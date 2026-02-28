@@ -24,6 +24,7 @@ export function ProductCard({ product }: { product: Product }) {
                         alt={product.name}
                         fill
                         className="object-contain p-4 mix-blend-multiply group-hover:scale-105 transition-transform duration-300"
+                        unoptimized
                     />
                 ) : (
                     <div className="flex items-center justify-center h-full text-muted-foreground">No Image</div>

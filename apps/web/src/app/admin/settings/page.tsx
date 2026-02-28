@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, AlertCircle, Save, Globe, CreditCard } from "lucide-react";
+import { useAuthStore } from "@/lib/auth-store";
 
 interface Setting {
     key: string;
@@ -11,6 +12,7 @@ interface Setting {
 }
 
 export default function AdminSettingsPage() {
+    const { token } = useAuthStore();
     const [settings, setSettings] = useState<Record<string, string>>({
         GST_PERCENTAGE: "18",
         FREE_SHIPPING_THRESHOLD: "0",
@@ -59,7 +61,10 @@ export default function AdminSettingsPage() {
                 // Saving all is simpler for this scale.
                 return fetch(`http://localhost:4000/settings/${key}`, {
                     method: "PUT",
-                    headers: { "Content-Type": "application/json" },
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`,
+                    },
                     body: JSON.stringify({
                         value,
                         description: getDescription(key)

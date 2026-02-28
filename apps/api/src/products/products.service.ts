@@ -41,7 +41,17 @@ export class ProductsService {
     });
   }
 
-  remove(id: number) {
-    return this.prisma.product.delete({ where: { id } });
+  async remove(id: number) {
+    try {
+      // Check if product is referenced in orders (soft-fail if needed)
+      return await this.prisma.product.delete({ where: { id } });
+    } catch (error) {
+      if (error?.code === 'P2003') { // Prisma foreign key constraint failed
+        throw new import('@nestjs/common').BadRequestException(
+          'Cannot delete product because it is part of existing orders. Please delete or archive the associated orders first.'
+        );
+      }
+      throw new import('@nestjs/common').InternalServerErrorException('Error deleting product.');
+    }
   }
 }

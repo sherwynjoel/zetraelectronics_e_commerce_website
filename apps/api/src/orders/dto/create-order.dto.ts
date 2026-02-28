@@ -14,4 +14,5 @@ export class CreateOrderDto {
         city: string;
         zip: string;
     }
+    paymentMethod?: string;
 }

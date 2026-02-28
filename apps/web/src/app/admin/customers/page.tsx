@@ -1,18 +1,36 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Mail, Shield } from "lucide-react";
+import { useAuthStore } from "@/lib/auth-store";
 
-async function getCustomers() {
-    try {
-        const res = await fetch("http://localhost:4000/auth/users", { cache: "no-store" });
-        if (!res.ok) return [];
-        return res.json();
-    } catch (e) {
-        return [];
-    }
-}
+export default function AdminCustomersPage() {
+    const { token } = useAuthStore();
+    const [customers, setCustomers] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
-export default async function AdminCustomersPage() {
-    const customers = await getCustomers();
+    useEffect(() => {
+        if (!token) return;
+        fetch("http://localhost:4000/auth/users", {
+            headers: { "Authorization": `Bearer ${token}` },
+            cache: "no-store",
+        } as any)
+            .then(res => {
+                if (!res.ok) throw new Error("Unauthorized");
+                return res.json();
+            })
+            .then(data => {
+                setCustomers(data);
+                setLoading(false);
+            })
+            .catch(err => {
+                console.error(err);
+                setLoading(false);
+            });
+    }, [token]);
+
+    if (loading) return <div className="p-8">Loading customers...</div>;
 
     return (
         <div className="space-y-6">
@@ -49,8 +67,8 @@ export default async function AdminCustomersPage() {
                                 <td className="p-4">{customer.email}</td>
                                 <td className="p-4">
                                     <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${customer.role === 'ADMIN'
-                                            ? 'bg-purple-100 text-purple-800'
-                                            : 'bg-green-100 text-green-800'
+                                        ? 'bg-purple-100 text-purple-800'
+                                        : 'bg-green-100 text-green-800'
                                         }`}>
                                         {customer.role === 'ADMIN' && <Shield className="w-3 h-3 mr-1" />}
                                         {customer.role}

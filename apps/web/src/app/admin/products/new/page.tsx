@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ImageUpload } from "@/components/admin/image-upload";
+import { useAuthStore } from "@/lib/auth-store";
 
 export default function CreateProductPage() {
     const router = useRouter();
+    const { token } = useAuthStore();
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         name: "",
@@ -30,7 +32,10 @@ export default function CreateProductPage() {
         try {
             const res = await fetch("http://localhost:4000/products", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
                 body: JSON.stringify({
                     ...formData,
                     price: parseFloat(formData.price),

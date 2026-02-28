@@ -4,11 +4,13 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { ImageUpload } from "@/components/admin/image-upload";
+import { useAuthStore } from "@/lib/auth-store";
 
 export default function EditProductPage() {
     const router = useRouter();
     const params = useParams();
     const id = params?.id as string;
+    const { token } = useAuthStore();
 
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(true);
@@ -61,7 +63,10 @@ export default function EditProductPage() {
         try {
             const res = await fetch(`http://localhost:4000/products/${id}`, {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
                 body: JSON.stringify({
                     ...formData,
                     price: parseFloat(formData.price),

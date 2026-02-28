@@ -43,7 +43,7 @@ export default function CartPage() {
                             <div key={item.id} className="bg-card p-4 rounded-xl border flex gap-4 items-center">
                                 <div className="relative h-20 w-20 bg-white rounded-md border flex-shrink-0 flex items-center justify-center">
                                     {item.image ? (
-                                        <Image src={item.image} alt={item.name} fill className="object-contain p-2 mix-blend-multiply" />
+                                        <Image src={item.image} alt={item.name} fill className="object-contain p-2 mix-blend-multiply" unoptimized />
                                     ) : (
                                         <div className="text-xs text-muted-foreground">No Img</div>
                                     )}

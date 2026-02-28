@@ -64,6 +64,7 @@ export class OrdersService {
           total: calculatedTotal,
           userId: userId || 1, // Default user
           status: 'PENDING',
+          paymentMethod: createOrderDto.paymentMethod || 'COD',
           items: {
             create: items.map(item => ({
               productId: item.productId,
@@ -192,6 +193,7 @@ export class OrdersService {
 
       doc.moveDown();
       doc.text(`Order ID: #${order.id}`);
+      doc.text(`Payment: ${order.paymentMethod}`);
       doc.text(`Date: ${order.createdAt.toLocaleDateString()}`);
       doc.moveDown();
 

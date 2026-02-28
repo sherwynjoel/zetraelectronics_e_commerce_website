@@ -11,9 +11,12 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 
 import { UploadsController } from './uploads.controller';
 import { SettingsModule } from './settings/settings.module';
+import { ConfigModule } from '@nestjs/config';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
     ProductsModule,
     OrdersModule,
     MailerModule.forRoot({
@@ -38,6 +41,7 @@ import { SettingsModule } from './settings/settings.module';
     }),
     AuthModule,
     SettingsModule,
+    AnalyticsModule,
   ],
   controllers: [AppController, UploadsController],
   providers: [AppService],

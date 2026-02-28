@@ -7,12 +7,13 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { ArrowLeft, CheckCircle } from "lucide-react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { useAuthStore } from "@/lib/auth-store";
 
 export default function CheckoutPage() {
     const { items, clearCart } = useCartStore();
-    const { user } = useAuthStore();
+    const { user, token } = useAuthStore();
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
@@ -91,7 +92,10 @@ export default function CheckoutPage() {
         try {
             const res = await fetch("http://localhost:4000/orders", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
                 body: JSON.stringify(orderData)
             });
 
@@ -180,11 +184,45 @@ export default function CheckoutPage() {
                             <h2 className="text-xl font-bold mb-4">Payment Method</h2>
                             <div className="space-y-3">
                                 <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50">
-                                    <input type="radio" name="paymentMethod" value="card" disabled />
-                                    <span className="font-medium text-muted-foreground">Credit/Debit Card (Coming Soon)</span>
+                                    <input
+                                        type="radio"
+                                        name="paymentMethod"
+                                        value="card"
+                                        checked={formData.paymentMethod === 'card'}
+                                        onChange={handleChange}
+                                    />
+                                    <span className="font-medium">Credit/Debit Card (Secure)</span>
                                 </label>
+
+                                <AnimatePresence>
+                                    {formData.paymentMethod === 'card' && (
+                                        <motion.div
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: 'auto' }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            className="space-y-3 pl-8 border-l-2 border-primary/20"
+                                        >
+                                            <input required placeholder="Card Number (0000 0000 0000 0000)" className="w-full border rounded-md p-2 text-sm" maxLength={19} />
+                                            <div className="flex gap-3">
+                                                <input required placeholder="MM/YY" className="w-1/2 border rounded-md p-2 text-sm" maxLength={5} />
+                                                <input required placeholder="CVC" className="w-1/2 border rounded-md p-2 text-sm" maxLength={3} />
+                                            </div>
+                                            <div className="text-xs text-muted-foreground flex items-center gap-1">
+                                                <CheckCircle className="h-3 w-3 text-green-500" />
+                                                <span>Payments processed securely via encrypted gateway (Simulation)</span>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+
                                 <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer bg-primary/5 ring-1 ring-primary/20">
-                                    <input type="radio" name="paymentMethod" value="cod" defaultChecked />
+                                    <input
+                                        type="radio"
+                                        name="paymentMethod"
+                                        value="cod"
+                                        checked={formData.paymentMethod === 'cod'}
+                                        onChange={handleChange}
+                                    />
                                     <span className="font-medium">Cash on Delivery (COD)</span>
                                 </label>
                             </div>
@@ -203,7 +241,7 @@ export default function CheckoutPage() {
                                 {items.map((item) => (
                                     <div key={item.id} className="py-3 flex gap-3">
                                         <div className="relative h-12 w-12 bg-white border rounded flex-shrink-0">
-                                            {item.image && <Image src={item.image} alt={item.name} fill className="object-contain p-1" />}
+                                            {item.image && <Image src={item.image} alt={item.name} fill className="object-contain p-1" unoptimized />}
                                             <span className="absolute -top-2 -right-2 bg-slate-700 text-white text-[10px] h-5 w-5 flex items-center justify-center rounded-full">
                                                 {item.quantity}
                                             </span>

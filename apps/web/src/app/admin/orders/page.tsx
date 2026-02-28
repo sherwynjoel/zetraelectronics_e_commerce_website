@@ -1,19 +1,36 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Download } from "lucide-react";
+import { useAuthStore } from "@/lib/auth-store";
 
-async function getOrders() {
-    try {
-        const res = await fetch("http://localhost:4000/orders", { cache: "no-store" });
-        if (!res.ok) return [];
-        return res.json();
-    } catch (e) {
-        return [];
-    }
-}
+export default function AdminOrdersPage() {
+    const { token } = useAuthStore();
+    const [orders, setOrders] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
-export default async function AdminOrdersPage() {
-    const orders = await getOrders();
+    useEffect(() => {
+        if (!token) return;
+        fetch("http://localhost:4000/orders", {
+            headers: { "Authorization": `Bearer ${token}` },
+        })
+            .then(res => {
+                if (!res.ok) throw new Error("Unauthorized");
+                return res.json();
+            })
+            .then(data => {
+                setOrders(data);
+                setLoading(false);
+            })
+            .catch(err => {
+                console.error(err);
+                setLoading(false);
+            });
+    }, [token]);
+
+    if (loading) return <div className="p-8">Loading orders...</div>;
 
     return (
         <div className="space-y-6">

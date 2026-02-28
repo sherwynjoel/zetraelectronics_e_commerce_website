@@ -1,4 +1,7 @@
 import { Controller, Post, Body, Get, UseGuards } from '@nestjs/common';
+import { JwtAuthGuard } from './jwt-auth.guard';
+import { RolesGuard } from './roles.guard';
+import { Roles } from './roles.decorator';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -18,6 +21,8 @@ export class AuthController {
     }
 
     @Get('users')
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Roles('ADMIN')
     findAll() {
         return this.authService.findAllUsers();
     }

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Upload, X, Loader2 } from "lucide-react";
 import Image from "next/image";
+import { useAuthStore } from "@/lib/auth-store";
 
 interface ImageUploadProps {
     value: string;
@@ -12,6 +13,7 @@ interface ImageUploadProps {
 
 export function ImageUpload({ value, onChange }: ImageUploadProps) {
     const [isUploading, setIsUploading] = useState(false);
+    const { token } = useAuthStore();
 
     const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files || e.target.files.length === 0) return;
@@ -24,6 +26,7 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
         try {
             const res = await fetch("http://localhost:4000/products/upload", {
                 method: "POST",
+                headers: { "Authorization": `Bearer ${token}` },
                 body: formData,
             });
 
@@ -44,7 +47,7 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
     if (value) {
         return (
             <div className="relative w-40 h-40 border rounded-lg overflow-hidden group">
-                <Image src={value} alt="Product Image" fill className="object-cover" />
+                <Image src={value} alt="Product Image" fill className="object-cover" unoptimized />
                 <button
                     type="button"
                     onClick={() => onChange("")}

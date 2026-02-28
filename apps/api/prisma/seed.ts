@@ -1,9 +1,29 @@
 import { PrismaClient } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log('🌱 Starting database seed...');
+
+  // Create Admin User
+  const adminEmail = 'admin@techuc.com';
+  const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
+
+  if (!existingAdmin) {
+    const hashedPassword = await bcrypt.hash('admin123', 10);
+    await prisma.user.create({
+      data: {
+        email: adminEmail,
+        password: hashedPassword,
+        name: 'Super Admin',
+        role: 'ADMIN',
+      },
+    });
+    console.log(`✅ Created Admin User: ${adminEmail} / admin123`);
+  } else {
+    console.log('ℹ️ Admin user already exists.');
+  }
 
   // delete existing products to avoid duplicates if running multiple times
   // await prisma.product.deleteMany();

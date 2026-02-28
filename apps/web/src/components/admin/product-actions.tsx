@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Trash2, Edit } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/lib/auth-store";
 
 interface ProductActionsProps {
     productId: number;
@@ -11,15 +12,28 @@ interface ProductActionsProps {
 
 export function ProductActions({ productId }: ProductActionsProps) {
     const router = useRouter();
+    const { token } = useAuthStore();
 
     const handleDelete = async () => {
         if (!window.confirm("Are you sure you want to delete this product?")) return;
 
         try {
-            await fetch(`http://localhost:4000/products/${productId}`, { method: "DELETE" });
+            const res = await fetch(`http://localhost:4000/products/${productId}`, {
+                method: "DELETE",
+                headers: { "Authorization": `Bearer ${token}` },
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({}));
+                alert(`Failed to delete: ${errorData.message || res.statusText || 'Product might be restricted or in an active order.'}`);
+                return;
+            }
+
+            alert("Product successfully deleted!");
             router.refresh();
         } catch (e) {
-            alert("Failed to delete");
+            alert("Failed to connect to the server to delete.");
+            console.error(e);
         }
     };
 

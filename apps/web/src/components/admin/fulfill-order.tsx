@@ -4,19 +4,24 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Truck, X, Check } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/lib/auth-store";
 
 export function FulfillOrder({ orderId, currentStatus, currentTracking }: { orderId: number, currentStatus: string, currentTracking?: string }) {
     const [isOpen, setIsOpen] = useState(false);
     const [trackingUrl, setTrackingUrl] = useState(currentTracking || "");
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
+    const { token } = useAuthStore();
 
     const handleFulfill = async () => {
         setIsLoading(true);
         try {
             const res = await fetch(`http://localhost:4000/orders/${orderId}`, {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
                 body: JSON.stringify({
                     status: "SHIPPED",
                     trackingUrl: trackingUrl

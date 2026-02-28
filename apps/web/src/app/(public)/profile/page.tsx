@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -22,7 +23,7 @@ interface Order {
 }
 
 export default function ProfilePage() {
-    const { user, logout } = useAuthStore();
+    const { user, token, logout } = useAuthStore();
     const router = useRouter();
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
@@ -33,8 +34,22 @@ export default function ProfilePage() {
             return;
         }
 
-        fetch(`http://localhost:4000/orders/user/${user.id}`)
-            .then(res => res.json())
+        if (!token) {
+            router.push("/login");
+            return;
+        }
+
+        fetch(`http://localhost:4000/orders/user/${user.id}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        })
+            .then(res => {
+                if (res.status === 401 || res.status === 403) {
+                    logout();
+                    router.push("/login");
+                    throw new Error("Unauthorized");
+                }
+                return res.json();
+            })
             .then(data => {
                 setOrders(data);
                 setLoading(false);
@@ -43,7 +58,29 @@ export default function ProfilePage() {
                 console.error(err);
                 setLoading(false);
             });
-    }, [user, router]);
+    }, [user, token, router, logout]);
+
+    const downloadInvoice = async (orderId: number) => {
+        try {
+            const res = await fetch(`http://localhost:4000/orders/${orderId}/invoice`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!res.ok) throw new Error("Failed to download invoice");
+
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `invoice-${orderId}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        } catch (e) {
+            console.error(e);
+            alert("Could not download invoice. Please try again.");
+        }
+    };
 
     if (!user) return null;
 
@@ -107,14 +144,12 @@ export default function ProfilePage() {
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-3">
-                                            <a
-                                                href={`http://localhost:4000/orders/${order.id}/invoice`}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="flex items-center gap-1 text-xs font-medium text-primary hover:underline px-3 py-1 bg-primary/10 rounded-full"
+                                            <button
+                                                onClick={() => downloadInvoice(order.id)}
+                                                className="flex items-center gap-1 text-xs font-medium text-primary hover:underline px-3 py-1 bg-primary/10 rounded-full cursor-pointer border-0"
                                             >
                                                 <Download className="h-3 w-3" /> Invoice
-                                            </a>
+                                            </button>
                                             <span className={`px-2 py-1 rounded-full text-xs font-bold ${order.status === 'DELIVERED' ? 'bg-green-100 text-green-700' :
                                                 order.status === 'SHIPPED' ? 'bg-blue-100 text-blue-700' :
                                                     'bg-yellow-100 text-yellow-700'
@@ -134,8 +169,10 @@ export default function ProfilePage() {
                                                 <div key={i} className="flex gap-4 items-center">
                                                     {/* We could show image here if we had it populated properly */}
                                                     <div className="h-12 w-12 bg-muted rounded flex-shrink-0 overflow-hidden relative">
-                                                        {item.product.image && (
+                                                        {item.product.image ? (
                                                             <img src={item.product.image} alt="" className="object-contain w-full h-full" />
+                                                        ) : (
+                                                            <div className="w-full h-full flex items-center justify-center bg-gray-200 text-xs">No Img</div>
                                                         )}
                                                     </div>
                                                     <div className="flex-1">

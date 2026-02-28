@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -22,13 +22,13 @@ model Product {
   id          Int      @id @default(autoincrement())
   name        String
   description String?
-  price       Decimal
+  price       Float
   stock       Int      @default(0)
   category    String
   image       String?
   datasheet   String?
   specs       String? // JSON string for flexibility in SQLite
-  shippingCost Decimal @default(0)
+  shippingCost Float   @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   orderItems  OrderItem[]
@@ -40,7 +40,8 @@ model Order {
   user      User     @relation(fields: [userId], references: [id])
   status    String   @default("PENDING") // PENDING, SHIPPED, DELIVERED
   trackingUrl String?
-  total     Decimal
+  total     Float
+  paymentMethod String @default("COD")
   createdAt DateTime @default(now())
   items     OrderItem[]
 }
@@ -52,7 +53,7 @@ model OrderItem {
   productId Int
   product   Product @relation(fields: [productId], references: [id])
   quantity  Int
-  price     Decimal
+  price     Float
 }
 
 model SystemSetting {
