@@ -30,7 +30,7 @@ export default function CreateProductPage() {
         setLoading(true);
 
         try {
-            const res = await fetch("http://localhost:4000/products", {
+            const res = await fetch("http://127.0.0.1:4000/products", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

@@ -32,7 +32,7 @@ export default function AdminDashboard() {
         }
 
         // Fetch stats
-        fetch('http://localhost:4000/analytics/stats', {
+        fetch('http://127.0.0.1:4000/analytics/stats', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
             .then(res => {

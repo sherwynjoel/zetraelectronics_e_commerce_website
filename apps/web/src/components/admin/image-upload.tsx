@@ -24,7 +24,7 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
         formData.append("file", file);
 
         try {
-            const res = await fetch("http://localhost:4000/products/upload", {
+            const res = await fetch("http://127.0.0.1:4000/products/upload", {
                 method: "POST",
                 headers: { "Authorization": `Bearer ${token}` },
                 body: formData,

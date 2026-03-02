@@ -62,7 +62,7 @@ export const useCartStore = create<CartStore>()(
                 }),
             clearCart: () => set({ items: [] }),
             count: () => get().items.reduce((acc, item) => acc + item.quantity, 0),
-            total: () => get().items.reduce((acc, item) => acc + (item.price * item.quantity) + (item.shippingCost * item.quantity), 0),
+            total: () => get().items.reduce((acc, item) => acc + (item.price * item.quantity), 0),
         }),
         {
             name: 'electro-cart-storage',

@@ -6,7 +6,7 @@ import Image from "next/image";
 
 async function getProducts() {
     try {
-        const res = await fetch("http://localhost:4000/products", { cache: "no-store" });
+        const res = await fetch("http://127.0.0.1:4000/products", { cache: "no-store" });
         if (!res.ok) return [];
         return res.json();
     } catch (e) {

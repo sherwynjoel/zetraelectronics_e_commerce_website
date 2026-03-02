@@ -13,7 +13,7 @@ export default function AdminOrdersPage() {
 
     useEffect(() => {
         if (!token) return;
-        fetch("http://localhost:4000/orders", {
+        fetch("http://127.0.0.1:4000/orders", {
             headers: { "Authorization": `Bearer ${token}` },
         })
             .then(res => {
