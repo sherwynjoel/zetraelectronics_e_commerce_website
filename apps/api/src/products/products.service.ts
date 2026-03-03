@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { PrismaService } from '../prisma.service';
@@ -47,11 +47,11 @@ export class ProductsService {
       return await this.prisma.product.delete({ where: { id } });
     } catch (error) {
       if (error?.code === 'P2003') { // Prisma foreign key constraint failed
-        throw new import('@nestjs/common').BadRequestException(
+        throw new BadRequestException(
           'Cannot delete product because it is part of existing orders. Please delete or archive the associated orders first.'
         );
       }
-      throw new import('@nestjs/common').InternalServerErrorException('Error deleting product.');
+      throw new InternalServerErrorException('Error deleting product.');
     }
   }
 }

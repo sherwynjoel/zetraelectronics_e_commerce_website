@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
@@ -182,13 +183,15 @@ export function Navbar() {
             <div className="max-w-[1440px] mx-auto px-4 md:px-6 lg:px-12 py-3 md:py-4">
                 <div className="flex items-center justify-between gap-4 md:gap-12">
                     {/* Logo */}
-                    <Link href="/" className="flex-shrink-0 flex items-center gap-2 group">
-                        <div className="relative h-9 w-9 md:h-10 md:w-10 overflow-hidden rounded-xl bg-primary flex items-center justify-center text-white shadow-lg shadow-primary/20 group-hover:scale-105 transition-transform duration-300">
-                            <span className="font-bold text-lg md:text-xl">T</span>
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="font-bold text-xl md:text-2xl leading-none tracking-tight text-slate-900 dark:text-white">Tech<span className="text-primary">uc</span></span>
-                            <span className="text-[9px] md:text-[10px] text-slate-500 font-bold tracking-[0.2em] uppercase">Electronics</span>
+                    <Link href="/" className="flex-shrink-0 flex items-center group">
+                        <div className="relative h-10 w-10 md:h-12 md:w-12 flex-shrink-0 group-hover:scale-105 transition-transform duration-300">
+                            <Image
+                                src="/logo.png"
+                                alt="Zetra Electronics Logo"
+                                fill
+                                className="object-contain"
+                                priority
+                            />
                         </div>
                     </Link>
 

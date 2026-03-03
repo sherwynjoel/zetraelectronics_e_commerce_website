@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Mail, Phone, MapPin, Instagram, Twitter, Linkedin, Facebook } from "lucide-react";
 
 async function getSettings() {
@@ -25,8 +26,15 @@ export async function Footer() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                     {/* Brand */}
                     <div className="col-span-1 md:col-span-1">
-                        <Link href="/" className="text-2xl font-bold text-white mb-4 block">
-                            <span className="text-primary">Tech</span> uc
+                        <Link href="/" className="inline-block mb-4">
+                            <div className="relative h-32 w-32">
+                                <Image
+                                    src="/logo.png"
+                                    alt="Zetra Electronics Logo"
+                                    fill
+                                    className="object-contain brightness-0 invert"
+                                />
+                            </div>
                         </Link>
                         <p className="text-sm text-slate-400 leading-relaxed mb-6">
                             Your premium source for electronic components, sensors, and robotics. Empowering innovation across India.

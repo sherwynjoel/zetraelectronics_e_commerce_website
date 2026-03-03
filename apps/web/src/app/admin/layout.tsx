@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -40,10 +41,16 @@ export default function AdminLayout({
         <div className="min-h-screen bg-muted/20 flex">
             {/* Sidebar */}
             <aside className="w-64 bg-slate-900 text-white flex flex-col fixed h-full z-10 transition-transform">
-                <div className="p-6 border-b border-white/10">
-                    <Link href="/admin" className="flex items-center gap-2">
-                        <div className="h-8 w-8 bg-blue-600 rounded flex items-center justify-center font-bold">T</div>
-                        <span className="text-xl font-bold">Tech uc Admin</span>
+                <div className="p-4 border-b border-white/10">
+                    <Link href="/admin" className="flex items-center">
+                        <div className="relative h-12 w-36">
+                            <Image
+                                src="/logo.png"
+                                alt="Zetra Electronics Logo"
+                                fill
+                                className="object-contain brightness-0 invert"
+                            />
+                        </div>
                     </Link>
                 </div>
 
