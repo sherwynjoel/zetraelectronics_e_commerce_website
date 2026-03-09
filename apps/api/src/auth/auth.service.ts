@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/co
 import { PrismaService } from '../prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import * as admin from 'firebase-admin';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 
@@ -64,6 +65,55 @@ export class AuthService {
                 role: user.role
             }
         };
+    }
+
+    async googleLogin(token: string) {
+        if (!admin.apps.length) {
+            admin.initializeApp({
+                projectId: 'zetraelectronics-c55c1'
+            });
+        }
+
+        try {
+            const decodedToken = await admin.auth().verifyIdToken(token);
+            const email = decodedToken.email;
+
+            if (!email) {
+                throw new UnauthorizedException('Google token did not contain an email');
+            }
+
+            let user = await this.prisma.user.findUnique({
+                where: { email },
+            });
+
+            if (!user) {
+                const generatedPassword = Math.random().toString(36).slice(-8) + 'A1!';
+                const hashedPassword = await bcrypt.hash(generatedPassword, 10);
+                user = await this.prisma.user.create({
+                    data: {
+                        email,
+                        password: hashedPassword,
+                        name: decodedToken.name || 'Google User',
+                    },
+                });
+            }
+
+            const payload = { sub: user.id, email: user.email, role: user.role };
+            const jwtToken = this.jwtService.sign(payload);
+
+            return {
+                access_token: jwtToken,
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    name: user.name,
+                    role: user.role
+                }
+            };
+        } catch (error) {
+            console.error('Firebase Auth Error:', error);
+            throw new UnauthorizedException('Invalid Google token');
+        }
     }
     async findAllUsers() {
         return this.prisma.user.findMany({

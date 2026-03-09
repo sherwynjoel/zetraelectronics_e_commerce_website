@@ -15,6 +15,11 @@ export class AuthController {
         return this.authService.login(loginDto);
     }
 
+    @Post('google/firebase')
+    googleLogin(@Body('token') token: string) {
+        return this.authService.googleLogin(token);
+    }
+
     @Post('register')
     register(@Body() registerDto: RegisterDto) {
         return this.authService.register(registerDto);
