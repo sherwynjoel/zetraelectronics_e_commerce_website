@@ -30,6 +30,28 @@ export default function AdminOrdersPage() {
             });
     }, [token]);
 
+    const downloadInvoice = async (orderId: number) => {
+        try {
+            const res = await fetch(`http://127.0.0.1:4000/orders/${orderId}/invoice`, {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            if (!res.ok) throw new Error("Failed to download invoice");
+
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `invoice-${orderId}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error(err);
+            alert("Error downloading invoice. Please make sure you are logged in.");
+        }
+    };
+
     if (loading) return <div className="p-8">Loading orders...</div>;
 
     return (
@@ -69,9 +91,9 @@ export default function AdminOrdersPage() {
                                     </td>
                                     <td className="p-4 font-medium">₹{Number(order.total).toFixed(2)}</td>
                                     <td className="p-4 text-right">
-                                        <a href={`http://localhost:4000/orders/${order.id}/invoice`} target="_blank" className="mr-2 inline-flex h-9 items-center justify-center rounded-md border border-input bg-background px-3 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground align-middle">
+                                        <button onClick={() => downloadInvoice(order.id)} className="mr-2 inline-flex h-9 items-center justify-center rounded-md border border-input bg-background px-3 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground align-middle cursor-pointer">
                                             <Download className="h-4 w-4 mr-2" /> Invoice
-                                        </a>
+                                        </button>
                                         <Link href={`/admin/orders/${order.id}`}>
                                             <Button variant="outline" size="sm">Manage</Button>
                                         </Link>

@@ -110,7 +110,11 @@ export async function Footer() {
             {/* Bottom Bar */}
             <div className="border-t border-slate-800">
                 <div className="max-w-[1440px] mx-auto px-6 lg:px-12 py-6 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500">
-                    <p>© {new Date().getFullYear()} Tech uc. All rights reserved.</p>
+                    <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4">
+                        <p>© {new Date().getFullYear()} Tech uc. All rights reserved.</p>
+                        <span className="hidden md:inline text-slate-700">|</span>
+                        <p>Powered by <a href="https://thearktech.in" target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:text-white transition-colors">The Ark Tech</a></p>
+                    </div>
                     <div className="flex gap-6">
                         <Link href="/terms" className="hover:text-slate-300">Terms of Service</Link>
                         <Link href="/privacy" className="hover:text-slate-300">Privacy Policy</Link>

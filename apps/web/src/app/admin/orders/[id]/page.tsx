@@ -6,7 +6,7 @@ import { FulfillOrder } from "@/components/admin/fulfill-order";
 
 async function getOrder(id: string) {
     try {
-        const res = await fetch(`http://localhost:4000/orders/${id}`, { cache: "no-store" });
+        const res = await fetch(`http://127.0.0.1:4000/orders/${id}`, { cache: "no-store" });
         if (!res.ok) return null;
         return res.json();
     } catch (e) {

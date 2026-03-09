@@ -3,8 +3,8 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { PrismaService } from '../prisma.service';
 import { MailerService } from '@nestjs-modules/mailer';
+import * as path from 'path';
 const PDFDocument = require('pdfkit');
-
 @Injectable()
 export class OrdersService {
   constructor(
@@ -171,73 +171,130 @@ export class OrdersService {
 
     return new Promise((resolve) => {
       // @ts-ignore
-      const doc = new PDFDocument({ margin: 50 });
+      const doc = new PDFDocument({ margin: 50, size: 'A4' });
       const buffers: Buffer[] = [];
       doc.on('data', buffers.push.bind(buffers));
       doc.on('end', () => resolve(Buffer.concat(buffers)));
 
-      // --- Header ---
-      doc.fontSize(20).text('TAX INVOICE', { align: 'center' });
-      doc.moveDown();
-      doc.fontSize(20).text('Tech uc', { align: 'left' });
-      doc.fontSize(10).text(s.STORE_ADDRESS || 'Tech Store Address', { align: 'left' });
-      doc.text(`Phone: ${s.STORE_PHONE || 'N/A'}`);
-      doc.text(`Email: ${s.STORE_EMAIL || 'N/A'}`);
-      if (s.GST_PERCENTAGE) doc.text(`GST Rate: ${s.GST_PERCENTAGE}%`);
-      doc.moveDown();
+      // --- Header with Logo ---
+      const logoPath = path.resolve(process.cwd(), '../web/public/logo.png');
+      try {
+        doc.image(logoPath, 50, 45, { width: 100 });
+      } catch (e) {
+        console.warn('Logo not found or could not be loaded for invoice:', logoPath);
+      }
+
+      // --- Document Title & Details ---
+      doc.fillColor('#333333')
+        .fontSize(24)
+        .text('TAX INVOICE', 50, 50, { align: 'right' });
+
+      doc.fontSize(10)
+        .fillColor('#666666')
+        .text(`Invoice No: #${order.id.toString().padStart(5, '0')}`, { align: 'right' })
+        .text(`Date: ${order.createdAt.toLocaleDateString()}`, { align: 'right' })
+        .text(`Payment: ${order.paymentMethod}`, { align: 'right' })
+        .text(`Status: ${order.status}`, { align: 'right' })
+        .moveDown();
+
+      // --- Company Info ---
+      doc.fillColor('#333333')
+        .fontSize(14)
+        .text('Zetra Electronics', 50, 110)
+        .fontSize(10)
+        .fillColor('#666666')
+        .text(s.STORE_ADDRESS || 'Tech Street, India', 50, 126)
+        .text(`Phone: ${s.STORE_PHONE || '+91 99999 99999'}`, 50, 140)
+        .text(`Email: ${s.STORE_EMAIL || 'support@zetraelectronics.com'}`, 50, 154);
+
+      if (s.GST_PERCENTAGE) {
+        doc.text(`GST No: Pending`, 50, 168);
+      }
 
       // --- Bill To ---
-      doc.fontSize(12).text('Bill To:', { underline: true });
-      doc.fontSize(10).text(order.user.name);
-      doc.text(order.user.email);
+      doc.fillColor('#333333')
+        .fontSize(12)
+        .text('Billed To:', 350, 110, { underline: true });
 
-      doc.moveDown();
-      doc.text(`Order ID: #${order.id}`);
-      doc.text(`Payment: ${order.paymentMethod}`);
-      doc.text(`Date: ${order.createdAt.toLocaleDateString()}`);
-      doc.moveDown();
+      doc.fontSize(10)
+        .fillColor('#666666')
+        .text(order.user?.name || 'Customer Name', 350, 126)
+        .text(order.user?.email || 'N/A', 350, 140)
+        .moveDown(3);
 
       // --- Table Header ---
-      const tableTop = doc.y;
-      doc.font('Helvetica-Bold');
-      doc.text('#', 50, tableTop);
-      doc.text('Item', 100, tableTop);
-      doc.text('Qty', 300, tableTop);
-      doc.text('Price', 350, tableTop);
-      doc.text('Total', 450, tableTop);
-      doc.moveDown();
-      doc.font('Helvetica');
+      const tableTop = 220;
+      doc.fillColor('#ffffff')
+        .rect(50, tableTop - 5, 500, 20)
+        .fill('#333333');
 
-      let y = doc.y;
+      doc.fillColor('#ffffff')
+        .font('Helvetica-Bold')
+        .text('Item', 60, tableTop)
+        .text('Qty', 320, tableTop, { width: 40, align: 'center' })
+        .text('Unit Price', 380, tableTop, { width: 60, align: 'right' })
+        .text('Total', 450, tableTop, { width: 90, align: 'right' });
 
       // --- Table Rows ---
+      doc.font('Helvetica')
+        .fillColor('#333333');
+      let y = tableTop + 25;
       let subtotal = 0;
+
       order.items.forEach((item, i) => {
         const itemTotal = Number(item.price) * item.quantity;
         subtotal += itemTotal;
 
-        doc.text((i + 1).toString(), 50, y);
-        doc.text(item.product.name.substring(0, 35), 100, y);
-        doc.text(item.quantity.toString(), 300, y);
-        doc.text(Number(item.price).toFixed(2), 350, y);
-        doc.text(itemTotal.toFixed(2), 450, y);
+        doc.text(item.product.name.substring(0, 40), 60, y)
+          .text(item.quantity.toString(), 320, y, { width: 40, align: 'center' })
+          .text(`Rs ${Number(item.price).toFixed(2)}`, 380, y, { width: 60, align: 'right' })
+          .text(`Rs ${itemTotal.toFixed(2)}`, 450, y, { width: 90, align: 'right' });
+
         y += 20;
+
+        // Add a line between items
+        doc.strokeColor('#cccccc')
+          .lineWidth(0.5)
+          .moveTo(50, y - 5)
+          .lineTo(550, y - 5)
+          .stroke();
       });
 
-      doc.moveDown();
-      const lineY = y + 10;
-      doc.moveTo(50, lineY).lineTo(550, lineY).stroke();
-
-      // --- Totals ---
-      y = lineY + 15;
+      // --- Totals Section ---
+      y += 15;
       doc.font('Helvetica-Bold');
 
-      doc.text('Subtotal:', 350, y);
-      doc.text(subtotal.toFixed(2), 450, y);
+      doc.text('Subtotal:', 380, y, { width: 60, align: 'right' })
+        .text(`Rs ${subtotal.toFixed(2)}`, 450, y, { width: 90, align: 'right' });
       y += 20;
 
-      doc.text('Total:', 300, y);
-      doc.text(Number(order.total).toFixed(2), 450, y);
+      const taxRate = s.GST_PERCENTAGE ? parseFloat(s.GST_PERCENTAGE) : 0;
+      const taxAmount = Number(order.total) - subtotal; // Assuming total includes exactly shipping + tax
+
+      if (taxRate > 0) {
+        doc.font('Helvetica')
+          .text(`Tax (${taxRate}%):`, 380, y, { width: 60, align: 'right' })
+          .text(`Rs ${taxAmount.toFixed(2)}`, 450, y, { width: 90, align: 'right' });
+        y += 20;
+      }
+
+      // Draw final total line
+      doc.strokeColor('#333333')
+        .lineWidth(2)
+        .moveTo(380, y - 5)
+        .lineTo(540, y - 5)
+        .stroke();
+
+      doc.font('Helvetica-Bold')
+        .fontSize(14)
+        .text('Grand Total:', 320, y, { width: 120, align: 'right' })
+        .text(`Rs ${Number(order.total).toFixed(2)}`, 450, y, { width: 90, align: 'right' });
+
+      // --- Footer Section ---
+      doc.fontSize(10)
+        .font('Helvetica')
+        .fillColor('#999999')
+        .text('Thank you for shopping with Zetra Electronics!', 50, 700, { align: 'center' });
 
       doc.end();
     });

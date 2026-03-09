@@ -14,8 +14,26 @@ async function getProducts() {
     }
 }
 
-export default async function AdminProductsPage() {
-    const products = await getProducts();
+export default async function AdminProductsPage({ searchParams }: { searchParams: Promise<{ sort?: string }> }) {
+    const resolvedParams = await searchParams;
+    const sort = resolvedParams?.sort;
+    let products = await getProducts();
+
+    if (sort) {
+        products = [...products].sort((a: any, b: any) => {
+            if (sort === "price_asc") return Number(a.price) - Number(b.price);
+            if (sort === "price_desc") return Number(b.price) - Number(a.price);
+            if (sort === "stock_asc") return a.stock - b.stock;
+            if (sort === "stock_desc") return b.stock - a.stock;
+            if (sort === "name_desc") return b.name.localeCompare(a.name);
+            return a.name.localeCompare(b.name);
+        });
+    }
+
+    const toggleSort = (key: string) => {
+        if (sort === `${key}_asc`) return `${key}_desc`;
+        return `${key}_asc`;
+    };
 
     return (
         <div className="space-y-6">
@@ -33,10 +51,10 @@ export default async function AdminProductsPage() {
                     <thead className="bg-muted text-muted-foreground border-b">
                         <tr>
                             <th className="p-4 font-medium">Image</th>
-                            <th className="p-4 font-medium">Name</th>
+                            <th className="p-4 font-medium"><Link href={`/admin/products?sort=${toggleSort('name')}`} className="hover:text-primary transition-colors">Name 🔃</Link></th>
                             <th className="p-4 font-medium">Category</th>
-                            <th className="p-4 font-medium">Price</th>
-                            <th className="p-4 font-medium">Stock</th>
+                            <th className="p-4 font-medium"><Link href={`/admin/products?sort=${toggleSort('price')}`} className="hover:text-primary transition-colors">Price 🔃</Link></th>
+                            <th className="p-4 font-medium"><Link href={`/admin/products?sort=${toggleSort('stock')}`} className="hover:text-primary transition-colors">Stock 🔃</Link></th>
                             <th className="p-4 font-medium text-right">Actions</th>
                         </tr>
                     </thead>

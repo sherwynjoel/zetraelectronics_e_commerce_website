@@ -12,7 +12,7 @@ export default function AdminCustomersPage() {
 
     useEffect(() => {
         if (!token) return;
-        fetch("http://localhost:4000/auth/users", {
+        fetch("http://127.0.0.1:4000/auth/users", {
             headers: { "Authorization": `Bearer ${token}` },
             cache: "no-store",
         } as any)
@@ -79,7 +79,7 @@ export default function AdminCustomersPage() {
                                     {new Date(customer.createdAt).toLocaleDateString()}
                                 </td>
                                 <td className="p-4 text-right">
-                                    <Button variant="ghost" size="sm">View Details</Button>
+                                    <Button variant="ghost" size="sm" onClick={() => alert(`Customer Details Summary:\nName: ${customer.name || 'N/A'}\nEmail: ${customer.email}\nJoined: ${new Date(customer.createdAt).toLocaleDateString()}\nTotal Orders: ${customer._count?.orders || 0}`)}>View Details</Button>
                                 </td>
                             </tr>
                         ))}
