@@ -23,85 +23,80 @@ export async function Footer() {
     return (
         <footer className="bg-slate-900 text-slate-200 mt-auto border-t border-slate-800">
             <div className="max-w-[1440px] mx-auto px-6 lg:px-12 py-12">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
                     {/* Brand */}
-                    <div className="col-span-1 md:col-span-1">
-                        <Link href="/" className="inline-block mb-4">
-                            <div className="relative h-32 w-32">
-                                <Image
-                                    src="/logo.png"
-                                    alt="Zetra Electronics Logo"
-                                    fill
-                                    className="object-contain brightness-0 invert"
-                                />
+                    <div className="col-span-1 md:col-span-1 flex flex-col items-start">
+                        <Link href="/" className="flex items-center gap-2 mb-6 group">
+                            <div className="relative h-12 w-12">
+                                <div className="absolute inset-0 scale-[1.3] origin-left group-hover:scale-[1.4] transition-transform duration-300">
+                                    <Image src="/logo.png" alt="Zetra" fill className="object-contain" />
+                                </div>
                             </div>
+                            <span className="font-bold text-2xl text-white tracking-tight">
+                                Zetra <span className="text-primary">Electronics</span>
+                            </span>
                         </Link>
                         <p className="text-sm text-slate-400 leading-relaxed mb-6">
                             Your premium source for electronic components, sensors, and robotics. Empowering innovation across India.
                         </p>
                         <div className="flex gap-4">
-                            {settings.SOCIAL_INSTAGRAM && (
-                                <a href={settings.SOCIAL_INSTAGRAM} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
-                                    <Instagram className="h-5 w-5" />
-                                </a>
-                            )}
-                            {settings.SOCIAL_TWITTER && (
-                                <a href={settings.SOCIAL_TWITTER} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
-                                    <Twitter className="h-5 w-5" />
-                                </a>
-                            )}
-                            {settings.SOCIAL_LINKEDIN && (
-                                <a href={settings.SOCIAL_LINKEDIN} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
-                                    <Linkedin className="h-5 w-5" />
-                                </a>
-                            )}
+                            <a href={settings.SOCIAL_INSTAGRAM || "#"} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+                                <Instagram className="h-5 w-5" />
+                            </a>
+                            <a href={settings.SOCIAL_TWITTER || "#"} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+                                <Twitter className="h-5 w-5" />
+                            </a>
+                            <a href={settings.SOCIAL_LINKEDIN || "#"} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+                                <Linkedin className="h-5 w-5" />
+                            </a>
                         </div>
                     </div>
 
-                    {/* Quick Links */}
-                    <div>
-                        <h3 className="font-bold text-white mb-4">Shop</h3>
-                        <ul className="space-y-2 text-sm">
-                            <li><Link href="/products" className="hover:text-primary transition-colors">All Products</Link></li>
-                            <li><Link href="/products?category=Sensors" className="hover:text-primary transition-colors">Sensors</Link></li>
-                            <li><Link href="/products?category=Robotics" className="hover:text-primary transition-colors">Robotics</Link></li>
-                            <li><Link href="/products?category=Development+Boards" className="hover:text-primary transition-colors">Dev Boards</Link></li>
-                        </ul>
-                    </div>
+                    {/* Shop & Support (2 Columns on mobile) */}
+                    <div className="col-span-1 md:col-span-2 grid grid-cols-2 gap-8">
+                        {/* Quick Links */}
+                        <div>
+                            <h3 className="font-bold text-white mb-4">Shop</h3>
+                            <ul className="space-y-3 text-sm text-slate-400">
+                                <li><Link href="/products" className="hover:text-primary transition-colors">All Products</Link></li>
+                                <li><Link href="/products?category=Sensors" className="hover:text-primary transition-colors">Sensors</Link></li>
+                                <li><Link href="/products?category=Robotics" className="hover:text-primary transition-colors">Robotics</Link></li>
+                                <li><Link href="/products?category=Development+Boards" className="hover:text-primary transition-colors">Dev Boards</Link></li>
+                            </ul>
+                        </div>
 
-                    {/* Support */}
-                    <div>
-                        <h3 className="font-bold text-white mb-4">Support</h3>
-                        <ul className="space-y-2 text-sm">
-                            <li><Link href="/profile" className="hover:text-primary transition-colors">My Account</Link></li>
-                            <li><Link href="/cart" className="hover:text-primary transition-colors">Track Order</Link></li>
-                            <li><Link href="/contact" className="hover:text-primary transition-colors">Contact Us</Link></li>
-                            <li><Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
-                        </ul>
+                        {/* Support */}
+                        <div>
+                            <h3 className="font-bold text-white mb-4">Support</h3>
+                            <ul className="space-y-3 text-sm text-slate-400">
+                                <li><Link href="/profile" className="hover:text-primary transition-colors">My Account</Link></li>
+                                <li><Link href="/cart" className="hover:text-primary transition-colors">Track Order</Link></li>
+                                <li><Link href="/contact" className="hover:text-primary transition-colors">Contact Us</Link></li>
+                                <li><Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
+                            </ul>
+                        </div>
                     </div>
 
                     {/* Contact */}
-                    <div>
+                    <div className="col-span-1">
                         <h3 className="font-bold text-white mb-4">Contact Us</h3>
-                        <ul className="space-y-4 text-sm">
-                            {settings.STORE_ADDRESS && (
-                                <li className="flex gap-3">
-                                    <MapPin className="h-5 w-5 text-primary flex-shrink-0" />
-                                    <span>{settings.STORE_ADDRESS}</span>
-                                </li>
-                            )}
-                            {settings.STORE_PHONE && (
-                                <li className="flex gap-3 items-center">
-                                    <Phone className="h-5 w-5 text-primary flex-shrink-0" />
-                                    <a href={`tel:${settings.STORE_PHONE}`} className="hover:text-white">{settings.STORE_PHONE}</a>
-                                </li>
-                            )}
-                            {settings.STORE_EMAIL && (
-                                <li className="flex gap-3 items-center">
-                                    <Mail className="h-5 w-5 text-primary flex-shrink-0" />
-                                    <a href={`mailto:${settings.STORE_EMAIL}`} className="hover:text-white">{settings.STORE_EMAIL}</a>
-                                </li>
-                            )}
+                        <ul className="space-y-4 text-sm text-slate-400">
+                            <li className="flex gap-3">
+                                <MapPin className="h-5 w-5 text-primary flex-shrink-0" />
+                                <span>{settings.STORE_ADDRESS || "123 Tech Park, Coimbatore, TN"}</span>
+                            </li>
+                            <li className="flex gap-3 items-center">
+                                <Phone className="h-5 w-5 text-primary flex-shrink-0" />
+                                <a href={`tel:${settings.STORE_PHONE || "+918005551234"}`} className="hover:text-white transition-colors">
+                                    {settings.STORE_PHONE || "+91 800 555 1234"}
+                                </a>
+                            </li>
+                            <li className="flex gap-3 items-center">
+                                <Mail className="h-5 w-5 text-primary flex-shrink-0" />
+                                <a href={`mailto:${settings.STORE_EMAIL || "support@zetraelectronics.com"}`} className="hover:text-white transition-colors">
+                                    {settings.STORE_EMAIL || "support@zetraelectronics.com"}
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </div>
@@ -111,7 +106,7 @@ export async function Footer() {
             <div className="border-t border-slate-800">
                 <div className="max-w-[1440px] mx-auto px-6 lg:px-12 py-6 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500">
                     <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4">
-                        <p>© {new Date().getFullYear()} Tech uc. All rights reserved.</p>
+                        <p>© {new Date().getFullYear()} Zetra Electronics. All rights reserved.</p>
                         <span className="hidden md:inline text-slate-700">|</span>
                         <p>Powered by <a href="https://thearktech.in" target="_blank" rel="noopener noreferrer" className="text-slate-300 hover:text-white transition-colors">The Ark Tech</a></p>
                     </div>

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Res, UseGuards, Request, ForbiddenException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res, UseGuards, Request, ForbiddenException, Query } from '@nestjs/common';
 import type { Response } from 'express';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -22,18 +22,32 @@ export class OrdersController {
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
-  findAll() {
-    return this.ordersService.findAll();
+  findAll(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.ordersService.findAll(
+      page ? Number(page) : 1,
+      limit ? Number(limit) : 50,
+    );
   }
 
   @Get('user/:userId')
   @UseGuards(JwtAuthGuard)
-  findAllByUser(@Request() req, @Param('userId') userId: string) {
+  async findAllByUser(@Request() req, @Param('userId') userId: string) {
+    const requestedId = Number(userId);
+    const tokenUserId = Number(req.user.userId);
+
     // Check if user is accessing their own data or is admin
-    if (Number(userId) !== req.user.userId && !req.user.role?.includes('ADMIN')) {
+    if (requestedId !== tokenUserId && !req.user.role?.includes('ADMIN')) {
       throw new ForbiddenException('You can only view your own orders');
     }
-    return this.ordersService.findAllByUser(+userId);
+    try {
+      return await this.ordersService.findAllByUser(requestedId);
+    } catch (error) {
+      console.error('findAllByUser error:', error);
+      return [];
+    }
   }
 
   @Get(':id/invoice')

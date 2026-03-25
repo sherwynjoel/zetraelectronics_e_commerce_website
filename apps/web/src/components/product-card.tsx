@@ -17,13 +17,13 @@ interface Product {
 export function ProductCard({ product }: { product: Product }) {
     return (
         <div className="bg-card text-card-foreground rounded-xl border overflow-hidden shadow-sm hover:shadow-md transition-shadow group">
-            <Link href={`/products/${product.id}`} className="block relative aspect-square bg-muted">
+            <Link href={`/products/${product.id}`} className="block relative aspect-square bg-slate-50 dark:bg-slate-900 border-b">
                 {product.image ? (
                     <Image
                         src={product.image}
                         alt={product.name}
                         fill
-                        className="object-contain p-4 mix-blend-multiply group-hover:scale-105 transition-transform duration-300"
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
                         unoptimized
                     />
                 ) : (
@@ -40,23 +40,23 @@ export function ProductCard({ product }: { product: Product }) {
                 )}
             </Link>
 
-            <div className="p-4 space-y-2">
-                <div className="text-xs text-muted-foreground font-semibold">{product.category}</div>
+            <div className="p-3 sm:p-4 space-y-1.5 sm:space-y-2">
+                <div className="text-[10px] sm:text-xs text-muted-foreground font-semibold line-clamp-1">{product.category}</div>
                 <Link href={`/products/${product.id}`} className="block">
-                    <h3 className="font-bold text-base leading-tight line-clamp-2 h-10 hover:text-primary transition-colors" title={product.name}>
+                    <h3 className="font-bold text-sm sm:text-base leading-tight line-clamp-2 h-9 sm:h-10 hover:text-primary transition-colors" title={product.name}>
                         {product.name}
                     </h3>
                 </Link>
 
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-0.5 sm:gap-1">
                     {[1, 2, 3, 4, 5].map((s) => (
-                        <Star key={s} className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                        <Star key={s} className="h-2.5 w-2.5 sm:h-3 sm:w-3 fill-yellow-400 text-yellow-400" />
                     ))}
-                    <span className="text-xs text-muted-foreground ml-1">(0)</span>
+                    <span className="text-[10px] sm:text-xs text-muted-foreground ml-1">(0)</span>
                 </div>
 
-                <div className="flex items-center justify-between pt-2">
-                    <div className="text-lg font-bold text-primary">
+                <div className="flex items-center justify-between pt-1 sm:pt-2">
+                    <div className="text-base sm:text-lg font-bold text-primary truncate mr-2">
                         ₹{Number(product.price).toFixed(2)}
                     </div>
                     <AddToCartButton product={product} size="icon" />

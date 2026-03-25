@@ -197,7 +197,7 @@ export default function AdminSettingsPage() {
                                 value={settings.SOCIAL_INSTAGRAM}
                                 onChange={(e) => handleChange("SOCIAL_INSTAGRAM", e.target.value)}
                                 className="w-full border rounded-md p-2 bg-background"
-                                placeholder="https://instagram.com/techuc"
+                                placeholder="https://instagram.com/zetraelectronics"
                             />
                         </div>
                         <div>
@@ -207,7 +207,7 @@ export default function AdminSettingsPage() {
                                 value={settings.SOCIAL_TWITTER}
                                 onChange={(e) => handleChange("SOCIAL_TWITTER", e.target.value)}
                                 className="w-full border rounded-md p-2 bg-background"
-                                placeholder="https://twitter.com/techuc"
+                                placeholder="https://twitter.com/zetraelectronics"
                             />
                         </div>
                         <div>
@@ -217,7 +217,7 @@ export default function AdminSettingsPage() {
                                 value={settings.SOCIAL_LINKEDIN}
                                 onChange={(e) => handleChange("SOCIAL_LINKEDIN", e.target.value)}
                                 className="w-full border rounded-md p-2 bg-background"
-                                placeholder="https://linkedin.com/company/techuc"
+                                placeholder="https://linkedin.com/company/zetraelectronics"
                             />
                         </div>
                     </div>

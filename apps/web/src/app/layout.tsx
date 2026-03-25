@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Tech uc | Premium Electronic Components",
-  description: "Your one-stop shop for electronic components, sensors, and robotics at Tech uc.",
+  title: "Zetra Electronics | Premium Electronic Components",
+  description: "Your one-stop shop for electronic components, sensors, and robotics at Zetra Electronics.",
 };
 
 

@@ -5,7 +5,7 @@ const bcrypt = require('bcrypt');
 const prisma = new PrismaClient();
 
 async function main() {
-    const adminEmail = 'admin@techuc.com';
+    const adminEmail = 'admin@zetraelectronics.com';
     const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
 
     if (!existingAdmin) {

@@ -85,7 +85,7 @@ export default function ContactPage() {
                                 <p className="text-sm text-muted-foreground mb-2">For general inquiries</p>
                                 {loading ? <div className="h-4 w-32 bg-muted animate-pulse rounded" /> : (
                                     <a href={`mailto:${settings.STORE_EMAIL}`} className="font-medium hover:text-primary transition-colors">
-                                        {settings.STORE_EMAIL || "support@techuc.com"}
+                                        {settings.STORE_EMAIL || "support@zetraelectronics.com"}
                                     </a>
                                 )}
                             </div>

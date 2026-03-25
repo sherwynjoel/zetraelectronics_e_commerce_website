@@ -2,7 +2,7 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 async function main() {
-    const emailToDelete = 'admin@techuc.com';
+    const emailToDelete = 'admin@zetraelectronics.com';
 
     const existingAdmin = await prisma.user.findUnique({ where: { email: emailToDelete } });
 

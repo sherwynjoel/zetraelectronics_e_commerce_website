@@ -6,163 +6,248 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Starting database seed...');
 
-  // Create Admin User
-  const adminEmail = 'admin@techuc.com';
+  // ── Admin User ──────────────────────────────────────────────
+  const adminEmail = 'admin@zetraelectronics.com';
   const existingAdmin = await prisma.user.findUnique({ where: { email: adminEmail } });
-
   if (!existingAdmin) {
     const hashedPassword = await bcrypt.hash('admin123', 10);
     await prisma.user.create({
-      data: {
-        email: adminEmail,
-        password: hashedPassword,
-        name: 'Super Admin',
-        role: 'ADMIN',
-      },
+      data: { email: adminEmail, password: hashedPassword, name: 'Super Admin', role: 'ADMIN' },
     });
-    console.log(`✅ Created Admin User: ${adminEmail} / admin123`);
+    console.log(`✅ Created Admin: ${adminEmail} / admin123`);
   } else {
-    console.log('ℹ️ Admin user already exists.');
+    console.log('ℹ️  Admin already exists.');
   }
 
-  // delete existing products to avoid duplicates if running multiple times
-  // await prisma.product.deleteMany();
+  // ── System Settings ─────────────────────────────────────────
+  const settings = [
+    { key: 'GST_PERCENTAGE', value: '18' },
+    { key: 'FREE_SHIPPING_THRESHOLD', value: '999' },
+  ];
+  for (const s of settings) {
+    await prisma.systemSetting.upsert({ where: { key: s.key }, update: { value: s.value }, create: s });
+  }
+  console.log('✅ System settings upserted');
 
+  // ── Skip if products already exist ──────────────────────────
+  const existingCount = await prisma.product.count();
+  if (existingCount > 0) {
+    console.log(`ℹ️  ${existingCount} products already exist — skipping product seed.`);
+    return;
+  }
+
+  // ── Products ─────────────────────────────────────────────────
   const products = [
+    // Development Boards
     {
-      name: "UltraBook Pro X1",
-      description: "The ultimate productivity machine with a 4K display, i9 processor, and 32GB RAM. Perfect for creative professionals.",
-      price: 1999.99,
-      stock: 50,
-      category: "Laptops",
-      image: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      specs: JSON.stringify({
-        processor: "Intel Core i9",
-        ram: "32GB",
-        storage: "1TB SSD",
-        display: "15.6 inch 4K OLED"
-      }),
-      shippingCost: 25.00
+      name: 'Arduino Uno R3',
+      description: 'The classic microcontroller board based on ATmega328P. Perfect for beginners and prototyping projects.',
+      price: 649,
+      stock: 120,
+      category: 'Development Boards',
+      image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80',
+      specs: JSON.stringify({ microcontroller: 'ATmega328P', voltage: '5V', pins: '14 digital', flash: '32KB' }),
+      shippingCost: 49,
     },
     {
-      name: "Smartphone Z Fold",
-      description: "Experience the future with a foldable display. 5G ready, triple camera system, and all-day battery life.",
-      price: 1499.00,
+      name: 'Raspberry Pi 5 (4GB)',
+      description: 'The latest Raspberry Pi single-board computer with 4GB RAM. Ideal for IoT, AI, and embedded projects.',
+      price: 5999,
+      stock: 35,
+      category: 'Development Boards',
+      image: 'https://images.unsplash.com/photo-1563452965085-2e77e5bf2607?w=800&q=80',
+      specs: JSON.stringify({ cpu: 'Cortex-A76 2.4GHz', ram: '4GB LPDDR4X', storage: 'MicroSD', usb: 'USB 3.0 x2' }),
+      shippingCost: 99,
+    },
+    {
+      name: 'ESP32 DevKit V1',
+      description: 'Dual-core Wi-Fi & Bluetooth chip. Ideal for IoT projects. Includes built-in antenna and 38 GPIO pins.',
+      price: 349,
+      stock: 200,
+      category: 'Development Boards',
+      image: 'https://images.unsplash.com/photo-1555664424-778a1e5e1b48?w=800&q=80',
+      specs: JSON.stringify({ cpu: 'Xtensa LX6 240MHz', wifi: '802.11 b/g/n', bluetooth: 'BT 4.2 + BLE', gpio: '38 pins' }),
+      shippingCost: 39,
+    },
+    {
+      name: 'NodeMCU ESP8266',
+      description: 'Low-cost Wi-Fi microchip with full TCP/IP stack and MCU capability. Compatible with Arduino IDE.',
+      price: 199,
+      stock: 300,
+      category: 'Development Boards',
+      image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80',
+      specs: JSON.stringify({ cpu: 'L106 80MHz', wifi: '802.11 b/g/n', flash: '4MB', pins: '11 digital' }),
+      shippingCost: 29,
+    },
+    // Sensors
+    {
+      name: 'DHT22 Temperature & Humidity Sensor',
+      description: 'High-precision digital temperature and humidity sensor. Operating range: -40 to 80°C, 0-100% RH.',
+      price: 189,
+      stock: 250,
+      category: 'Sensors',
+      image: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&q=80',
+      specs: JSON.stringify({ tempRange: '-40 to 80°C', humidity: '0-100% RH', accuracy: '±0.5°C', interface: 'Digital' }),
+      shippingCost: 29,
+    },
+    {
+      name: 'HC-SR04 Ultrasonic Sensor',
+      description: 'Non-contact distance measurement sensor. Range: 2cm to 400cm with ±3mm accuracy.',
+      price: 99,
+      stock: 400,
+      category: 'Sensors',
+      image: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=800&q=80',
+      specs: JSON.stringify({ range: '2cm - 400cm', accuracy: '±3mm', voltage: '5V DC', frequency: '40kHz' }),
+      shippingCost: 19,
+    },
+    {
+      name: 'MPU-6050 Gyroscope + Accelerometer',
+      description: '6-axis motion tracker with gyroscope and accelerometer. Communicates via I2C. Perfect for drones and robotics.',
+      price: 149,
+      stock: 180,
+      category: 'Sensors',
+      image: 'https://images.unsplash.com/photo-1535378917042-10a22c95931a?w=800&q=80',
+      specs: JSON.stringify({ axes: '6-axis', interface: 'I2C', range: '±2g to ±16g', voltage: '3.3V - 5V' }),
+      shippingCost: 19,
+    },
+    // Robotics
+    {
+      name: 'MG996R Servo Motor',
+      description: 'High-torque metal gear servo motor. 11kg.cm torque. Ideal for robotic arms and RC models.',
+      price: 279,
+      stock: 150,
+      category: 'Robotics',
+      image: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800&q=80',
+      specs: JSON.stringify({ torque: '11kg.cm', speed: '0.17s/60°', voltage: '4.8-7.2V', weight: '55g' }),
+      shippingCost: 39,
+    },
+    {
+      name: 'L298N Motor Driver Module',
+      description: 'Dual H-Bridge motor driver. Supports 2 DC motors or 1 stepper motor. Up to 2A per channel.',
+      price: 129,
+      stock: 220,
+      category: 'Robotics',
+      image: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800&q=80',
+      specs: JSON.stringify({ channels: '2', currentPerChannel: '2A', voltage: '5V-35V', control: 'PWM' }),
+      shippingCost: 25,
+    },
+    {
+      name: 'Robotic Arm Kit (4 DOF)',
+      description: 'Complete 4 degrees of freedom robotic arm kit with servo motors. Includes assembly guide and controller board.',
+      price: 2499,
       stock: 30,
-      category: "Smartphones",
-      image: "https://images.unsplash.com/photo-1598327773202-e00f1522231c?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      specs: JSON.stringify({
-        screen: "7.6 inch Foldable AMOLED",
-        camera: "108MP Main",
-        battery: "4500mAh",
-        network: "5G"
-      }),
-      shippingCost: 15.00
+      category: 'Robotics',
+      image: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800&q=80',
+      specs: JSON.stringify({ dof: '4', servos: '4x SG90', reach: '30cm', payload: '150g' }),
+      shippingCost: 149,
+    },
+    // IoT & Wireless
+    {
+      name: 'LoRa SX1278 Module',
+      description: 'Long-range 433MHz LoRa transceiver module. Range up to 10km in open areas. Ideal for IoT networks.',
+      price: 449,
+      stock: 90,
+      category: 'IoT & Wireless',
+      image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80',
+      specs: JSON.stringify({ frequency: '433MHz', range: '10km', interface: 'SPI', power: '14dBm' }),
+      shippingCost: 49,
     },
     {
-      name: "NoiseCanceller 3000 Headphones",
-      description: "Immerse yourself in music with industry-leading noise cancellation. 30-hour battery life and premium comfort.",
-      price: 349.50,
-      stock: 100,
-      category: "Audio",
-      image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      specs: JSON.stringify({
-        type: "Over-ear",
-        connectivity: "Bluetooth 5.2",
-        batteryLife: "30 hours",
-        features: "Active Noise Cancellation"
-      }),
-      shippingCost: 10.00
+      name: 'NRF24L01 Wireless Transceiver',
+      description: '2.4GHz wireless transceiver module for short-range communications. Low power consumption with 6 data pipes.',
+      price: 129,
+      stock: 350,
+      category: 'IoT & Wireless',
+      image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80',
+      specs: JSON.stringify({ frequency: '2.4GHz', range: '100m', dataRate: '2Mbps', interface: 'SPI' }),
+      shippingCost: 25,
     },
     {
-      name: "Gaming Monitor 144Hz",
-      description: "Gain the competitive edge with a 144Hz refresh rate, 1ms response time, and G-Sync compatibility.",
-      price: 499.00,
-      stock: 40,
-      category: "Monitors",
-      image: "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      specs: JSON.stringify({
-        size: "27 inch",
-        resolution: "1440p",
-        refreshRate: "144Hz",
-        panel: "IPS"
-      }),
-      shippingCost: 30.00
-    },
-    {
-      name: "Smart Watch Series 7",
-      description: "Track your fitness, monitor your health, and stay connected. Always-on Retina display and water resistant.",
-      price: 399.00,
-      stock: 75,
-      category: "Wearables",
-      image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      specs: JSON.stringify({
-        size: "44mm",
-        sensors: "Heart Rate, Blood Oxygen",
-        waterResistance: "WR50",
-        connectivity: "GPS + Cellular"
-      }),
-      shippingCost: 8.00
-    },
-    {
-      name: "Wireless Mechanical Keyboard",
-      description: "Tactile mechanical switches with customizable RGB lighting. Connects to up to 3 devices simultaneously.",
-      price: 129.99,
+      name: 'SIM800L GSM Module',
+      description: 'Quad-band GSM/GPRS module with SMS, voice call, and data support. Compact size for embedded systems.',
+      price: 599,
       stock: 60,
-      category: "Accessories",
-      image: "https://images.unsplash.com/photo-1587829741301-dc798b91add1?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      specs: JSON.stringify({
-        switchType: "Brown Tactile",
-        layout: "75%",
-        connectivity: "Bluetooth / 2.4GHz / Wired",
-        battery: "4000mAh"
-      }),
-      shippingCost: 12.00
+      category: 'IoT & Wireless',
+      image: 'https://images.unsplash.com/photo-1534224039826-c7a0eda0e6b3?w=800&q=80',
+      specs: JSON.stringify({ bands: 'GSM 850/900/1800/1900', interface: 'UART', voltage: '3.7-4.2V', sms: 'Yes' }),
+      shippingCost: 59,
     },
+    // Tools
     {
-      name: "4K Action Camera",
-      description: "Capture your adventures in stunning 4K. Waterproof without a case and features HyperSmooth stabilization.",
-      price: 299.00,
+      name: 'Soldering Iron Station 60W',
+      description: 'Temperature-controlled soldering station with digital display. Range: 200-480°C. Includes 5 tips.',
+      price: 1299,
       stock: 45,
-      category: "Cameras",
-      image: "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      specs: JSON.stringify({
-        resolution: "4K 60fps",
-        waterproof: "10m",
-        stabilization: "HyperSmooth 3.0",
-        screen: "Front & Rear Touch"
-      }),
-      shippingCost: 10.00
+      category: 'Tools',
+      image: 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&q=80',
+      specs: JSON.stringify({ power: '60W', tempRange: '200-480°C', display: 'LED Digital', tips: '5 included' }),
+      shippingCost: 99,
     },
     {
-      name: "Tablet Pro 12.9",
-      description: "Your next computer is not a computer. Powerful M1 chip, XDR display, and 5G connectivity.",
-      price: 1099.00,
-      stock: 25,
-      category: "Tablets",
-      image: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      specs: JSON.stringify({
-        chip: "M1",
-        display: "Liquid Retina XDR",
-        storage: "256GB",
-        connectivity: "Wi-Fi 6 + 5G"
-      }),
-      shippingCost: 15.00
-    }
+      name: 'Digital Multimeter DT-830B',
+      description: 'Compact digital multimeter for measuring voltage, current, and resistance. Auto-range with LCD display.',
+      price: 349,
+      stock: 120,
+      category: 'Tools',
+      image: 'https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?w=800&q=80',
+      specs: JSON.stringify({ voltage: 'DC/AC 0-600V', current: '0-10A', resistance: '0-2MΩ', display: '3.5 digit LCD' }),
+      shippingCost: 49,
+    },
+    {
+      name: 'Jumper Wire Kit (120pcs)',
+      description: 'Premium quality 120-piece jumper wire kit. Includes M-M, M-F, and F-F connectors in 10 colors.',
+      price: 149,
+      stock: 500,
+      category: 'Tools',
+      image: 'https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?w=800&q=80',
+      specs: JSON.stringify({ quantity: '120 pcs', types: 'M-M, M-F, F-F', length: '20cm', colors: '10' }),
+      shippingCost: 19,
+    },
+    // Components
+    {
+      name: 'Capacitor Kit (400 pcs)',
+      description: 'Assorted electrolytic capacitor kit. Values from 1μF to 1000μF. 400 pieces across 16 values.',
+      price: 249,
+      stock: 200,
+      category: 'Components',
+      image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80',
+      specs: JSON.stringify({ quantity: '400 pcs', values: '16 types (1μF-1000μF)', voltage: '25V', type: 'Electrolytic' }),
+      shippingCost: 29,
+    },
+    {
+      name: 'Resistor Kit (860 pcs)',
+      description: '860-piece metal film resistor kit. 1% tolerance, 1/4W. 86 values from 1Ω to 10MΩ.',
+      price: 199,
+      stock: 300,
+      category: 'Components',
+      image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80',
+      specs: JSON.stringify({ quantity: '860 pcs', values: '86 types', tolerance: '1%', power: '1/4W (0.25W)' }),
+      shippingCost: 25,
+    },
+    {
+      name: 'Breadboard 830 Point',
+      description: 'Solderless breadboard with 830 tie-points. Multiple power rails. Ideal for circuit prototyping.',
+      price: 119,
+      stock: 600,
+      category: 'Components',
+      image: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&q=80',
+      specs: JSON.stringify({ tiePoints: '830', powerRails: '4', size: '16.5 x 5.5 cm', type: 'Solderless' }),
+      shippingCost: 19,
+    },
   ];
 
+  let created = 0;
   for (const product of products) {
-    await prisma.product.create({
-      data: product,
-    });
+    await prisma.product.create({ data: product });
+    created++;
   }
 
-  console.log(`✅ Added ${products.length} products to the database.`);
+  console.log(`✅ Seeded ${created} products successfully.`);
 }
 
 main()
   .catch((e) => {
-    console.error(e);
+    console.error('❌ Seed failed:', e);
     process.exit(1);
   })
   .finally(async () => {

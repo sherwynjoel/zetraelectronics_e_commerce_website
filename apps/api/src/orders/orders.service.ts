@@ -19,9 +19,14 @@ export class OrdersService {
     let calculatedTotal = 0;
     let calculatedShipping = 0;
 
-    // We need to fetch products to check stock and price
+    const productIds = items.map((item) => item.productId);
+    const products = await this.prisma.product.findMany({
+      where: { id: { in: productIds } },
+    });
+    const productMap = new Map(products.map((p) => [p.id, p]));
+
     for (const item of items) {
-      const product = await this.prisma.product.findUnique({ where: { id: item.productId } });
+      const product = productMap.get(item.productId);
       if (!product) {
         throw new BadRequestException(`Product ID ${item.productId} not found`);
       }
@@ -29,16 +34,11 @@ export class OrdersService {
         throw new BadRequestException(`Insufficient stock for ${product.name}`);
       }
       calculatedTotal += Number(product.price) * item.quantity;
-      // Add Shipping Cost
-      // @ts-ignore
       if (product.shippingCost) {
-        // @ts-ignore
         calculatedShipping += Number(product.shippingCost) * item.quantity;
       }
     }
 
-    // Check Free Shipping Threshold
-    // @ts-ignore
     const shippingSetting = await this.prisma.systemSetting.findUnique({ where: { key: 'FREE_SHIPPING_THRESHOLD' } });
     const freeShippingThreshold = shippingSetting ? parseFloat(shippingSetting.value) : 0;
 
@@ -48,8 +48,6 @@ export class OrdersService {
 
     calculatedTotal += calculatedShipping;
 
-    // Apply GST from Settings
-    // @ts-ignore
     const gstSetting = await this.prisma.systemSetting.findUnique({ where: { key: 'GST_PERCENTAGE' } });
     const gstRate = gstSetting ? parseFloat(gstSetting.value) / 100 : 0.18;
 
@@ -120,10 +118,16 @@ export class OrdersService {
     return order;
   }
 
-  findAll() {
+  findAll(page = 1, limit = 50) {
+    const safePage = page < 1 ? 1 : page;
+    const safeLimit = Math.min(Math.max(limit, 1), 100);
+    const skip = (safePage - 1) * safeLimit;
+
     return this.prisma.order.findMany({
       include: { user: true, items: true },
-      orderBy: { createdAt: 'desc' }
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take: safeLimit,
     });
   }
 
@@ -145,7 +149,10 @@ export class OrdersService {
   update(id: number, updateOrderDto: UpdateOrderDto) {
     return this.prisma.order.update({
       where: { id },
-      data: updateOrderDto as any
+      data: {
+        status: updateOrderDto.status,
+        trackingUrl: updateOrderDto.trackingUrl,
+      },
     });
   }
 

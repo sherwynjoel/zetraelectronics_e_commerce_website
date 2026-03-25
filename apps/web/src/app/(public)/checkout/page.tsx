@@ -131,9 +131,22 @@ export default function CheckoutPage() {
 
     if (items.length === 0) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center">
-                <h1 className="text-2xl font-bold">Your cart is empty</h1>
-                <Link href="/" className="text-primary mt-4 hover:underline">Continue Shopping</Link>
+            <div className="min-h-[70vh] flex items-center justify-center px-4">
+                <div className="text-center max-w-md">
+                    <div className="mx-auto mb-6 h-20 w-20 rounded-full bg-muted flex items-center justify-center">
+                        <ArrowLeft className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                    <h1 className="text-2xl font-bold mb-2">Your cart is empty</h1>
+                    <p className="text-muted-foreground mb-6">Add some products to your cart before checking out.</p>
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                        <Link href="/products">
+                            <Button size="lg" className="w-full sm:w-auto">Browse Products</Button>
+                        </Link>
+                        <Link href="/cart">
+                            <Button size="lg" variant="outline" className="w-full sm:w-auto">View Cart</Button>
+                        </Link>
+                    </div>
+                </div>
             </div>
         )
     }

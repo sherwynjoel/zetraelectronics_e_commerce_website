@@ -68,13 +68,13 @@ export default async function ProductPage({ params }: { params: { id: string } }
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                     {/* Left Column: Images */}
                     <div className="space-y-4">
-                        <div className="aspect-square relative bg-white border rounded-2xl overflow-hidden flex items-center justify-center p-8">
+                        <div className="aspect-square relative bg-slate-50 dark:bg-slate-900 border rounded-2xl overflow-hidden flex items-center justify-center">
                             {product.image ? (
                                 <Image
                                     src={product.image}
                                     alt={product.name}
                                     fill
-                                    className="object-contain mix-blend-multiply"
+                                    className="object-cover"
                                     priority
                                 />
                             ) : (

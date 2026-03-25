@@ -1,4 +1,10 @@
+import { IsOptional, IsString } from 'class-validator';
+
 export class UpdateSettingDto {
-    value: string;
-    description?: string;
+  @IsString()
+  value!: string;
+
+  @IsString()
+  @IsOptional()
+  description?: string;
 }

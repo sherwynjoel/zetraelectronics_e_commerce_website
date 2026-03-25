@@ -21,7 +21,7 @@ export default function LoginPage() {
         setError("");
 
         try {
-            const res = await fetch("http://127.0.0.1:4000/auth/login", {
+            const res = await fetch("http://localhost:4000/auth/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password }),
@@ -58,7 +58,7 @@ export default function LoginPage() {
             const idToken = await result.user.getIdToken();
 
             // 2. Send the Firebase ID token to the NestJS backend
-            const res = await fetch("http://127.0.0.1:4000/auth/google/firebase", {
+            const res = await fetch("http://localhost:4000/auth/google/firebase", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ token: idToken }),
@@ -93,7 +93,7 @@ export default function LoginPage() {
             <div className="w-full max-w-md space-y-8 bg-card p-8 rounded-xl border shadow-lg">
                 <div className="text-center">
                     <h2 className="text-3xl font-bold tracking-tight">Welcome Back</h2>
-                    <p className="text-muted-foreground mt-2">Sign in to your Tech uc account</p>
+                    <p className="text-muted-foreground mt-2">Sign in to your Zetra Electronics account</p>
                 </div>
 
                 {error && (
@@ -125,7 +125,7 @@ export default function LoginPage() {
                             placeholder="••••••••"
                         />
                     </div>
-                    <Button className="w-full" size="lg" disabled={isLoading}>
+                    <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
                         {isLoading ? "Signing in..." : "Sign In"}
                     </Button>
                 </form>

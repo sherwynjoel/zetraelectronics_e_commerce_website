@@ -5,7 +5,7 @@ async function testOrder() {
     try {
         // 1. Login as Admin to get token
         const loginRes = await axios.post('http://localhost:4000/auth/login', {
-            email: 'admin@techuc.com',
+            email: 'admin@zetraelectronics.com',
             password: 'admin123'
         });
         const token = loginRes.data.access_token;

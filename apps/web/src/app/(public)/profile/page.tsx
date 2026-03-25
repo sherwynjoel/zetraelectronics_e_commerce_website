@@ -27,20 +27,13 @@ export default function ProfilePage() {
     const router = useRouter();
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
+    const [ordersError, setOrdersError] = useState<string | null>(null);
 
-    useEffect(() => {
-        if (!user) {
-            router.push("/login");
-            return;
-        }
-
-        if (!token) {
-            router.push("/login");
-            return;
-        }
-
-        fetch(`http://localhost:4000/orders/user/${user.id}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
+    const fetchOrders = (uid: number, tok: string) => {
+        setLoading(true);
+        setOrdersError(null);
+        fetch(`http://localhost:4000/orders/user/${uid}`, {
+            headers: { 'Authorization': `Bearer ${tok}` }
         })
             .then(res => {
                 if (res.status === 401 || res.status === 403) {
@@ -48,16 +41,26 @@ export default function ProfilePage() {
                     router.push("/login");
                     throw new Error("Unauthorized");
                 }
+                if (!res.ok) throw new Error(`Server error (${res.status})`);
                 return res.json();
             })
             .then(data => {
-                setOrders(data);
+                setOrders(Array.isArray(data) ? data : []);
                 setLoading(false);
             })
             .catch(err => {
                 console.error(err);
+                setOrdersError(err.message || "Failed to load orders");
                 setLoading(false);
             });
+    };
+
+    useEffect(() => {
+        if (!user || !token) {
+            router.push("/login");
+            return;
+        }
+        fetchOrders(user.id, token);
     }, [user, token, router, logout]);
 
     const downloadInvoice = async (orderId: number) => {
@@ -123,7 +126,18 @@ export default function ProfilePage() {
                     </h2>
 
                     {loading ? (
-                        <div className="text-center py-12">Loading orders...</div>
+                        <div className="text-center py-12 text-muted-foreground">Loading orders...</div>
+                    ) : ordersError ? (
+                        <div className="bg-card p-8 rounded-xl border text-center">
+                            <p className="text-destructive font-medium mb-2">Could not load orders</p>
+                            <p className="text-sm text-muted-foreground mb-4">{ordersError}</p>
+                            <button
+                                onClick={() => user && token && fetchOrders(user.id, token)}
+                                className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
+                            >
+                                Retry
+                            </button>
+                        </div>
                     ) : orders.length === 0 ? (
                         <div className="bg-card p-8 rounded-xl border text-center text-muted-foreground">
                             No orders found.

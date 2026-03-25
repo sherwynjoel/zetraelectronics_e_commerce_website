@@ -117,7 +117,7 @@ export default function AdminLayout({
                 {/* Admin Footer */}
                 <footer className="border-t bg-background px-8 py-4 text-xs text-muted-foreground">
                     <div className="flex justify-between items-center">
-                        <p>© {new Date().getFullYear()} Tech uc Admin. All rights reserved.</p>
+                        <p>© {new Date().getFullYear()} Zetra Electronics Admin. All rights reserved.</p>
                         <div className="flex gap-4">
                             <span>v1.0.0</span>
                             <span className="text-primary font-medium">System Online</span>

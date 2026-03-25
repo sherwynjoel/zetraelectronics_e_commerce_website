@@ -7,12 +7,10 @@ export class SettingsService {
     constructor(private prisma: PrismaService) { }
 
     async findAll() {
-        // @ts-ignore - Property 'systemSetting' does not exist on type 'PrismaService' until generation
         return this.prisma.systemSetting.findMany();
     }
 
     async findOne(key: string) {
-        // @ts-ignore
         const setting = await this.prisma.systemSetting.findUnique({
             where: { key },
         });
@@ -23,7 +21,6 @@ export class SettingsService {
     }
 
     async update(key: string, updateSettingDto: UpdateSettingDto) {
-        // @ts-ignore
         return this.prisma.systemSetting.upsert({
             where: { key },
             update: {

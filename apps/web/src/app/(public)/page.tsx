@@ -28,7 +28,7 @@ export default async function Home() {
               NEW: RASPBERRY PI 5 STOCK
             </div>
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
-              Build the Future with <span className="text-primary">Tech uc</span>
+              Build the Future with <span className="text-primary">Zetra Electronics</span>
             </h1>
             <p className="text-lg text-slate-300">
               Your premium destination for electronic components, sensors, IoT modules, and robotics kits.
@@ -41,9 +41,6 @@ export default async function Home() {
                   Browse Catalog
                 </Button>
               </Link>
-              <Button size="lg" variant="outline" className="rounded-full bg-transparent text-white border-white/20 hover:bg-white hover:text-black px-8">
-                Datasheets
-              </Button>
             </div>
           </div>
           {/* Abstract Tech Graphic Placeholder */}
@@ -60,9 +57,11 @@ export default async function Home() {
           <h2 className="text-2xl font-bold mb-8">Popular Categories</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {["Development Boards", "Sensors", "Robotics", "IoT & Wireless", "Tools", "Batteries"].map((cat) => (
-              <div key={cat} className="bg-card p-4 rounded-xl border hover:border-primary transition-all cursor-pointer shadow-sm hover:shadow-md text-center group">
-                <div className="font-semibold group-hover:text-primary transition-colors text-sm md:text-base">{cat}</div>
-              </div>
+              <Link key={cat} href={`/products?category=${encodeURIComponent(cat)}`}>
+                <div className="bg-card p-4 rounded-xl border hover:border-primary transition-all cursor-pointer shadow-sm hover:shadow-md text-center group h-full">
+                  <div className="font-semibold group-hover:text-primary transition-colors text-sm md:text-base">{cat}</div>
+                </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -78,7 +77,7 @@ export default async function Home() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
             {products.length > 0 ? products.map((product: any) => (
               <ProductCard key={product.id} product={product} />
             )) : (
