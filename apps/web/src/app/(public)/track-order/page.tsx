@@ -1,5 +1,6 @@
 "use client";
 
+import { API_URL } from '@/lib/api';
 import { useState } from "react";
 import { Search, Package, MapPin, Calendar, CreditCard, ChevronRight, Truck, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -41,7 +42,7 @@ export default function TrackOrderPage() {
         setOrder(null);
 
         try {
-            const res = await fetch(`http://localhost:4000/orders/${orderId}`);
+            const res = await fetch(`${API_URL}/orders/${orderId}`);
             if (!res.ok) {
                 if (res.status === 404) {
                     throw new Error("Order not found. Please check your Order ID.");
@@ -216,7 +217,7 @@ export default function TrackOrderPage() {
                                                 {/* Placeholder since API might not return full image URL or backend structure for OrderItem product include might vary */}
                                                 {item.product?.image && (
                                                     <img
-                                                        src={item.product.image.startsWith('http') ? item.product.image : `http://localhost:4000${item.product.image}`}
+                                                        src={item.product.image.startsWith('http') ? item.product.image : `${API_URL}${item.product.image}`}
                                                         alt={item.product?.name}
                                                         className="h-full w-full object-cover"
                                                     />

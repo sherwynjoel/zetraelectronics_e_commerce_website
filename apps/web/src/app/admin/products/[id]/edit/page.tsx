@@ -1,5 +1,6 @@
 "use client";
 
+import { API_URL } from '@/lib/api';
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
@@ -27,7 +28,7 @@ export default function EditProductPage() {
 
     useEffect(() => {
         if (!id) return;
-        fetch(`http://localhost:4000/products/${id}`)
+        fetch(`${API_URL}/products/${id}`)
             .then(res => {
                 if (!res.ok) throw new Error("Product not found");
                 return res.json();
@@ -61,7 +62,7 @@ export default function EditProductPage() {
         setLoading(true);
 
         try {
-            const res = await fetch(`http://localhost:4000/products/${id}`, {
+            const res = await fetch(`${API_URL}/products/${id}`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",

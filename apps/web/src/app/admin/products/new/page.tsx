@@ -1,5 +1,6 @@
 "use client";
 
+import { API_URL } from '@/lib/api';
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -30,7 +31,7 @@ export default function CreateProductPage() {
         setLoading(true);
 
         try {
-            const res = await fetch("http://127.0.0.1:4000/products", {
+            const res = await fetch(`${API_URL}/products`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

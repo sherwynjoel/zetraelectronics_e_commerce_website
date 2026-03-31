@@ -1,5 +1,6 @@
 "use client";
 
+import { API_URL } from '@/lib/api';
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Truck, X, Check } from "lucide-react";
@@ -16,7 +17,7 @@ export function FulfillOrder({ orderId, currentStatus, currentTracking }: { orde
     const handleFulfill = async () => {
         setIsLoading(true);
         try {
-            const res = await fetch(`http://localhost:4000/orders/${orderId}`, {
+            const res = await fetch(`${API_URL}/orders/${orderId}`, {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",

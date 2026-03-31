@@ -1,5 +1,6 @@
 "use client";
 
+import { API_URL } from '@/lib/api';
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useState } from "react";
@@ -35,7 +36,7 @@ export default function RegisterPage() {
 
         try {
             // 1. Register
-            const res = await fetch("http://localhost:4000/auth/register", {
+            const res = await fetch(`${API_URL}/auth/register`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -52,7 +53,7 @@ export default function RegisterPage() {
             }
 
             // 2. Auto Login after register
-            const loginRes = await fetch("http://localhost:4000/auth/login", {
+            const loginRes = await fetch(`${API_URL}/auth/login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: formData.email, password: formData.password }),

@@ -1,5 +1,6 @@
 "use client";
 
+import { API_URL } from '@/lib/api';
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useState } from "react";
@@ -21,7 +22,7 @@ export default function LoginPage() {
         setError("");
 
         try {
-            const res = await fetch("http://localhost:4000/auth/login", {
+            const res = await fetch(`${API_URL}/auth/login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password }),
@@ -58,7 +59,7 @@ export default function LoginPage() {
             const idToken = await result.user.getIdToken();
 
             // 2. Send the Firebase ID token to the NestJS backend
-            const res = await fetch("http://localhost:4000/auth/google/firebase", {
+            const res = await fetch(`${API_URL}/auth/google/firebase`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ token: idToken }),

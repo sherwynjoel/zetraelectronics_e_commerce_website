@@ -1,3 +1,4 @@
+import { API_URL } from '@/lib/api';
 import { ProductCard } from "@/components/product-card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -6,7 +7,7 @@ import { HeroSearchBar } from "@/components/layout/HeroSearchBar";
 
 async function getProducts() {
   try {
-    const res = await fetch("http://localhost:4000/products", { cache: "no-store" });
+    const res = await fetch(`${API_URL}/products`, { cache: "no-store" });
     if (!res.ok) return [];
     return res.json();
   } catch (e) {

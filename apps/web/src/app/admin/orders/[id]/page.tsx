@@ -1,3 +1,4 @@
+import { API_URL } from '@/lib/api';
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowLeft, Check, Package } from "lucide-react";
@@ -6,7 +7,7 @@ import { FulfillOrder } from "@/components/admin/fulfill-order";
 
 async function getOrder(id: string) {
     try {
-        const res = await fetch(`http://127.0.0.1:4000/orders/${id}`, { cache: "no-store" });
+        const res = await fetch(`${API_URL}/orders/${id}`, { cache: "no-store" });
         if (!res.ok) return null;
         return res.json();
     } catch (e) {

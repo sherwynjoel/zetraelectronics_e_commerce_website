@@ -8,6 +8,7 @@ export interface CartItem {
     shippingCost: number;
     image: string | null;
     quantity: number;
+    stock: number; // track available stock to enforce cap
 }
 
 interface CartStore {
@@ -27,8 +28,11 @@ export const useCartStore = create<CartStore>()(
             addItem: (product) => {
                 const items = get().items;
                 const existingItem = items.find((item) => item.id === product.id);
+                const stock = Number(product.stock ?? 999);
 
                 if (existingItem) {
+                    // Don't exceed available stock
+                    if (existingItem.quantity >= stock) return;
                     set({
                         items: items.map((item) =>
                             item.id === product.id
@@ -47,6 +51,7 @@ export const useCartStore = create<CartStore>()(
                                 shippingCost: Number(product.shippingCost || 0),
                                 image: product.image,
                                 quantity: 1,
+                                stock,
                             },
                         ],
                     });
@@ -57,7 +62,9 @@ export const useCartStore = create<CartStore>()(
             updateQuantity: (id, quantity) =>
                 set({
                     items: get().items.map((item) =>
-                        item.id === id ? { ...item, quantity: Math.max(1, quantity) } : item
+                        item.id === id
+                            ? { ...item, quantity: Math.min(Math.max(1, quantity), item.stock) }
+                            : item
                     ),
                 }),
             clearCart: () => set({ items: [] }),
@@ -69,3 +76,4 @@ export const useCartStore = create<CartStore>()(
         }
     )
 );
+

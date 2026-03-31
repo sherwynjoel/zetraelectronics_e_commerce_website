@@ -1,0 +1,11 @@
+{
+  "name": "zetra-electronics",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "start \"API\" cmd /k \"cd apps\\api && npm run start:dev\" && start \"Web\" cmd /k \"cd apps\\web && npm run dev\"",
+    "dev:api": "cd apps/api && npm run start:dev",
+    "dev:web": "cd apps/web && npm run dev",
+    "install:all": "cd apps/api && npm install && cd ../web && npm install"
+  }
+}

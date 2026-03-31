@@ -1,3 +1,4 @@
+import { API_URL } from '@/lib/api';
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import Link from "next/link";
@@ -6,7 +7,7 @@ import Image from "next/image";
 
 async function getProducts() {
     try {
-        const res = await fetch("http://127.0.0.1:4000/products", { cache: "no-store" });
+        const res = await fetch(`${API_URL}/products`, { cache: "no-store" });
         if (!res.ok) return [];
         return res.json();
     } catch (e) {

@@ -1,5 +1,6 @@
 "use client";
 
+import { API_URL } from '@/lib/api';
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Package, FileText } from "lucide-react";
 import Link from "next/link";
@@ -37,7 +38,7 @@ function SuccessContent() {
                     </Button>
                 </Link>
                 {orderId && (
-                    <a href={`http://localhost:4000/orders/${orderId}/invoice`} target="_blank" rel="noopener noreferrer" className="w-full block">
+                    <a href={`${API_URL}/orders/${orderId}/invoice`} target="_blank" rel="noopener noreferrer" className="w-full block">
                         <Button variant="secondary" className="w-full gap-2 bg-slate-100 dark:bg-slate-800 border">
                             <FileText className="h-4 w-4" /> View Invoice
                         </Button>

@@ -1,10 +1,11 @@
+import { API_URL } from '@/lib/api';
 import { ProductCard } from "@/components/product-card";
 import { ProductFilters } from "@/components/product-filters";
 
 async function getProducts(params: Record<string, string>) {
     try {
         const query = new URLSearchParams(params).toString();
-        const url = `http://localhost:4000/products${query ? `?${query}` : ""}`;
+        const url = `${API_URL}/products${query ? `?${query}` : ""}`;
         const res = await fetch(url, { cache: "no-store" });
         if (!res.ok) return [];
         return res.json();

@@ -1,5 +1,6 @@
 "use client";
 
+import { API_URL } from '@/lib/api';
 import { useEffect, useState, useRef } from "react";
 import { Search, Loader2, X, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -33,7 +34,7 @@ export function SearchBar() {
                 setIsLoading(true);
                 setIsOpen(true);
                 try {
-                    const res = await fetch(`http://localhost:4000/products?search=${encodeURIComponent(query)}`);
+                    const res = await fetch(`${API_URL}/products?search=${encodeURIComponent(query)}`);
                     if (res.ok) {
                         const data = await res.json();
                         setResults(data.slice(0, 6));
@@ -128,7 +129,7 @@ export function SearchBar() {
                                             <div className="h-10 w-10 bg-white rounded-md overflow-hidden flex-shrink-0 relative border border-slate-700">
                                                 {product.image ? (
                                                     <img
-                                                        src={product.image.startsWith('http') ? product.image : `http://localhost:4000${product.image}`}
+                                                        src={product.image.startsWith('http') ? product.image : `${API_URL}${product.image}`}
                                                         alt={product.name}
                                                         referrerPolicy="no-referrer"
                                                         className="h-full w-full object-contain p-1 group-hover:scale-110 transition-transform duration-300"

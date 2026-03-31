@@ -1,5 +1,6 @@
 "use client";
 
+import { API_URL } from '@/lib/api';
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Upload, X, Loader2 } from "lucide-react";
@@ -24,7 +25,7 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
         formData.append("file", file);
 
         try {
-            const res = await fetch("http://127.0.0.1:4000/products/upload", {
+            const res = await fetch(`${API_URL}/products/upload`, {
                 method: "POST",
                 headers: { "Authorization": `Bearer ${token}` },
                 body: formData,

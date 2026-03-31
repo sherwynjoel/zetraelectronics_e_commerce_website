@@ -1,10 +1,11 @@
+import { API_URL } from '@/lib/api';
 import Link from "next/link";
 import Image from "next/image";
 import { Mail, Phone, MapPin, Instagram, Twitter, Linkedin, Facebook } from "lucide-react";
 
 async function getSettings() {
     try {
-        const res = await fetch("http://localhost:4000/settings", { next: { revalidate: 60 } }); // Revalidate every minute
+        const res = await fetch(`${API_URL}/settings`, { next: { revalidate: 60 } }); // Revalidate every minute
         if (!res.ok) return {};
         const data = await res.json();
         const settings: Record<string, string> = {};

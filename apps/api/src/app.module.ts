@@ -33,7 +33,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
         defaults: {
           from:
             config.get<string>('MAIL_FROM') ||
-            '"ElectroStore" <noreply@electrostore.com>',
+            '"Zetra Electronics" <noreply@zetraelectronics.com>',
         },
         template: {
           dir: join(__dirname, 'templates'),

@@ -1,4 +1,5 @@
 "use client";
+
 import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import {
 import Link from "next/link";
 import { useAuthStore } from "@/lib/auth-store";
 import { useRouter, usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const navItems = [
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
@@ -31,6 +33,20 @@ export default function AdminLayout({
     const { user, logout } = useAuthStore();
     const router = useRouter();
     const pathname = usePathname();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => { setMounted(true); }, []);
+
+    useEffect(() => {
+        if (!mounted) return;
+        if (!user || user.role !== 'ADMIN') {
+            router.push('/login');
+        }
+    }, [mounted, user, router]);
+
+    if (!mounted || !user || user.role !== 'ADMIN') {
+        return <div className="min-h-screen flex items-center justify-center">Checking access...</div>;
+    }
 
     const handleLogout = () => {
         logout();

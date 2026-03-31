@@ -1,5 +1,6 @@
 "use client";
 
+import { API_URL } from '@/lib/api';
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, AlertCircle, Save, Globe, CreditCard } from "lucide-react";
@@ -30,7 +31,7 @@ export default function AdminSettingsPage() {
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
     useEffect(() => {
-        fetch("http://localhost:4000/settings")
+        fetch(`${API_URL}/settings`)
             .then(res => res.json())
             .then((data: Setting[]) => {
                 const newSettings: any = { ...settings };
@@ -59,7 +60,7 @@ export default function AdminSettingsPage() {
             const updates = Object.entries(settings).map(([key, value]) => {
                 // Only save if it's different or exists? API allows upsert so generally safe to save all or check dirty.
                 // Saving all is simpler for this scale.
-                return fetch(`http://localhost:4000/settings/${key}`, {
+                return fetch(`${API_URL}/settings/${key}`, {
                     method: "PUT",
                     headers: {
                         "Content-Type": "application/json",

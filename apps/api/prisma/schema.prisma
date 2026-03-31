@@ -35,15 +35,16 @@ model Product {
 }
 
 model Order {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
-  status    String   @default("PENDING") // PENDING, SHIPPED, DELIVERED
-  trackingUrl String?
-  total     Float
-  paymentMethod String @default("COD")
-  createdAt DateTime @default(now())
-  items     OrderItem[]
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  user            User     @relation(fields: [userId], references: [id])
+  status          String   @default("PENDING") // PENDING, SHIPPED, DELIVERED
+  trackingUrl     String?
+  total           Float
+  paymentMethod   String   @default("COD")
+  shippingAddress String?  // JSON string: { street, city, zip }
+  createdAt       DateTime @default(now())
+  items           OrderItem[]
 }
 
 model OrderItem {

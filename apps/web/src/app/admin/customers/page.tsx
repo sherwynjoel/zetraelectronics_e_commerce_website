@@ -1,5 +1,6 @@
 "use client";
 
+import { API_URL } from '@/lib/api';
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Mail, Shield } from "lucide-react";
@@ -9,10 +10,13 @@ export default function AdminCustomersPage() {
     const { token } = useAuthStore();
     const [customers, setCustomers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => { setMounted(true); }, []);
 
     useEffect(() => {
-        if (!token) return;
-        fetch("http://127.0.0.1:4000/auth/users", {
+        if (!mounted || !token) return;
+        fetch(`${API_URL}/auth/users`, {
             headers: { "Authorization": `Bearer ${token}` },
             cache: "no-store",
         } as any)
@@ -21,14 +25,14 @@ export default function AdminCustomersPage() {
                 return res.json();
             })
             .then(data => {
-                setCustomers(data);
+                setCustomers(Array.isArray(data) ? data : []);
                 setLoading(false);
             })
             .catch(err => {
                 console.error(err);
                 setLoading(false);
             });
-    }, [token]);
+    }, [mounted, token]);
 
     if (loading) return <div className="p-8">Loading customers...</div>;
 

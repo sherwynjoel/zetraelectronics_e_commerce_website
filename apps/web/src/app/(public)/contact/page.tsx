@@ -1,5 +1,6 @@
 "use client";
 
+import { API_URL } from '@/lib/api';
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Mail, Phone, MapPin, Send, CheckCircle } from "lucide-react";
@@ -20,7 +21,7 @@ export default function ContactPage() {
 
     useEffect(() => {
         // Fetch Store Settings
-        fetch("http://localhost:4000/settings")
+        fetch(`${API_URL}/settings`)
             .then(res => res.json())
             .then(data => {
                 const s: any = {};

@@ -1,5 +1,6 @@
 "use client";
 
+import { API_URL } from '@/lib/api';
 import { useCartStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
@@ -30,7 +31,7 @@ export default function CheckoutPage() {
 
     useEffect(() => {
         // Fetch dynamic settings
-        fetch("http://localhost:4000/settings")
+        fetch(`${API_URL}/settings`)
             .then(res => res.ok ? res.json() : [])
             .then((data: any[]) => {
                 const gst = data.find(s => s.key === 'GST_PERCENTAGE');
@@ -90,7 +91,7 @@ export default function CheckoutPage() {
         };
 
         try {
-            const res = await fetch("http://localhost:4000/orders", {
+            const res = await fetch(`${API_URL}/orders`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

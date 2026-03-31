@@ -1,5 +1,6 @@
 "use client";
 
+import { API_URL } from '@/lib/api';
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ProductCard } from "@/components/product-card";
@@ -7,7 +8,7 @@ import { Button } from "@/components/ui/button";
 
 async function searchProducts(query: string) {
     try {
-        const res = await fetch(`http://localhost:4000/products?search=${encodeURIComponent(query)}`, { cache: "no-store" });
+        const res = await fetch(`${API_URL}/products?search=${encodeURIComponent(query)}`, { cache: "no-store" });
         if (!res.ok) return [];
         return await res.json();
     } catch (e) {

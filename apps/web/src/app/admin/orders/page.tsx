@@ -1,38 +1,51 @@
 "use client";
 
+import { API_URL } from '@/lib/api';
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Download } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
+import { useRouter } from "next/navigation";
 
 export default function AdminOrdersPage() {
-    const { token } = useAuthStore();
+    const { token, logout } = useAuthStore();
+    const router = useRouter();
     const [orders, setOrders] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => { setMounted(true); }, []);
 
     useEffect(() => {
-        if (!token) return;
-        fetch("http://127.0.0.1:4000/orders", {
+        if (!mounted) return;
+        if (!token) { router.push('/login'); return; }
+
+        fetch(`${API_URL}/orders`, {
             headers: { "Authorization": `Bearer ${token}` },
         })
             .then(res => {
-                if (!res.ok) throw new Error("Unauthorized");
+                if (res.status === 401 || res.status === 403) {
+                    logout();
+                    router.push('/login');
+                    return null;
+                }
+                if (!res.ok) throw new Error("Failed to load orders");
                 return res.json();
             })
             .then(data => {
-                setOrders(data);
+                setOrders(Array.isArray(data) ? data : []);
                 setLoading(false);
             })
             .catch(err => {
                 console.error(err);
                 setLoading(false);
             });
-    }, [token]);
+    }, [mounted, token]);
 
     const downloadInvoice = async (orderId: number) => {
         try {
-            const res = await fetch(`http://127.0.0.1:4000/orders/${orderId}/invoice`, {
+            const res = await fetch(`${API_URL}/orders/${orderId}/invoice`, {
                 headers: { "Authorization": `Bearer ${token}` }
             });
             if (!res.ok) throw new Error("Failed to download invoice");

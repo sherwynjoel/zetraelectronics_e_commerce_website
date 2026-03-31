@@ -1,5 +1,6 @@
 "use client";
 
+import { API_URL } from '@/lib/api';
 import { useEffect, useState, useRef } from "react";
 import { Search, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -32,7 +33,7 @@ export function HeroSearchBar() {
                 setIsLoading(true);
                 setIsOpen(true);
                 try {
-                    const res = await fetch(`http://localhost:4000/products?search=${encodeURIComponent(query)}`);
+                    const res = await fetch(`${API_URL}/products?search=${encodeURIComponent(query)}`);
                     if (res.ok) {
                         const data = await res.json();
                         setResults(data.slice(0, 5));
@@ -100,7 +101,7 @@ export function HeroSearchBar() {
                                         <div className="h-14 w-14 bg-white/5 rounded-lg overflow-hidden flex-shrink-0 relative">
                                             {product.image ? (
                                                 <Image
-                                                    src={product.image.startsWith('http') ? product.image : `http://localhost:4000${product.image}`}
+                                                    src={product.image.startsWith('http') ? product.image : `${API_URL}${product.image}`}
                                                     alt={product.name}
                                                     fill
                                                     className="object-cover"

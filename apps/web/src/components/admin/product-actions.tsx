@@ -1,5 +1,6 @@
 "use client";
 
+import { API_URL } from '@/lib/api';
 import { Button } from "@/components/ui/button";
 import { Trash2, Edit } from "lucide-react";
 import Link from "next/link";
@@ -19,7 +20,7 @@ export function ProductActions({ productId }: ProductActionsProps) {
     const handleDelete = async () => {
         setIsConfirming(false);
         try {
-            const res = await fetch(`http://127.0.0.1:4000/products/${productId}`, {
+            const res = await fetch(`${API_URL}/products/${productId}`, {
                 method: "DELETE",
                 headers: { "Authorization": `Bearer ${token}` },
             });

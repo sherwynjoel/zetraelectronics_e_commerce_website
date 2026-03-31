@@ -1,3 +1,4 @@
+import { API_URL } from '@/lib/api';
 import { AddToCartButton } from "@/components/add-to-cart";
 import { Button } from "@/components/ui/button";
 import { Star, ShoppingCart, Truck, Check, Share2, Download, FileText } from "lucide-react";
@@ -20,7 +21,7 @@ interface Product {
 // Fetch single product
 async function getProduct(id: string) {
     try {
-        const res = await fetch(`http://localhost:4000/products/${id}`, { cache: "no-store" });
+        const res = await fetch(`${API_URL}/products/${id}`, { cache: "no-store" });
         if (!res.ok) return null;
         return res.json();
     } catch (e) {

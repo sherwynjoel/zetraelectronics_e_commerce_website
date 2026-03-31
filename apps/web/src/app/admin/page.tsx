@@ -1,5 +1,6 @@
-
 "use client";
+
+import { API_URL } from '@/lib/api';
 
 import { Button } from "@/components/ui/button";
 import { Package, ShoppingCart, DollarSign, TrendingUp, Users } from "lucide-react";
@@ -16,12 +17,21 @@ interface DashboardStats {
 }
 
 export default function AdminDashboard() {
-    const { user, token } = useAuthStore();
+    const { user, token, logout } = useAuthStore();
     const router = useRouter();
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [loading, setLoading] = useState(true);
+    const [mounted, setMounted] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    // Wait for Zustand persist to rehydrate from localStorage before checking auth
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     useEffect(() => {
+        if (!mounted) return;
+
         if (!token) {
             router.push('/login');
             return;
@@ -32,32 +42,41 @@ export default function AdminDashboard() {
         }
 
         // Fetch stats
-        fetch('http://127.0.0.1:4000/analytics/stats', {
+        fetch(`${API_URL}/analytics/stats`, {
             headers: { 'Authorization': `Bearer ${token}` }
         })
             .then(res => {
                 if (res.status === 401 || res.status === 403) {
+                    logout();
                     router.push('/login');
-                    throw new Error('Unauthorized');
+                    throw new Error('Session expired — please log in again');
                 }
+                if (!res.ok) throw new Error(`API error: ${res.status}`);
                 return res.json();
             })
             .then(data => {
-                setStats(data);
+                setStats({
+                    revenue: Number(data?.revenue ?? 0),
+                    orders: Number(data?.orders ?? 0),
+                    products: Number(data?.products ?? 0),
+                    users: Number(data?.users ?? 0),
+                    recentOrders: Array.isArray(data?.recentOrders) ? data.recentOrders : [],
+                });
                 setLoading(false);
             })
             .catch(err => {
-                console.error(err);
+                console.error('Dashboard stats error:', err);
+                setError(err.message || 'Failed to load stats');
                 setLoading(false);
             });
-    }, [token, user, router]);
+    }, [mounted, token, user, router]);
 
-    if (loading) {
+    if (!mounted || loading) {
         return <div className="p-8">Loading dashboard metrics...</div>;
     }
 
-    if (!stats) {
-        return <div className="p-8 text-red-500">Failed to load stats. Please try again.</div>;
+    if (error || !stats) {
+        return <div className="p-8 text-red-500">Failed to load stats: {error ?? 'Unknown error'}. Please refresh.</div>;
     }
 
     return (

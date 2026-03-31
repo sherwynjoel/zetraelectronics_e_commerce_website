@@ -60,9 +60,10 @@ export class OrdersService {
       const order = await tx.order.create({
         data: {
           total: calculatedTotal,
-          userId: userId || 1, // Default user
+          userId: userId || 1,
           status: 'PENDING',
-          paymentMethod: createOrderDto.paymentMethod || 'COD',
+          paymentMethod: (createOrderDto.paymentMethod || 'COD').toUpperCase(),
+          shippingAddress: createOrderDto.address ? JSON.stringify(createOrderDto.address) : null,
           items: {
             create: items.map(item => ({
               productId: item.productId,
@@ -91,7 +92,7 @@ export class OrdersService {
 
       await this.mailerService.sendMail({
         to: order.user?.email || 'customer@example.com',
-        subject: `ElectroStore: Order #${order.id} Confirmed`,
+        subject: `Zetra Electronics: Order #${order.id} Confirmed`,
         template: 'order-confirmation',
         context: {
           name: order.user?.name || 'Customer',

@@ -1,5 +1,6 @@
-
 "use client";
+
+import { API_URL } from '@/lib/api';
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -32,7 +33,7 @@ export default function ProfilePage() {
     const fetchOrders = (uid: number, tok: string) => {
         setLoading(true);
         setOrdersError(null);
-        fetch(`http://localhost:4000/orders/user/${uid}`, {
+        fetch(`${API_URL}/orders/user/${uid}`, {
             headers: { 'Authorization': `Bearer ${tok}` }
         })
             .then(res => {
@@ -65,7 +66,7 @@ export default function ProfilePage() {
 
     const downloadInvoice = async (orderId: number) => {
         try {
-            const res = await fetch(`http://localhost:4000/orders/${orderId}/invoice`, {
+            const res = await fetch(`${API_URL}/orders/${orderId}/invoice`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
