@@ -2,7 +2,7 @@
 
 import { API_URL } from '@/lib/api';
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { ProductCard } from "@/components/product-card";
 import { Button } from "@/components/ui/button";
 
@@ -17,7 +17,7 @@ async function searchProducts(query: string) {
     }
 }
 
-export default function SearchPage() {
+function SearchContent() {
     const searchParams = useSearchParams();
     const query = searchParams.get("q") || "";
     const [products, setProducts] = useState([]);
@@ -57,4 +57,12 @@ export default function SearchPage() {
             )}
         </div>
     );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center bg-background min-h-screen">Loading Search...</div>}>
+      <SearchContent />
+    </Suspense>
+  );
 }

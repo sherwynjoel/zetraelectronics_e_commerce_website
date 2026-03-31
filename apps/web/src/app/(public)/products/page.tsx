@@ -14,6 +14,8 @@ async function getProducts(params: Record<string, string>) {
     }
 }
 
+export const dynamic = "force-dynamic";
+
 export default async function ProductsPage({
     searchParams,
 }: {
