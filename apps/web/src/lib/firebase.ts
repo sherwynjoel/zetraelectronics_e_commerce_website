@@ -7,8 +7,8 @@ const firebaseConfig = {
     projectId: "zetraelectronics-c55c1",
     storageBucket: "zetraelectronics-c55c1.firebasestorage.app",
     messagingSenderId: "8320225117",
-    appId: "1:8320225117:web:d7708f9669f7d1a20822b4",
-    measurementId: "G-0ES14GTG5Q"
+    appId: "1:8320225117:web:5cafe2a7b8522b3c0822b4",
+    measurementId: "G-6Q7D4M0YRZ"
 };
 
 // Initialize Firebase (using a singleton pattern to prevent Next.js hot-reload errors)
