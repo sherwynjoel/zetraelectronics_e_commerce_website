@@ -24,7 +24,7 @@ export default function CheckoutPage() {
         address: "",
         city: "",
         zip: "",
-        paymentMethod: "cod" // Default to Cash on Delivery
+        paymentMethod: "card"
     });
     const [taxRate, setTaxRate] = useState(0.18);
     const [freeShippingThreshold, setFreeShippingThreshold] = useState(0);
@@ -87,7 +87,8 @@ export default function CheckoutPage() {
                 street: formData.address,
                 city: formData.city,
                 zip: formData.zip
-            }
+            },
+            paymentMethod: formData.paymentMethod
         };
 
         try {
@@ -228,17 +229,6 @@ export default function CheckoutPage() {
                                         </motion.div>
                                     )}
                                 </AnimatePresence>
-
-                                <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer bg-primary/5 ring-1 ring-primary/20">
-                                    <input
-                                        type="radio"
-                                        name="paymentMethod"
-                                        value="cod"
-                                        checked={formData.paymentMethod === 'cod'}
-                                        onChange={handleChange}
-                                    />
-                                    <span className="font-medium">Cash on Delivery (COD)</span>
-                                </label>
                             </div>
                         </div>
 
