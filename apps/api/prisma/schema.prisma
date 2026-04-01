@@ -38,12 +38,11 @@ model Order {
   id              Int      @id @default(autoincrement())
   userId          Int
   user            User     @relation(fields: [userId], references: [id])
-  status          String   @default("PENDING") // PENDING, SHIPPED, DELIVERED
+  status          String   @default("PENDING")
   trackingUrl     String?
   total           Float
-  shippingCost    Float    @default(0)
   paymentMethod   String   @default("RAZORPAY")
-  shippingAddress String?  // JSON string: { street, city, zip }
+  shippingAddress String?
   createdAt       DateTime @default(now())
   items           OrderItem[]
 }

@@ -63,7 +63,6 @@ export class OrdersService {
       const order = await tx.order.create({
         data: {
           total: calculatedTotal,
-          shippingCost: calculatedShipping,
           userId: userId || 1,
           status: 'PENDING',
           paymentMethod: (createOrderDto.paymentMethod || 'RAZORPAY').toUpperCase(),
