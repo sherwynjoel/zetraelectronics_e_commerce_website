@@ -71,7 +71,7 @@ export async function Footer() {
                             <h3 className="font-bold text-white mb-4">Support</h3>
                             <ul className="space-y-3 text-sm text-slate-400">
                                 <li><Link href="/profile" className="hover:text-primary transition-colors">My Account</Link></li>
-                                <li><Link href="/cart" className="hover:text-primary transition-colors">Track Order</Link></li>
+                                <li><Link href="/track-order" className="hover:text-primary transition-colors">Track Order</Link></li>
                                 <li><Link href="/contact" className="hover:text-primary transition-colors">Contact Us</Link></li>
                                 <li><Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
                             </ul>
