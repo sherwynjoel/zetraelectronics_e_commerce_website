@@ -41,7 +41,8 @@ model Order {
   status          String   @default("PENDING") // PENDING, SHIPPED, DELIVERED
   trackingUrl     String?
   total           Float
-  paymentMethod   String   @default("COD")
+  shippingCost    Float    @default(0)
+  paymentMethod   String   @default("RAZORPAY")
   shippingAddress String?  // JSON string: { street, city, zip }
   createdAt       DateTime @default(now())
   items           OrderItem[]

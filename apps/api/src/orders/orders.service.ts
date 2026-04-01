@@ -46,10 +46,13 @@ export class OrdersService {
       calculatedShipping = 0;
     }
 
+    const subtotalBeforeShipping = calculatedTotal; // pure product subtotal
     calculatedTotal += calculatedShipping;
 
     const gstSetting = await this.prisma.systemSetting.findUnique({ where: { key: 'GST_PERCENTAGE' } });
     const gstRate = gstSetting ? parseFloat(gstSetting.value) / 100 : 0.18;
+
+    const taxAmount = calculatedTotal * gstRate;
 
     // Apply Tax
     calculatedTotal = calculatedTotal * (1 + gstRate);
@@ -60,9 +63,10 @@ export class OrdersService {
       const order = await tx.order.create({
         data: {
           total: calculatedTotal,
+          shippingCost: calculatedShipping,
           userId: userId || 1,
           status: 'PENDING',
-          paymentMethod: (createOrderDto.paymentMethod || 'COD').toUpperCase(),
+          paymentMethod: (createOrderDto.paymentMethod || 'RAZORPAY').toUpperCase(),
           shippingAddress: createOrderDto.address ? JSON.stringify(createOrderDto.address) : null,
           items: {
             create: items.map(item => ({
@@ -270,18 +274,25 @@ export class OrdersService {
 
       // --- Totals Section ---
       y += 15;
-      doc.font('Helvetica-Bold');
 
-      doc.text('Subtotal:', 380, y, { width: 60, align: 'right' })
+      const shipping = Number((order as any).shippingCost ?? 0);
+      const taxRate = s.GST_PERCENTAGE ? parseFloat(s.GST_PERCENTAGE) : 18;
+      // Back-calculate: total = (subtotal + shipping) * (1 + taxRate/100)
+      const subtotalPlusShipping = Number(order.total) / (1 + taxRate / 100);
+      const taxAmount = Number(order.total) - subtotalPlusShipping;
+
+      doc.font('Helvetica')
+        .fontSize(10)
+        .text('Subtotal:', 380, y, { width: 60, align: 'right' })
         .text(`Rs ${subtotal.toFixed(2)}`, 450, y, { width: 90, align: 'right' });
       y += 20;
 
-      const taxRate = s.GST_PERCENTAGE ? parseFloat(s.GST_PERCENTAGE) : 0;
-      const taxAmount = Number(order.total) - subtotal; // Assuming total includes exactly shipping + tax
+      doc.text('Shipping:', 380, y, { width: 60, align: 'right' })
+        .text(shipping === 0 ? 'Free' : `Rs ${shipping.toFixed(2)}`, 450, y, { width: 90, align: 'right' });
+      y += 20;
 
       if (taxRate > 0) {
-        doc.font('Helvetica')
-          .text(`Tax (${taxRate}%):`, 380, y, { width: 60, align: 'right' })
+        doc.text(`GST (${taxRate}%):`, 380, y, { width: 60, align: 'right' })
           .text(`Rs ${taxAmount.toFixed(2)}`, 450, y, { width: 90, align: 'right' });
         y += 20;
       }
