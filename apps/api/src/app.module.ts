@@ -25,6 +25,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
         transport: {
           host: config.get<string>('SMTP_HOST'),
           port: config.get<number>('SMTP_PORT'),
+          secure: config.get<number>('SMTP_PORT') === 465, // Use SSL for port 465
           auth: {
             user: config.get<string>('SMTP_USER'),
             pass: config.get<string>('SMTP_PASS'),
