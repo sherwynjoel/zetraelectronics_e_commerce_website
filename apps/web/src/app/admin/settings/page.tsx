@@ -119,7 +119,7 @@ export default function AdminSettingsPage() {
                                 value={settings.STORE_PHONE}
                                 onChange={(e) => handleChange("STORE_PHONE", e.target.value)}
                                 className="w-full border rounded-md p-2 bg-background"
-                                placeholder="+91 99999 99999"
+                                placeholder="e.g. +91 98765 43210"
                             />
                         </div>
                         <div>
@@ -129,7 +129,7 @@ export default function AdminSettingsPage() {
                                 value={settings.STORE_EMAIL}
                                 onChange={(e) => handleChange("STORE_EMAIL", e.target.value)}
                                 className="w-full border rounded-md p-2 bg-background"
-                                placeholder="support@example.com"
+                                placeholder="e.g. contact@yourstore.com"
                             />
                         </div>
                         <div className="md:col-span-2">
@@ -138,7 +138,7 @@ export default function AdminSettingsPage() {
                                 value={settings.STORE_ADDRESS}
                                 onChange={(e) => handleChange("STORE_ADDRESS", e.target.value)}
                                 className="w-full border rounded-md p-2 bg-background h-20"
-                                placeholder="123 Tech Street, Silicon Valley, India"
+                                placeholder="Enter your business address"
                             />
                         </div>
                     </div>

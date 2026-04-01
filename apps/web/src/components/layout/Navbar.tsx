@@ -49,7 +49,19 @@ export function Navbar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [categorySearch, setCategorySearch] = useState("");
     const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+    const [settings, setSettings] = useState<Record<string, string>>({});
     const categoryMenuRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        fetch(`${API_URL}/settings`)
+            .then(res => res.json())
+            .then((data: any[]) => {
+                const s: any = {};
+                data.forEach(item => s[item.key] = item.value);
+                setSettings(s);
+            })
+            .catch(console.error);
+    }, []);
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -84,10 +96,10 @@ export function Navbar() {
                         <div className="flex items-center gap-6">
                             <span className="flex items-center gap-2 hover:text-white transition-colors cursor-default">
                                 <Phone className="h-3.5 w-3.5 text-primary" />
-                                <span>+91 98765 43210</span>
+                                <span>{settings.STORE_PHONE || "Support Hotline"}</span>
                             </span>
                             <span className="hover:text-white transition-colors cursor-default">
-                                support@zetraelectronics.com
+                                {settings.STORE_EMAIL || "info@zetraelectronics.com"}
                             </span>
                         </div>
                         <div className="flex items-center gap-6">
@@ -382,9 +394,9 @@ export function Navbar() {
                         <div className="flex items-center justify-between text-xs text-slate-400">
                             <span className="flex items-center gap-1.5">
                                 <Phone className="h-3 w-3 text-primary" />
-                                +91 98765 43210
+                                {settings.STORE_PHONE || "Support"}
                             </span>
-                            <span>support@zetraelectronics.com</span>
+                            <span>{settings.STORE_EMAIL || "info@zetraelectronics.com"}</span>
                         </div>
                     </div>
                 </div>

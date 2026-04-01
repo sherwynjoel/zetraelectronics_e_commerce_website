@@ -84,18 +84,18 @@ export async function Footer() {
                         <ul className="space-y-4 text-sm text-slate-400">
                             <li className="flex gap-3">
                                 <MapPin className="h-5 w-5 text-primary flex-shrink-0" />
-                                <span>{settings.STORE_ADDRESS || "123 Tech Park, Coimbatore, TN"}</span>
+                                <span>{settings.STORE_ADDRESS || "Store Address"}</span>
                             </li>
                             <li className="flex gap-3 items-center">
                                 <Phone className="h-5 w-5 text-primary flex-shrink-0" />
-                                <a href={`tel:${settings.STORE_PHONE || "+918005551234"}`} className="hover:text-white transition-colors">
-                                    {settings.STORE_PHONE || "+91 800 555 1234"}
+                                <a href={`tel:${settings.STORE_PHONE || ""}`} className="hover:text-white transition-colors">
+                                    {settings.STORE_PHONE || "Call Support"}
                                 </a>
                             </li>
                             <li className="flex gap-3 items-center">
                                 <Mail className="h-5 w-5 text-primary flex-shrink-0" />
-                                <a href={`mailto:${settings.STORE_EMAIL || "support@zetraelectronics.com"}`} className="hover:text-white transition-colors">
-                                    {settings.STORE_EMAIL || "support@zetraelectronics.com"}
+                                <a href={`mailto:${settings.STORE_EMAIL || ""}`} className="hover:text-white transition-colors">
+                                    {settings.STORE_EMAIL || "Email Support"}
                                 </a>
                             </li>
                         </ul>
