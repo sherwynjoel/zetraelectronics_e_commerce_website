@@ -67,6 +67,7 @@ export class OrdersService {
           status: 'PENDING',
           paymentMethod: (createOrderDto.paymentMethod || 'RAZORPAY').toUpperCase(),
           shippingAddress: createOrderDto.address ? JSON.stringify(createOrderDto.address) : null,
+          shippingCost: calculatedShipping,
           items: {
             create: items.map(item => ({
               productId: item.productId,
@@ -279,11 +280,8 @@ export class OrdersService {
       y += 15;
       const taxRate = s.GST_PERCENTAGE ? parseFloat(s.GST_PERCENTAGE) : 18;
 
-      // Correct shipping: back-calc from (subtotal + shipping) * (1 + taxRate/100) = order.total
-      const storedShipping = Number((order as any).shippingCost ?? -1);
-      const shipping = storedShipping >= 0
-        ? storedShipping
-        : Math.max(0, Math.round((Number(order.total) / (1 + taxRate / 100) - subtotal) * 100) / 100);
+      // Correct shipping: Use stored value
+      const shipping = Number(order.shippingCost || 0);
       const taxAmount = (subtotal + shipping) * (taxRate / 100);
       const grandTotal = subtotal + shipping + taxAmount;
 
