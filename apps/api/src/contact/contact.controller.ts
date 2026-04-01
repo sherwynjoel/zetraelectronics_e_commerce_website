@@ -20,6 +20,7 @@ export class ContactController {
         const settings = await this.prisma.systemSetting.findMany();
         const s: any = settings.reduce((acc, item) => ({ ...acc, [item.key]: item.value }), {});
         const adminEmail = s.STORE_EMAIL || 'admin@zetraelectronics.com';
+        console.log(`[CONTACT] Attempting to send message to: ${adminEmail}`);
 
         try {
             await this.mailerService.sendMail({
