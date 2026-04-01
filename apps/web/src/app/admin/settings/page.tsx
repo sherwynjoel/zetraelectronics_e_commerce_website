@@ -23,7 +23,9 @@ export default function AdminSettingsPage() {
         SOCIAL_INSTAGRAM: "",
         SOCIAL_TWITTER: "", 
         SOCIAL_LINKEDIN: "",
-        FLAT_SHIPPING_FEE: "0"
+        FLAT_SHIPPING_FEE: "0",
+        HOME_HERO_IMAGE: "",
+        HOME_HERO_SUBTEXT: ""
     });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -90,6 +92,8 @@ export default function AdminSettingsPage() {
             case "SOCIAL_TWITTER": return "Twitter/X Profile URL";
             case "SOCIAL_LINKEDIN": return "LinkedIn Company Page URL";
             case "FLAT_SHIPPING_FEE": return "Standard shipping charge when threshold is not met";
+            case "HOME_HERO_IMAGE": return "Hero banner image URL for homepage";
+            case "HOME_HERO_SUBTEXT": return "Short description text below the hero title";
             default: return "";
         }
     };
@@ -194,6 +198,76 @@ export default function AdminSettingsPage() {
                                 <p className="text-xs text-muted-foreground mt-2">
                                     Applied if the order is below the free shipping threshold.
                                 </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Hero / Branding Section */}
+                <div className="bg-card p-8 rounded-2xl border shadow-sm space-y-6">
+                    <h2 className="text-xl font-bold flex items-center gap-2">
+                        Homepage Hero Section
+                    </h2>
+                    <div className="space-y-6">
+                        <div>
+                            <label className="text-sm font-semibold mb-2 block">Hero Tagline / Subtext</label>
+                            <input
+                                type="text"
+                                value={settings.HOME_HERO_SUBTEXT}
+                                onChange={(e) => handleChange("HOME_HERO_SUBTEXT", e.target.value)}
+                                className="w-full border rounded-xl p-3 bg-background focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                placeholder="e.g. Your premium destination for electronic components..."
+                            />
+                        </div>
+                        <div>
+                            <label className="text-sm font-semibold mb-2 block">Hero Banner Image</label>
+                            <div className="flex gap-4 items-start">
+                                <div className="relative h-40 w-64 bg-muted rounded-xl border border-dashed flex items-center justify-center overflow-hidden">
+                                    {settings.HOME_HERO_IMAGE ? (
+                                        <img src={settings.HOME_HERO_IMAGE} alt="Hero" className="object-cover h-full w-full" />
+                                    ) : (
+                                        <div className="text-xs text-muted-foreground">No image set</div>
+                                    )}
+                                </div>
+                                <div className="space-y-3">
+                                    <input 
+                                        type="file" 
+                                        accept="image/*" 
+                                        className="hidden" 
+                                        id="hero-upload"
+                                        onChange={async (e) => {
+                                            const file = e.target.files?.[0];
+                                            if (!file) return;
+                                            
+                                            const formData = new FormData();
+                                            formData.append('file', file);
+                                            
+                                            try {
+                                                const res = await fetch(`${API_URL}/products/upload`, {
+                                                    method: 'POST',
+                                                    headers: { 'Authorization': `Bearer ${token}` },
+                                                    body: formData
+                                                });
+                                                const data = await res.json();
+                                                if (data.url) {
+                                                    const finalUrl = data.url.replace('http://localhost:4000', API_URL);
+                                                    handleChange("HOME_HERO_IMAGE", finalUrl);
+                                                }
+                                            } catch (err) {
+                                                console.error("Upload failed", err);
+                                            }
+                                        }}
+                                    />
+                                    <Button 
+                                        type="button" 
+                                        variant="outline" 
+                                        onClick={() => document.getElementById('hero-upload')?.click()}
+                                        className="rounded-xl"
+                                    >
+                                        Upload New Image
+                                    </Button>
+                                    <p className="text-[10px] text-muted-foreground">Recommended: 1200x800px. JPG/PNG.</p>
+                                </div>
                             </div>
                         </div>
                     </div>

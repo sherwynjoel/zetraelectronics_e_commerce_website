@@ -16,10 +16,25 @@ async function getProducts() {
   }
 }
 
+async function getSettings() {
+  try {
+    const res = await fetch(`${API_URL}/settings`, { cache: "no-store" });
+    if (!res.ok) return [];
+    return res.json();
+  } catch (e) {
+    console.error("Failed to fetch settings:", e);
+    return [];
+  }
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const products = await getProducts();
+  const settingsData = await getSettings();
+  
+  const heroImage = settingsData.find((s: any) => s.key === "HOME_HERO_IMAGE")?.value || "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=1000";
+  const heroSubtext = settingsData.find((s: any) => s.key === "HOME_HERO_SUBTEXT")?.value || "Your premium destination for electronic components, sensors, IoT modules, and robotics kits. Enterprise-grade quality for hobbyists and professionals.";
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -34,8 +49,7 @@ export default async function Home() {
               Build the Future with <span className="text-primary">Zetra Electronics</span>
             </h1>
             <p className="text-lg text-slate-300">
-              Your premium destination for electronic components, sensors, IoT modules, and robotics kits.
-              Enterprise-grade quality for hobbyists and professionals.
+              {heroSubtext}
             </p>
             <HeroSearchBar />
             <div className="flex gap-4 pt-4">
@@ -48,8 +62,11 @@ export default async function Home() {
           </div>
           {/* Abstract Tech Graphic Placeholder */}
           <div className="w-full max-w-md h-64 bg-slate-800/50 rounded-2xl border border-white/10 relative overflow-hidden flex items-center justify-center backdrop-blur-sm">
-            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=1000')] bg-cover bg-center opacity-40 mix-blend-overlay"></div>
-            <span className="relative z-10 text-slate-400 font-mono text-sm">[ Circuit Visualization ]</span>
+            <div 
+              className="absolute inset-0 bg-cover bg-center opacity-40 mix-blend-overlay"
+              style={{ backgroundImage: `url('${heroImage}')` }}
+            ></div>
+            {!heroImage.includes('unsplash') && <span className="relative z-10 text-slate-400 font-mono text-sm">[ Circuit Visualization ]</span>}
           </div>
         </div>
       </section>
