@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { PrismaService } from './prisma.service';
 import { ProductsModule } from './products/products.module';
 import { OrdersModule } from './orders/orders.module';
 import { MailerModule } from '@nestjs-modules/mailer';
@@ -59,6 +60,6 @@ import { existsSync } from 'fs';
     AnalyticsModule,
   ],
   controllers: [AppController, UploadsController],
-  providers: [AppService],
+  providers: [AppService, PrismaService],
 })
 export class AppModule { }
