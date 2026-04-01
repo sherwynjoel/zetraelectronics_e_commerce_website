@@ -13,6 +13,7 @@ import { UploadsController } from './uploads.controller';
 import { SettingsModule } from './settings/settings.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { existsSync } from 'fs';
 
 @Module({
   imports: [
@@ -21,29 +22,35 @@ import { AnalyticsModule } from './analytics/analytics.module';
     OrdersModule,
     MailerModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        transport: {
-          host: config.get<string>('SMTP_HOST'),
-          port: parseInt(config.get<string>('SMTP_PORT') || '587', 10),
-          secure: parseInt(config.get<string>('SMTP_PORT') || '587', 10) === 465,
-          auth: {
-            user: config.get<string>('SMTP_USER'),
-            pass: config.get<string>('SMTP_PASS'),
+      useFactory: (config: ConfigService) => {
+        const templateDir = existsSync(join(__dirname, 'templates'))
+          ? join(__dirname, 'templates')
+          : join(process.cwd(), 'dist', 'templates');
+
+        return {
+          transport: {
+            host: config.get<string>('SMTP_HOST'),
+            port: parseInt(config.get<string>('SMTP_PORT') || '587', 10),
+            secure: parseInt(config.get<string>('SMTP_PORT') || '587', 10) === 465,
+            auth: {
+              user: config.get<string>('SMTP_USER'),
+              pass: config.get<string>('SMTP_PASS'),
+            },
           },
-        },
-        defaults: {
-          from:
-            config.get<string>('MAIL_FROM') ||
-            '"Zetra Electronics" <noreply@zetraelectronics.com>',
-        },
-        template: {
-          dir: join(__dirname, 'templates'),
-          adapter: new HandlebarsAdapter(),
-          options: {
-            strict: true,
+          defaults: {
+            from:
+              config.get<string>('MAIL_FROM') ||
+              '"Zetra Electronics" <noreply@zetraelectronics.com>',
           },
-        },
-      }),
+          template: {
+            dir: templateDir,
+            adapter: new HandlebarsAdapter(),
+            options: {
+              strict: true,
+            },
+          },
+        };
+      },
     }),
     AuthModule,
     SettingsModule,
