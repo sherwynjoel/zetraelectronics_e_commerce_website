@@ -188,57 +188,75 @@ export class OrdersService {
       doc.on('data', buffers.push.bind(buffers));
       doc.on('end', () => resolve(Buffer.concat(buffers)));
 
-      // --- Header with Logo ---
+      // ── HEADER ZONE ──────────────────────────────────────────────
+      // Left: Logo (small, contained to top-left)
       const logoPath = path.resolve(process.cwd(), '../web/public/logo.png');
       try {
-        doc.image(logoPath, 50, 45, { width: 100 });
+        doc.image(logoPath, 50, 40, { width: 55, height: 55 });
       } catch (e) {
-        console.warn('Logo not found or could not be loaded for invoice:', logoPath);
+        console.warn('Logo not found:', logoPath);
       }
 
-      // --- Document Title & Details ---
-      doc.fillColor('#333333')
-        .fontSize(24)
-        .text('TAX INVOICE', 50, 50, { align: 'right' });
+      // Right: TAX INVOICE title
+      doc.fillColor('#111111')
+        .font('Helvetica-Bold')
+        .fontSize(26)
+        .text('TAX INVOICE', 300, 40, { width: 250, align: 'right' });
 
-      doc.fontSize(10)
-        .fillColor('#666666')
-        .text(`Invoice No: #${order.id.toString().padStart(5, '0')}`, { align: 'right' })
-        .text(`Date: ${order.createdAt.toLocaleDateString()}`, { align: 'right' })
-        .text(`Payment: ${order.paymentMethod}`, { align: 'right' })
-        .text(`Status: ${order.status}`, { align: 'right' })
-        .moveDown();
+      // Right: Invoice meta details (below title)
+      doc.fontSize(9)
+        .font('Helvetica')
+        .fillColor('#555555')
+        .text(`Invoice No: #${order.id.toString().padStart(5, '0')}`, 300, 72, { width: 250, align: 'right' })
+        .text(`Date: ${order.createdAt.toLocaleDateString()}`, 300, 85, { width: 250, align: 'right' })
+        .text(`Payment: ${order.paymentMethod}`, 300, 98, { width: 250, align: 'right' })
+        .text(`Status: ${order.status}`, 300, 111, { width: 250, align: 'right' });
 
-      // --- Company Info ---
-      doc.fillColor('#333333')
-        .fontSize(14)
-        .text('Zetra Electronics', 50, 110)
+      // ── DIVIDER LINE ─────────────────────────────────────────────
+      doc.strokeColor('#dddddd').lineWidth(1).moveTo(50, 108).lineTo(550, 108).stroke();
+
+      // ── COMPANY INFO (left, below logo) ─────────────────────────
+      doc.fillColor('#111111')
+        .font('Helvetica-Bold')
+        .fontSize(13)
+        .text('Zetra Electronics', 50, 120);
+
+      doc.fontSize(9)
+        .font('Helvetica')
+        .fillColor('#555555')
+        .text(s.STORE_ADDRESS || 'Tech Street, India', 50, 137)
+        .text(`Phone: ${s.STORE_PHONE || '+91 99999 99999'}`, 50, 150)
+        .text(`Email: ${s.STORE_EMAIL || 'support@zetraelectronics.com'}`, 50, 163)
+        .text(`GST No: Pending`, 50, 176);
+
+      // ── BILLED TO (right, same row as company info) ──────────────
+      doc.fillColor('#111111')
+        .font('Helvetica-Bold')
         .fontSize(10)
-        .fillColor('#666666')
-        .text(s.STORE_ADDRESS || 'Tech Street, India', 50, 126)
-        .text(`Phone: ${s.STORE_PHONE || '+91 99999 99999'}`, 50, 140)
-        .text(`Email: ${s.STORE_EMAIL || 'support@zetraelectronics.com'}`, 50, 154);
+        .text('Billed To:', 320, 120);
 
-      if (s.GST_PERCENTAGE) {
-        doc.text(`GST No: Pending`, 50, 168);
+      doc.fontSize(9)
+        .font('Helvetica')
+        .fillColor('#555555')
+        .text(order.user?.name || 'Customer Name', 320, 137)
+        .text(order.user?.email || 'N/A', 320, 150);
+
+      if (order.shippingAddress) {
+        try {
+          const addr = JSON.parse(order.shippingAddress as string);
+          if (addr.street) doc.text(addr.street, 320, 163);
+          if (addr.city) doc.text(`${addr.city}${addr.zip ? ' - ' + addr.zip : ''}`, 320, 176);
+        } catch {}
       }
 
-      // --- Bill To ---
-      doc.fillColor('#333333')
-        .fontSize(12)
-        .text('Billed To:', 350, 110, { underline: true });
-
-      doc.fontSize(10)
-        .fillColor('#666666')
-        .text(order.user?.name || 'Customer Name', 350, 126)
-        .text(order.user?.email || 'N/A', 350, 140)
-        .moveDown(3);
+      // ── SECOND DIVIDER ───────────────────────────────────────────
+      doc.strokeColor('#dddddd').lineWidth(1).moveTo(50, 198).lineTo(550, 198).stroke();
 
       // --- Table Header ---
-      const tableTop = 220;
+      const tableTop = 215;
       doc.fillColor('#ffffff')
-        .rect(50, tableTop - 5, 500, 20)
-        .fill('#333333');
+        .rect(50, tableTop - 5, 500, 22)
+        .fill('#222222');
 
       doc.fillColor('#ffffff')
         .font('Helvetica-Bold')
