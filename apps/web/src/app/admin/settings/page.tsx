@@ -3,7 +3,7 @@
 import { API_URL } from '@/lib/api';
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { CheckCircle, AlertCircle, Save, Globe, CreditCard } from "lucide-react";
+import { CheckCircle, AlertCircle, Save, Globe } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
 
 interface Setting {
@@ -21,10 +21,8 @@ export default function AdminSettingsPage() {
         STORE_EMAIL: "",
         STORE_ADDRESS: "",
         SOCIAL_INSTAGRAM: "",
-        SOCIAL_TWITTER: "", // X
-        SOCIAL_LINKEDIN: "",
-        PAYMENT_RAZORPAY_KEY: "",
-        PAYMENT_RAZORPAY_SECRET: ""
+        SOCIAL_TWITTER: "", 
+        SOCIAL_LINKEDIN: ""
     });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -58,8 +56,6 @@ export default function AdminSettingsPage() {
 
         try {
             const updates = Object.entries(settings).map(([key, value]) => {
-                // Only save if it's different or exists? API allows upsert so generally safe to save all or check dirty.
-                // Saving all is simpler for this scale.
                 return fetch(`${API_URL}/settings/${key}`, {
                     method: "PUT",
                     headers: {
@@ -92,52 +88,55 @@ export default function AdminSettingsPage() {
             case "SOCIAL_INSTAGRAM": return "Instagram Profile URL";
             case "SOCIAL_TWITTER": return "Twitter/X Profile URL";
             case "SOCIAL_LINKEDIN": return "LinkedIn Company Page URL";
-            case "PAYMENT_RAZORPAY_KEY": return "Razorpay Public Key ID";
-            case "PAYMENT_RAZORPAY_SECRET": return "Razorpay Secret Key";
             default: return "";
         }
     };
 
-    if (loading) return <div className="p-8">Loading settings...</div>;
+    if (loading) return <div className="p-8 font-medium animate-pulse">Loading system settings...</div>;
 
     return (
-        <div className="space-y-6">
-            <h1 className="text-3xl font-bold">System Settings</h1>
+        <div className="space-y-8 pb-20">
+            <div className="flex justify-between items-center">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">System Settings</h1>
+                    <p className="text-muted-foreground mt-1 text-sm">Configure your store operations, taxes, and shipping rules.</p>
+                </div>
+            </div>
 
-            <form onSubmit={handleSave} className="grid grid-cols-1 gap-6 max-w-5xl">
+            <form onSubmit={handleSave} className="grid grid-cols-1 gap-8 max-w-5xl">
 
                 {/* Store Information */}
-                <div className="bg-card p-6 rounded-xl border shadow-sm">
-                    <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                        Store Information
+                <div className="bg-card p-8 rounded-2xl border shadow-sm space-y-6">
+                    <h2 className="text-xl font-bold flex items-center gap-2">
+                         Store Information
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label className="text-sm font-medium mb-1 block">Store Phone</label>
+                            <label className="text-sm font-semibold mb-2 block">Store Phone</label>
                             <input
                                 type="text"
                                 value={settings.STORE_PHONE}
                                 onChange={(e) => handleChange("STORE_PHONE", e.target.value)}
-                                className="w-full border rounded-md p-2 bg-background"
+                                className="w-full border rounded-xl p-3 bg-background focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                                 placeholder="e.g. +91 98765 43210"
                             />
                         </div>
                         <div>
-                            <label className="text-sm font-medium mb-1 block">Support Email</label>
+                            <label className="text-sm font-semibold mb-2 block">Support Email</label>
                             <input
                                 type="email"
                                 value={settings.STORE_EMAIL}
                                 onChange={(e) => handleChange("STORE_EMAIL", e.target.value)}
-                                className="w-full border rounded-md p-2 bg-background"
+                                className="w-full border rounded-xl p-3 bg-background focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                                 placeholder="e.g. contact@yourstore.com"
                             />
                         </div>
                         <div className="md:col-span-2">
-                            <label className="text-sm font-medium mb-1 block">Store Address</label>
+                            <label className="text-sm font-semibold mb-2 block">Store Address</label>
                             <textarea
                                 value={settings.STORE_ADDRESS}
                                 onChange={(e) => handleChange("STORE_ADDRESS", e.target.value)}
-                                className="w-full border rounded-md p-2 bg-background h-20"
+                                className="w-full border rounded-xl p-3 bg-background h-24 focus:ring-2 focus:ring-primary/20 outline-none transition-all resize-none"
                                 placeholder="Enter your business address"
                             />
                         </div>
@@ -145,39 +144,39 @@ export default function AdminSettingsPage() {
                 </div>
 
                 {/* Tax & Shipping Configuration */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="bg-card p-6 rounded-xl border shadow-sm h-full">
-                        <h2 className="text-xl font-bold mb-4">Tax Configuration</h2>
-                        <div className="grid gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="bg-card p-8 rounded-2xl border shadow-sm h-full flex flex-col">
+                        <h2 className="text-xl font-bold mb-6">Tax Configuration</h2>
+                        <div className="space-y-4 flex-1">
                             <div>
-                                <label className="text-sm font-medium mb-1 block">GST Percentage (%)</label>
+                                <label className="text-sm font-semibold mb-2 block">GST Percentage (%)</label>
                                 <input
                                     type="number"
                                     value={settings.GST_PERCENTAGE}
                                     onChange={(e) => handleChange("GST_PERCENTAGE", e.target.value)}
-                                    className="w-full border rounded-md p-2 bg-background"
+                                    className="w-full border rounded-xl p-3 bg-background focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                                     min="0" max="100" step="0.01"
                                 />
-                                <p className="text-xs text-muted-foreground mt-1">
+                                <p className="text-xs text-muted-foreground mt-2">
                                     Applied to all orders. Set to 0 to disable tax.
                                 </p>
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-card p-6 rounded-xl border shadow-sm h-full">
-                        <h2 className="text-xl font-bold mb-4">Shipping Configuration</h2>
-                        <div className="grid gap-4">
+                    <div className="bg-card p-8 rounded-2xl border shadow-sm h-full flex flex-col">
+                        <h2 className="text-xl font-bold mb-6">Shipping Configuration</h2>
+                        <div className="space-y-4 flex-1">
                             <div>
-                                <label className="text-sm font-medium mb-1 block">Free Shipping Threshold (₹)</label>
+                                <label className="text-sm font-semibold mb-2 block">Free Shipping Threshold (₹)</label>
                                 <input
                                     type="number"
                                     value={settings.FREE_SHIPPING_THRESHOLD}
                                     onChange={(e) => handleChange("FREE_SHIPPING_THRESHOLD", e.target.value)}
-                                    className="w-full border rounded-md p-2 bg-background"
+                                    className="w-full border rounded-xl p-3 bg-background focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                                     min="0"
                                 />
-                                <p className="text-xs text-muted-foreground mt-1">
+                                <p className="text-xs text-muted-foreground mt-2">
                                     Orders below this pay for shipping. Set to 0 to disable.
                                 </p>
                             </div>
@@ -186,85 +185,61 @@ export default function AdminSettingsPage() {
                 </div>
 
                 {/* Social Media */}
-                <div className="bg-card p-6 rounded-xl border shadow-sm">
-                    <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                <div className="bg-card p-8 rounded-2xl border shadow-sm space-y-6">
+                    <h2 className="text-xl font-bold flex items-center gap-2">
                         <Globe className="h-5 w-5" /> Social Media Links
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
-                            <label className="text-sm font-medium mb-1 block">Instagram URL</label>
+                            <label className="text-sm font-semibold mb-2 block">Instagram URL</label>
                             <input
                                 type="url"
                                 value={settings.SOCIAL_INSTAGRAM}
                                 onChange={(e) => handleChange("SOCIAL_INSTAGRAM", e.target.value)}
-                                className="w-full border rounded-md p-2 bg-background"
-                                placeholder="https://instagram.com/zetraelectronics"
+                                className="w-full border rounded-xl p-3 bg-background focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                placeholder="https://instagram.com/..."
                             />
                         </div>
                         <div>
-                            <label className="text-sm font-medium mb-1 block">Twitter / X URL</label>
+                            <label className="text-sm font-semibold mb-2 block">Twitter / X URL</label>
                             <input
                                 type="url"
                                 value={settings.SOCIAL_TWITTER}
                                 onChange={(e) => handleChange("SOCIAL_TWITTER", e.target.value)}
-                                className="w-full border rounded-md p-2 bg-background"
-                                placeholder="https://twitter.com/zetraelectronics"
+                                className="w-full border rounded-xl p-3 bg-background focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                placeholder="https://twitter.com/..."
                             />
                         </div>
                         <div>
-                            <label className="text-sm font-medium mb-1 block">LinkedIn URL</label>
+                            <label className="text-sm font-semibold mb-2 block">LinkedIn URL</label>
                             <input
                                 type="url"
                                 value={settings.SOCIAL_LINKEDIN}
                                 onChange={(e) => handleChange("SOCIAL_LINKEDIN", e.target.value)}
-                                className="w-full border rounded-md p-2 bg-background"
-                                placeholder="https://linkedin.com/company/zetraelectronics"
+                                className="w-full border rounded-xl p-3 bg-background focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                placeholder="https://linkedin.com/..."
                             />
                         </div>
                     </div>
-                </div>
-
-                {/* Payment Gateway */}
-                <div className="bg-card p-6 rounded-xl border shadow-sm">
-                    <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                        <CreditCard className="h-5 w-5" /> Payment Gateway (Razorpay)
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label className="text-sm font-medium mb-1 block">Key ID</label>
-                            <input
-                                type="password"
-                                value={settings.PAYMENT_RAZORPAY_KEY}
-                                onChange={(e) => handleChange("PAYMENT_RAZORPAY_KEY", e.target.value)}
-                                className="w-full border rounded-md p-2 bg-background"
-                                placeholder="rzp_test_..."
-                            />
-                        </div>
-                        <div>
-                            <label className="text-sm font-medium mb-1 block">Key Secret</label>
-                            <input
-                                type="password"
-                                value={settings.PAYMENT_RAZORPAY_SECRET}
-                                onChange={(e) => handleChange("PAYMENT_RAZORPAY_SECRET", e.target.value)}
-                                className="w-full border rounded-md p-2 bg-background"
-                            />
-                        </div>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-2">
-                        These keys are used to process payments. Keep them secure.
-                    </p>
                 </div>
 
                 {/* Save Bar */}
-                <div className="fixed bottom-6 right-6 z-50">
-                    {message && (
-                        <div className={`mb-4 p-4 rounded-xl border shadow-lg flex items-center gap-2 animate-in slide-in-from-bottom-5 ${message.type === 'success' ? 'bg-green-100 border-green-200 text-green-800' : 'bg-red-100 border-red-200 text-red-800'}`}>
-                            {message.type === 'success' ? <CheckCircle className="h-5 w-5" /> : <AlertCircle className="h-5 w-5" />}
-                            {message.text}
-                        </div>
-                    )}
-                    <Button type="submit" size="lg" disabled={saving} className="shadow-xl">
-                        <Save className="h-4 w-4 mr-2" />
+                <div className="fixed bottom-8 right-8 z-50 flex flex-col items-end gap-4">
+                    <AnimatePresence>
+                        {message && (
+                            <div className={`p-4 rounded-2xl border shadow-2xl flex items-center gap-3 bg-black text-white`}>
+                                {message.type === 'success' ? <CheckCircle className="h-5 w-5 text-green-400" /> : <AlertCircle className="h-5 w-5 text-red-400" />}
+                                <span className="text-sm font-medium">{message.text}</span>
+                            </div>
+                        )}
+                    </AnimatePresence>
+                    <Button 
+                        type="submit" 
+                        size="lg" 
+                        disabled={saving} 
+                        className="shadow-2xl rounded-2xl px-12 h-14 text-base font-bold bg-primary hover:bg-primary/90 transition-all hover:scale-105 active:scale-95"
+                    >
+                        <Save className="h-5 w-5 mr-3" />
                         {saving ? "Saving Changes..." : "Save All Settings"}
                     </Button>
                 </div>
@@ -272,3 +247,7 @@ export default function AdminSettingsPage() {
         </div>
     );
 }
+
+const AnimatePresence = ({ children }: { children: React.ReactNode }) => {
+    return <>{children}</>;
+};
