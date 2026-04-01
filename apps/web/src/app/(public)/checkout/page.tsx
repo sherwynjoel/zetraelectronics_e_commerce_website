@@ -27,6 +27,7 @@ export default function CheckoutPage() {
         paymentMethod: "razorpay"
     });
     const [taxRate, setTaxRate] = useState(0.18);
+    const [freeShippingThreshold, setFreeShippingThreshold] = useState(0);
     const [flatShippingFee, setFlatShippingFee] = useState(0);
 
     useEffect(() => {
