@@ -42,9 +42,7 @@ export default async function Home() {
       <section className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white py-20">
         <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="space-y-6 max-w-2xl">
-            <div className="inline-block px-3 py-1 bg-primary/20 text-primary text-xs font-bold rounded-full border border-primary/50">
-              NEW: RASPBERRY PI 5 STOCK
-            </div>
+
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
               Build the Future with <span className="text-primary">Zetra Electronics</span>
             </h1>
