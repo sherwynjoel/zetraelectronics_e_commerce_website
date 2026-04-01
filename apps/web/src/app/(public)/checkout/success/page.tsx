@@ -5,11 +5,38 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle, Package, FileText } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
+import { useAuthStore } from "@/lib/auth-store";
 
 function SuccessContent() {
     const searchParams = useSearchParams();
     const orderId = searchParams.get("orderId");
+    const { token } = useAuthStore();
+    const [downloading, setDownloading] = useState(false);
+
+    const handleDownloadInvoice = async () => {
+        if (!orderId || !token) return;
+        setDownloading(true);
+        try {
+            const res = await fetch(`${API_URL}/orders/${orderId}/invoice`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (!res.ok) throw new Error("Failed to download invoice");
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `invoice-${orderId}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (e) {
+            alert("Could not download invoice. Please try from Order History.");
+        } finally {
+            setDownloading(false);
+        }
+    };
 
     return (
         <div className="text-center space-y-6 max-w-md w-full">
@@ -38,11 +65,15 @@ function SuccessContent() {
                     </Button>
                 </Link>
                 {orderId && (
-                    <a href={`${API_URL}/orders/${orderId}/invoice`} target="_blank" rel="noopener noreferrer" className="w-full block">
-                        <Button variant="secondary" className="w-full gap-2 bg-slate-100 dark:bg-slate-800 border">
-                            <FileText className="h-4 w-4" /> View Invoice
-                        </Button>
-                    </a>
+                    <Button
+                        variant="secondary"
+                        className="w-full gap-2 bg-slate-100 dark:bg-slate-800 border"
+                        onClick={handleDownloadInvoice}
+                        disabled={downloading}
+                    >
+                        <FileText className="h-4 w-4" />
+                        {downloading ? "Downloading..." : "Download Invoice"}
+                    </Button>
                 )}
             </div>
         </div>
