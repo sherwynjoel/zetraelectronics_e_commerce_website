@@ -24,8 +24,8 @@ import { AnalyticsModule } from './analytics/analytics.module';
       useFactory: (config: ConfigService) => ({
         transport: {
           host: config.get<string>('SMTP_HOST'),
-          port: config.get<number>('SMTP_PORT'),
-          secure: config.get<number>('SMTP_PORT') === 465, // Use SSL for port 465
+          port: parseInt(config.get<string>('SMTP_PORT') || '587', 10),
+          secure: parseInt(config.get<string>('SMTP_PORT'), 10) === 465,
           auth: {
             user: config.get<string>('SMTP_USER'),
             pass: config.get<string>('SMTP_PASS'),
