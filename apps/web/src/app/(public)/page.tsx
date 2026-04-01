@@ -66,7 +66,6 @@ export default async function Home() {
               className="absolute inset-0 bg-cover bg-center opacity-40 mix-blend-overlay"
               style={{ backgroundImage: `url('${heroImage}')` }}
             ></div>
-            {!heroImage.includes('unsplash') && <span className="relative z-10 text-slate-400 font-mono text-sm">[ Circuit Visualization ]</span>}
           </div>
         </div>
       </section>
