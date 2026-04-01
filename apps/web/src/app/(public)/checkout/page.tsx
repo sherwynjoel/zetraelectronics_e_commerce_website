@@ -197,6 +197,7 @@ export default function CheckoutPage() {
 
                         <div className="bg-card p-6 rounded-xl border shadow-sm">
                             <h2 className="text-xl font-bold mb-4">Payment Method</h2>
+                            <div className="space-y-3">
                                 <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50 bg-primary/5 ring-1 ring-primary/20">
                                     <input
                                         type="radio"
