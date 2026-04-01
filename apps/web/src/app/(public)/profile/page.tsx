@@ -1,23 +1,20 @@
 "use client";
 
 import { API_URL } from '@/lib/api';
-
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/auth-store";
 import { Button } from "@/components/ui/button";
-import { Package, User, LogOut, Download } from "lucide-react";
+import { Package, User, LogOut, Download, MapPin } from "lucide-react";
 
 interface Order {
     id: number;
     createdAt: string;
     total: string;
     status: string;
+    trackingUrl?: string;
     items: {
-        product: {
-            name: string;
-            image: string;
-        };
+        product: { name: string; image: string };
         quantity: number;
         price: string;
     }[];
@@ -34,7 +31,7 @@ export default function ProfilePage() {
         setLoading(true);
         setOrdersError(null);
         fetch(`${API_URL}/orders/user/${uid}`, {
-            headers: { 'Authorization': `Bearer ${tok}` }
+            headers: { Authorization: `Bearer ${tok}` },
         })
             .then(res => {
                 if (res.status === 401 || res.status === 403) {
@@ -45,48 +42,42 @@ export default function ProfilePage() {
                 if (!res.ok) throw new Error(`Server error (${res.status})`);
                 return res.json();
             })
-            .then(data => {
-                setOrders(Array.isArray(data) ? data : []);
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error(err);
-                setOrdersError(err.message || "Failed to load orders");
-                setLoading(false);
-            });
+            .then(data => { setOrders(Array.isArray(data) ? data : []); setLoading(false); })
+            .catch(err => { console.error(err); setOrdersError(err.message || "Failed to load orders"); setLoading(false); });
     };
 
     useEffect(() => {
-        if (!user || !token) {
-            router.push("/login");
-            return;
-        }
+        if (!user || !token) { router.push("/login"); return; }
         fetchOrders(user.id, token);
-    }, [user, token, router, logout]);
+    }, [user, token]);
 
     const downloadInvoice = async (orderId: number) => {
         try {
             const res = await fetch(`${API_URL}/orders/${orderId}/invoice`, {
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: { Authorization: `Bearer ${token}` },
             });
-
-            if (!res.ok) throw new Error("Failed to download invoice");
-
+            if (!res.ok) throw new Error("Failed");
             const blob = await res.blob();
             const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
+            const a = document.createElement("a");
             a.href = url;
             a.download = `invoice-${orderId}.pdf`;
             document.body.appendChild(a);
             a.click();
             a.remove();
-        } catch (e) {
-            console.error(e);
+            window.URL.revokeObjectURL(url);
+        } catch {
             alert("Could not download invoice. Please try again.");
         }
     };
 
     if (!user) return null;
+
+    const statusColor = (s: string) =>
+        s === "DELIVERED" ? "bg-green-100 text-green-700" :
+        s === "SHIPPED"   ? "bg-blue-100 text-blue-700" :
+        s === "CANCELLED" ? "bg-red-100 text-red-700" :
+                            "bg-yellow-100 text-yellow-700";
 
     return (
         <div className="container mx-auto px-4 py-8">
@@ -102,20 +93,10 @@ export default function ProfilePage() {
                         <div>
                             <h2 className="text-xl font-bold">{user.name || "User"}</h2>
                             <p className="text-muted-foreground">{user.email}</p>
-                            <span className="inline-block mt-2 px-2 py-1 bg-muted rounded text-xs font-medium uppercase">
-                                {user.role}
-                            </span>
+                            <span className="inline-block mt-2 px-2 py-1 bg-muted rounded text-xs font-medium uppercase">{user.role}</span>
                         </div>
                     </div>
-
-                    <Button
-                        variant="destructive"
-                        className="w-full gap-2"
-                        onClick={() => {
-                            logout();
-                            router.push("/");
-                        }}
-                    >
+                    <Button variant="destructive" className="w-full gap-2" onClick={() => { logout(); router.push("/"); }}>
                         <LogOut className="h-4 w-4" /> Sign Out
                     </Button>
                 </div>
@@ -132,10 +113,8 @@ export default function ProfilePage() {
                         <div className="bg-card p-8 rounded-xl border text-center">
                             <p className="text-destructive font-medium mb-2">Could not load orders</p>
                             <p className="text-sm text-muted-foreground mb-4">{ordersError}</p>
-                            <button
-                                onClick={() => user && token && fetchOrders(user.id, token)}
-                                className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors"
-                            >
+                            <button onClick={() => user && token && fetchOrders(user.id, token)}
+                                className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
                                 Retry
                             </button>
                         </div>
@@ -147,57 +126,67 @@ export default function ProfilePage() {
                         <div className="space-y-4">
                             {orders.map((order) => (
                                 <div key={order.id} className="bg-card border rounded-xl overflow-hidden hover:shadow-md transition-shadow">
-                                    <div className="bg-muted/30 p-4 flex items-center justify-between border-b">
-                                        <div className="flex flex-col sm:flex-row sm:gap-6">
+                                    {/* Order Header */}
+                                    <div className="bg-muted/30 p-4 flex items-center justify-between border-b flex-wrap gap-3">
+                                        <div className="flex gap-6">
                                             <div>
                                                 <span className="text-xs text-muted-foreground block">Order Placed</span>
                                                 <span className="text-sm font-medium">{new Date(order.createdAt).toLocaleDateString()}</span>
                                             </div>
-                                            <div className="hidden sm:block">
+                                            <div>
                                                 <span className="text-xs text-muted-foreground block">Total</span>
                                                 <span className="text-sm font-medium">₹{Number(order.total).toFixed(2)}</span>
                                             </div>
+                                            <div>
+                                                <span className="text-xs text-muted-foreground block">Order ID</span>
+                                                <span className="text-sm font-mono font-medium">#{order.id.toString().padStart(5, "0")}</span>
+                                            </div>
                                         </div>
-                                        <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-2">
                                             <button
                                                 onClick={() => downloadInvoice(order.id)}
-                                                className="flex items-center gap-1 text-xs font-medium text-primary hover:underline px-3 py-1 bg-primary/10 rounded-full cursor-pointer border-0"
+                                                className="flex items-center gap-1 text-xs font-medium text-primary hover:underline px-3 py-1.5 bg-primary/10 rounded-full cursor-pointer border-0"
                                             >
                                                 <Download className="h-3 w-3" /> Invoice
                                             </button>
-                                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${order.status === 'DELIVERED' ? 'bg-green-100 text-green-700' :
-                                                order.status === 'SHIPPED' ? 'bg-blue-100 text-blue-700' :
-                                                    'bg-yellow-100 text-yellow-700'
-                                                }`}>
+                                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${statusColor(order.status)}`}>
                                                 {order.status}
                                             </span>
-                                            <span className="text-sm text-muted-foreground">#{order.id.toString().padStart(5, '0')}</span>
                                         </div>
                                     </div>
-                                    <div className="p-4">
-                                        {/* Mobile Total */}
-                                        <div className="sm:hidden mb-4 font-bold">
-                                            Total: ₹{Number(order.total).toFixed(2)}
-                                        </div>
-                                        <div className="space-y-3">
-                                            {order.items.map((item, i) => (
-                                                <div key={i} className="flex gap-4 items-center">
-                                                    {/* We could show image here if we had it populated properly */}
-                                                    <div className="h-12 w-12 bg-muted rounded flex-shrink-0 overflow-hidden relative">
-                                                        {item.product.image ? (
-                                                            <img src={item.product.image} alt="" className="object-contain w-full h-full" />
-                                                        ) : (
-                                                            <div className="w-full h-full flex items-center justify-center bg-gray-200 text-xs">No Img</div>
-                                                        )}
-                                                    </div>
-                                                    <div className="flex-1">
-                                                        <div className="font-medium text-sm line-clamp-1">{item.product.name}</div>
-                                                        <div className="text-xs text-muted-foreground">Qty: {item.quantity}</div>
-                                                    </div>
-                                                    <div className="font-medium text-sm">₹{item.price}</div>
+
+                                    {/* Order Items */}
+                                    <div className="p-4 space-y-3">
+                                        <div className="sm:hidden mb-3 font-bold text-sm">Total: ₹{Number(order.total).toFixed(2)}</div>
+                                        {order.items.map((item, i) => (
+                                            <div key={i} className="flex gap-4 items-center">
+                                                <div className="h-12 w-12 bg-muted rounded flex-shrink-0 overflow-hidden">
+                                                    {item.product.image ? (
+                                                        <img src={item.product.image} alt="" className="object-contain w-full h-full" />
+                                                    ) : (
+                                                        <div className="w-full h-full flex items-center justify-center bg-gray-200 text-xs">No Img</div>
+                                                    )}
                                                 </div>
-                                            ))}
-                                        </div>
+                                                <div className="flex-1">
+                                                    <div className="font-medium text-sm line-clamp-1">{item.product.name}</div>
+                                                    <div className="text-xs text-muted-foreground">Qty: {item.quantity}</div>
+                                                </div>
+                                                <div className="font-medium text-sm">₹{item.price}</div>
+                                            </div>
+                                        ))}
+
+                                        {/* Tracking link — shown when admin adds a tracking URL */}
+                                        {order.trackingUrl && (
+                                            <a
+                                                href={order.trackingUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="mt-2 flex items-center gap-2 px-4 py-2.5 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-lg text-blue-600 dark:text-blue-400 text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-950/60 transition-colors"
+                                            >
+                                                <MapPin className="h-4 w-4" />
+                                                Track your shipment →
+                                            </a>
+                                        )}
                                     </div>
                                 </div>
                             ))}

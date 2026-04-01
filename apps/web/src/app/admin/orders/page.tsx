@@ -2,11 +2,10 @@
 
 import { API_URL } from '@/lib/api';
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { Download } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
 import { useRouter } from "next/navigation";
+import { FulfillOrder } from "@/components/admin/fulfill-order";
 
 export default function AdminOrdersPage() {
     const { token, logout } = useAuthStore();
@@ -49,7 +48,6 @@ export default function AdminOrdersPage() {
                 headers: { "Authorization": `Bearer ${token}` }
             });
             if (!res.ok) throw new Error("Failed to download invoice");
-
             const blob = await res.blob();
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement("a");
@@ -61,7 +59,7 @@ export default function AdminOrdersPage() {
             window.URL.revokeObjectURL(url);
         } catch (err) {
             console.error(err);
-            alert("Error downloading invoice. Please make sure you are logged in.");
+            alert("Error downloading invoice.");
         }
     };
 
@@ -85,6 +83,7 @@ export default function AdminOrdersPage() {
                                 <th className="p-4 font-medium">Customer</th>
                                 <th className="p-4 font-medium">Status</th>
                                 <th className="p-4 font-medium">Total</th>
+                                <th className="p-4 font-medium">Tracking</th>
                                 <th className="p-4 font-medium text-right">Actions</th>
                             </tr>
                         </thead>
@@ -95,21 +94,40 @@ export default function AdminOrdersPage() {
                                     <td className="p-4 text-muted-foreground">{new Date(order.createdAt).toLocaleDateString()}</td>
                                     <td className="p-4">{order.user?.email || "Guest"}</td>
                                     <td className="p-4">
-                                        <span className={`px-2 py-1 rounded-full text-xs font-bold ${order.status === 'DELIVERED' ? 'bg-green-100 text-green-700' :
-                                            order.status === 'SHIPPED' ? 'bg-blue-100 text-blue-700' :
-                                                'bg-yellow-100 text-yellow-700'
-                                            }`}>
+                                        <span className={`px-2 py-1 rounded-full text-xs font-bold ${
+                                            order.status === 'DELIVERED' ? 'bg-green-100 text-green-700' :
+                                            order.status === 'SHIPPED'   ? 'bg-blue-100 text-blue-700' :
+                                            order.status === 'CANCELLED' ? 'bg-red-100 text-red-700' :
+                                                                           'bg-yellow-100 text-yellow-700'
+                                        }`}>
                                             {order.status}
                                         </span>
                                     </td>
                                     <td className="p-4 font-medium">₹{Number(order.total).toFixed(2)}</td>
+                                    <td className="p-4">
+                                        {order.trackingUrl ? (
+                                            <a href={order.trackingUrl} target="_blank" rel="noopener noreferrer"
+                                                className="text-blue-500 hover:underline text-xs">
+                                                Track →
+                                            </a>
+                                        ) : (
+                                            <span className="text-xs text-muted-foreground">—</span>
+                                        )}
+                                    </td>
                                     <td className="p-4 text-right">
-                                        <button onClick={() => downloadInvoice(order.id)} className="mr-2 inline-flex h-9 items-center justify-center rounded-md border border-input bg-background px-3 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground align-middle cursor-pointer">
-                                            <Download className="h-4 w-4 mr-2" /> Invoice
-                                        </button>
-                                        <Link href={`/admin/orders/${order.id}`}>
-                                            <Button variant="outline" size="sm">Manage</Button>
-                                        </Link>
+                                        <div className="flex items-center justify-end gap-2">
+                                            <button
+                                                onClick={() => downloadInvoice(order.id)}
+                                                className="inline-flex h-8 items-center justify-center rounded-md border border-input bg-background px-3 text-xs font-medium shadow-sm hover:bg-accent hover:text-accent-foreground cursor-pointer"
+                                            >
+                                                <Download className="h-3.5 w-3.5 mr-1.5" /> Invoice
+                                            </button>
+                                            <FulfillOrder
+                                                orderId={order.id}
+                                                currentStatus={order.status}
+                                                currentTracking={order.trackingUrl}
+                                            />
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
