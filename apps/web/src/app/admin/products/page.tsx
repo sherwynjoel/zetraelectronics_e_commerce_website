@@ -52,10 +52,10 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
                     <thead className="bg-muted text-muted-foreground border-b">
                         <tr>
                             <th className="p-4 font-medium">Image</th>
-                            <th className="p-4 font-medium"><Link href={`/admin/products?sort=${toggleSort('name')}`} className="hover:text-primary transition-colors">Name 🔃</Link></th>
+                            <th className="p-4 font-medium"><Link href={`/admin/products?sort=${toggleSort('name')}`} className="hover:text-primary transition-colors">Name</Link></th>
                             <th className="p-4 font-medium">Category</th>
-                            <th className="p-4 font-medium"><Link href={`/admin/products?sort=${toggleSort('price')}`} className="hover:text-primary transition-colors">Price 🔃</Link></th>
-                            <th className="p-4 font-medium"><Link href={`/admin/products?sort=${toggleSort('stock')}`} className="hover:text-primary transition-colors">Stock 🔃</Link></th>
+                            <th className="p-4 font-medium"><Link href={`/admin/products?sort=${toggleSort('price')}`} className="hover:text-primary transition-colors">Price</Link></th>
+                            <th className="p-4 font-medium"><Link href={`/admin/products?sort=${toggleSort('stock')}`} className="hover:text-primary transition-colors">Stock</Link></th>
                             <th className="p-4 font-medium text-right">Actions</th>
                         </tr>
                     </thead>
