@@ -235,28 +235,48 @@ export class OrdersService {
       const infoY = divider1Y + 12;
       doc.fillColor('#111111').font('Helvetica-Bold').fontSize(12)
         .text('Zetra Electronics', 50, infoY);
-      doc.fontSize(9).font('Helvetica').fillColor('#666666')
-        .text(s.STORE_ADDRESS || 'Tech Street, India', 50, infoY + 16)
-        .text(`Phone: ${s.STORE_PHONE || '+91 99999 99999'}`, 50, infoY + 29)
-        .text(`Email: ${s.STORE_EMAIL || 'support@zetraelectronics.com'}`, 50, infoY + 42)
-        .text('GST No: Pending', 50, infoY + 55);
+      
+      doc.fontSize(9).font('Helvetica').fillColor('#666666');
+      const companyInfoX = 50;
+      let currentY = infoY + 16;
+      
+      // Store Address (with optional wrap)
+      doc.text(s.STORE_ADDRESS || 'Tech Street, India', companyInfoX, currentY, { width: 250 });
+      currentY += (s.STORE_ADDRESS && s.STORE_ADDRESS.length > 40) ? 26 : 14;
 
-      // ── Right: Billed To (same row as company info, RIGHT column) ──
+      doc.text(`Phone: ${s.STORE_PHONE || '+91 99999 99999'}`, companyInfoX, currentY);
+      currentY += 13;
+      doc.text(`Email: ${s.STORE_EMAIL || 'support@zetraelectronics.com'}`, companyInfoX, currentY);
+      currentY += 13;
+      doc.text('GST No: Pending', companyInfoX, currentY);
+
+      // ── Right: Billed To (aligned top with company name) ──
+      const billedToX = 330;
       doc.fillColor('#111111').font('Helvetica-Bold').fontSize(10)
-        .text('Billed To:', 330, infoY);
-      doc.fontSize(9).font('Helvetica').fillColor('#666666')
-        .text(order.user?.name || 'Customer', 330, infoY + 16)
-        .text(order.user?.email || 'N/A', 330, infoY + 29);
+        .text('Billed To:', billedToX, infoY + 2);
+      
+      doc.fontSize(9).font('Helvetica').fillColor('#666666');
+      let billedY = infoY + 18;
+      doc.text(order.user?.name || 'Customer', billedToX, billedY);
+      billedY += 14;
+      doc.text(order.user?.email || 'N/A', billedToX, billedY);
+      billedY += 14;
+      
       if (order.shippingAddress) {
         try {
           const addr = JSON.parse(order.shippingAddress as string);
-          if (addr.street) doc.text(addr.street, 330, infoY + 42);
-          if (addr.city) doc.text(`${addr.city}${addr.zip ? ' - ' + addr.zip : ''}`, 330, infoY + 55);
+          if (addr.street) {
+            doc.text(addr.street, billedToX, billedY, { width: 220 });
+            billedY += addr.street.length > 35 ? 26 : 14;
+          }
+          if (addr.city) {
+            doc.text(`${addr.city}${addr.zip ? ' - ' + addr.zip : ''}`, billedToX, billedY);
+          }
         } catch { }
       }
 
       // ── Second divider ──
-      const divider2Y = infoY + 75;
+      const divider2Y = Math.max(currentY, billedY) + 15;
       doc.strokeColor('#dddddd').lineWidth(1).moveTo(50, divider2Y).lineTo(550, divider2Y).stroke();
 
       // ── Table ──
