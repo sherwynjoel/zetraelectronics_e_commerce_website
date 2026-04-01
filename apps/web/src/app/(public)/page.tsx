@@ -61,9 +61,9 @@ export default async function Home() {
             </div>
           </div>
           {/* Abstract Tech Graphic Placeholder */}
-          <div className="w-full max-w-md h-64 bg-slate-800/50 rounded-2xl border border-white/10 relative overflow-hidden flex items-center justify-center backdrop-blur-sm">
+          <div className="w-full max-w-md h-64 bg-slate-800/50 rounded-2xl border border-white/10 relative overflow-hidden flex items-center justify-center">
             <div 
-              className="absolute inset-0 bg-cover bg-center opacity-40 mix-blend-overlay"
+              className="absolute inset-0 bg-cover bg-center"
               style={{ backgroundImage: `url('${heroImage}')` }}
             ></div>
           </div>
