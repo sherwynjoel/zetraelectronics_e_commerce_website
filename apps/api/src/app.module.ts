@@ -25,7 +25,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
         transport: {
           host: config.get<string>('SMTP_HOST'),
           port: parseInt(config.get<string>('SMTP_PORT') || '587', 10),
-          secure: parseInt(config.get<string>('SMTP_PORT'), 10) === 465,
+          secure: parseInt(config.get<string>('SMTP_PORT') || '587', 10) === 465,
           auth: {
             user: config.get<string>('SMTP_USER'),
             pass: config.get<string>('SMTP_PASS'),
