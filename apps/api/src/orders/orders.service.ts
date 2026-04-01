@@ -40,10 +40,16 @@ export class OrdersService {
     }
 
     const shippingSetting = await this.prisma.systemSetting.findUnique({ where: { key: 'FREE_SHIPPING_THRESHOLD' } });
+    const flatFeeSetting = await this.prisma.systemSetting.findUnique({ where: { key: 'FLAT_SHIPPING_FEE' } });
+
     const freeShippingThreshold = shippingSetting ? parseFloat(shippingSetting.value) : 0;
+    const flatShippingFee = flatFeeSetting ? parseFloat(flatFeeSetting.value) : 0;
 
     if (freeShippingThreshold > 0 && calculatedTotal >= freeShippingThreshold) {
       calculatedShipping = 0;
+    } else if (flatShippingFee > 0) {
+      // If flat fee is set, use it instead of per-product sum
+      calculatedShipping = flatShippingFee;
     }
 
     const subtotalBeforeShipping = calculatedTotal; // pure product subtotal

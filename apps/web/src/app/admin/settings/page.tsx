@@ -22,7 +22,8 @@ export default function AdminSettingsPage() {
         STORE_ADDRESS: "",
         SOCIAL_INSTAGRAM: "",
         SOCIAL_TWITTER: "", 
-        SOCIAL_LINKEDIN: ""
+        SOCIAL_LINKEDIN: "",
+        FLAT_SHIPPING_FEE: "0"
     });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -88,6 +89,7 @@ export default function AdminSettingsPage() {
             case "SOCIAL_INSTAGRAM": return "Instagram Profile URL";
             case "SOCIAL_TWITTER": return "Twitter/X Profile URL";
             case "SOCIAL_LINKEDIN": return "LinkedIn Company Page URL";
+            case "FLAT_SHIPPING_FEE": return "Standard shipping charge when threshold is not met";
             default: return "";
         }
     };
@@ -178,6 +180,19 @@ export default function AdminSettingsPage() {
                                 />
                                 <p className="text-xs text-muted-foreground mt-2">
                                     Orders below this pay for shipping. Set to 0 to disable.
+                                </p>
+                            </div>
+                            <div>
+                                <label className="text-sm font-semibold mb-2 block">Standard Shipping Fee (₹)</label>
+                                <input
+                                    type="number"
+                                    value={settings.FLAT_SHIPPING_FEE}
+                                    onChange={(e) => handleChange("FLAT_SHIPPING_FEE", e.target.value)}
+                                    className="w-full border rounded-xl p-3 bg-background focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                                    min="0"
+                                />
+                                <p className="text-xs text-muted-foreground mt-2">
+                                    Applied if the order is below the free shipping threshold.
                                 </p>
                             </div>
                         </div>

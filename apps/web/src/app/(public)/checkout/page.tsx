@@ -27,7 +27,7 @@ export default function CheckoutPage() {
         paymentMethod: "razorpay"
     });
     const [taxRate, setTaxRate] = useState(0.18);
-    const [freeShippingThreshold, setFreeShippingThreshold] = useState(0);
+    const [flatShippingFee, setFlatShippingFee] = useState(0);
 
     useEffect(() => {
         // Fetch dynamic settings
@@ -39,6 +39,9 @@ export default function CheckoutPage() {
 
                 const shipping = data.find(s => s.key === 'FREE_SHIPPING_THRESHOLD');
                 if (shipping) setFreeShippingThreshold(parseFloat(shipping.value));
+
+                const flat = data.find(s => s.key === 'FLAT_SHIPPING_FEE');
+                if (flat) setFlatShippingFee(parseFloat(flat.value));
             })
             .catch(err => console.error("Using default settings", err));
     }, []);
@@ -53,6 +56,8 @@ export default function CheckoutPage() {
 
         if (freeShippingThreshold > 0 && subtotal >= freeShippingThreshold) {
             shipping = 0;
+        } else if (flatShippingFee > 0) {
+            shipping = flatShippingFee;
         }
 
         const tax = (subtotal + shipping) * taxRate;
