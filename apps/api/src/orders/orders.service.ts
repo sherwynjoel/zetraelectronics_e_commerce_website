@@ -123,7 +123,10 @@ export class OrdersService {
         ]
       });
     } catch (e) {
-      console.error("Failed to send email", e);
+      console.error("------------- EMAIL ERROR -------------");
+      console.error(`Failed to send order email to ${order.user?.email || 'unknown'}`);
+      console.error("Reason:", e.message || e);
+      console.error("---------------------------------------");
     }
 
     return order;
