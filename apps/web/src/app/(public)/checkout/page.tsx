@@ -24,7 +24,7 @@ export default function CheckoutPage() {
         address: "",
         city: "",
         zip: "",
-        paymentMethod: "card"
+        paymentMethod: "razorpay"
     });
     const [taxRate, setTaxRate] = useState(0.18);
     const [freeShippingThreshold, setFreeShippingThreshold] = useState(0);
@@ -197,37 +197,30 @@ export default function CheckoutPage() {
 
                         <div className="bg-card p-6 rounded-xl border shadow-sm">
                             <h2 className="text-xl font-bold mb-4">Payment Method</h2>
-                            <div className="space-y-3">
-                                <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50">
+                                <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50 bg-primary/5 ring-1 ring-primary/20">
                                     <input
                                         type="radio"
                                         name="paymentMethod"
-                                        value="card"
-                                        checked={formData.paymentMethod === 'card'}
-                                        onChange={handleChange}
+                                        value="razorpay"
+                                        checked={true}
+                                        readOnly
                                     />
-                                    <span className="font-medium">Credit/Debit Card (Secure)</span>
+                                    <span className="font-medium bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent italic font-bold text-lg">Razorpay</span>
+                                    <span className="text-sm text-muted-foreground">(Cards, UPI, NetBanking)</span>
                                 </label>
 
                                 <AnimatePresence>
-                                    {formData.paymentMethod === 'card' && (
-                                        <motion.div
-                                            initial={{ opacity: 0, height: 0 }}
-                                            animate={{ opacity: 1, height: 'auto' }}
-                                            exit={{ opacity: 0, height: 0 }}
-                                            className="space-y-3 pl-8 border-l-2 border-primary/20"
-                                        >
-                                            <input required placeholder="Card Number (0000 0000 0000 0000)" className="w-full border rounded-md p-2 text-sm" maxLength={19} />
-                                            <div className="flex gap-3">
-                                                <input required placeholder="MM/YY" className="w-1/2 border rounded-md p-2 text-sm" maxLength={5} />
-                                                <input required placeholder="CVC" className="w-1/2 border rounded-md p-2 text-sm" maxLength={3} />
-                                            </div>
-                                            <div className="text-xs text-muted-foreground flex items-center gap-1">
-                                                <CheckCircle className="h-3 w-3 text-green-500" />
-                                                <span>Payments processed securely via encrypted gateway (Simulation)</span>
-                                            </div>
-                                        </motion.div>
-                                    )}
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        className="space-y-3 pl-8 py-2 border-l-2 border-primary/20"
+                                    >
+                                        <div className="text-xs text-muted-foreground flex items-center gap-1">
+                                            <CheckCircle className="h-3 w-3 text-green-500" />
+                                            <span>You will be redirected to the secure Razorpay checkout page after clicking Place Order.</span>
+                                        </div>
+                                    </motion.div>
                                 </AnimatePresence>
                             </div>
                         </div>
