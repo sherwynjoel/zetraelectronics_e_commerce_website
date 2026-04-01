@@ -2,53 +2,69 @@
 <html>
 <head>
     <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 5px; }
-        .header { background-color: #0284c7; color: white; padding: 10px 20px; border-radius: 5px 5px 0 0; }
-        .content { padding: 20px; }
-        .order-details { margin: 20px 0; background-color: #f9f9f9; padding: 15px; border-radius: 5px; }
-        .footer { text-align: center; font-size: 12px; color: #888; margin-top: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #ddd; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #1e293b; background-color: #f8fafc; margin: 0; padding: 0; }
+        .wrapper { background-color: #f8fafc; padding: 40px 20px; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .header { background-color: #0f172a; color: white; padding: 40px 20px; text-align: center; }
+        .header h1 { margin: 0; font-size: 24px; letter-spacing: -0.025em; }
+        .content { padding: 40px; }
+        .greeting { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
+        .order-details { margin: 32px 0; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; }
+        .order-header { background-color: #f1f5f9; padding: 12px 20px; border-bottom: 1px solid #e2e8f0; font-weight: 600; font-size: 14px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; font-size: 12px; text-transform: uppercase; color: #64748b; padding: 12px 20px; background-color: #f8fafc; }
+        td { padding: 16px 20px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+        .footer { text-align: center; padding: 40px; font-size: 12px; color: #94a3b8; }
+        .btn { display: inline-block; background-color: #3b82f6; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 24px; }
+        .total-row { background-color: #f8fafc; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h2>Order Confirmation</h2>
-        </div>
-        <div class="content">
-            <p>Hi {{name}},</p>
-            <p>Thank you for shopping with ElectroStore! Your order has been received and is currently being processed.</p>
-            
-            <div class="order-details">
-                <h3>Order #{{orderId}}</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Item</th>
-                            <th>Qty</th>
-                            <th>Price</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {{#each items}}
-                        <tr>
-                            <td>{{this.productName}}</td>
-                            <td>{{this.quantity}}</td>
-                            <td>${{this.price}}</td>
-                        </tr>
-                        {{/each}}
-                    </tbody>
-                </table>
-                <p style="text-align: right; font-weight: bold; margin-top: 10px;">Total: ${{total}}</p>
+    <div class="wrapper">
+        <div class="container">
+            <div class="header">
+                <h1>ZETRA ELECTRONICS</h1>
+                <p style="margin-top: 8px; opacity: 0.8; font-size: 14px;">Order Confirmation</p>
             </div>
-            
-            <p>We'll notify you once your package is shipped.</p>
-            <p>Best regards,<br>The ElectroStore Team</p>
-        </div>
-        <div class="footer">
-            <p>&copy; 2026 ElectroStore. All rights reserved.</p>
+            <div class="content">
+                <p class="greeting">Hi {{name}},</p>
+                <p>Your order has been successfully placed! We're getting your components ready for shipment.</p>
+                
+                <div class="order-details">
+                    <div class="order-header">ORDER #{{orderId}}</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th style="text-align: center;">Qty</th>
+                                <th style="text-align: right;">Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#each items}}
+                            <tr>
+                                <td>{{this.productName}}</td>
+                                <td style="text-align: center;">{{this.quantity}}</td>
+                                <td style="text-align: right;">₹{{this.price}}</td>
+                            </tr>
+                            {{/each}}
+                            <tr class="total-row">
+                                <td colspan="2" style="text-align: right; font-weight: 600;">Total Amount</td>
+                                <td style="text-align: right; font-weight: 700; color: #0f172a; font-size: 16px;">₹{{total}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <p>We have attached the official tax invoice to this email for your records.</p>
+                <center>
+                    <a href="https://zetraelectronics.com/profile" class="btn">Track Your Order</a>
+                </center>
+            </div>
+            <div class="footer">
+                <p>Questions? Contact us at support@zetraelectronics.com</p>
+                <p>&copy; 2026 Zetra Electronics. All rights reserved.</p>
+            </div>
         </div>
     </div>
 </body>
