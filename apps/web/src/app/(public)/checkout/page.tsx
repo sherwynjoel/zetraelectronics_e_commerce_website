@@ -106,6 +106,8 @@ export default function CheckoutPage() {
     };
 
     const handlePlaceOrder = async () => {
+        if (!user) return; // TypeScript safety
+        
         setShowConfirmModal(false);
         setLoading(true);
 
