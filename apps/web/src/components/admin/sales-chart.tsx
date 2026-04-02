@@ -36,10 +36,6 @@ export function SalesChart() {
                         Orders: d.orders
                     };
                 });
-                
-                // Sort ascending by date
-                formatted.reverse(); 
-                
                 setChartData(formatted);
                 setLoading(false);
             })
