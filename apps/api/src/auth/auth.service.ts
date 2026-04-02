@@ -5,12 +5,14 @@ import * as bcrypt from 'bcrypt';
 import * as admin from 'firebase-admin';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class AuthService {
     constructor(
         private prisma: PrismaService,
         private jwtService: JwtService,
+        private mailerService: MailerService,
     ) { }
 
     async register(registerDto: RegisterDto) {
@@ -52,6 +54,48 @@ export class AuthService {
         if (!isMatch) {
             throw new UnauthorizedException('Invalid credentials');
         }
+
+        // --- 2FA OTP LOGIC FOR ADMINS ---
+        if (user.role === 'ADMIN') {
+            if (!loginDto.otpCode) {
+                // Generate and send OTP
+                const otp = Math.floor(100000 + Math.random() * 900000).toString();
+                const expiry = new Date();
+                expiry.setMinutes(expiry.getMinutes() + 10); // 10 minutes expiry
+
+                await this.prisma.user.update({
+                    where: { id: user.id },
+                    data: { otpCode: otp, otpExpiry: expiry }
+                });
+
+                try {
+                    await this.mailerService.sendMail({
+                        to: user.email,
+                        subject: 'Zetra Admin Panel - Security PIN',
+                        text: `Your Admin Panel login code is: ${otp}\nThis code will expire in 10 minutes.`,
+                    });
+                } catch (e) {
+                    console.error("Failed to send OTP email", e);
+                }
+
+                return { requires2FA: true, message: "OTP sent to your email." };
+            } else {
+                // Verify provided OTP
+                if (user.otpCode !== loginDto.otpCode) {
+                    throw new UnauthorizedException('Invalid OTP code');
+                }
+                if (!user.otpExpiry || user.otpExpiry < new Date()) {
+                    throw new UnauthorizedException('OTP has expired');
+                }
+
+                // OTP Valid, clear it
+                await this.prisma.user.update({
+                    where: { id: user.id },
+                    data: { otpCode: null, otpExpiry: null }
+                });
+            }
+        }
+        // --------------------------------
 
         const payload = { sub: user.id, email: user.email, role: user.role };
         const token = this.jwtService.sign(payload);
