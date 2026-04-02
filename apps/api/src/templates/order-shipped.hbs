@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+    .header { text-align: center; border-bottom: 2px solid #2563eb; padding-bottom: 10px; margin-bottom: 20px; }
+    .logo { font-size: 24px; font-weight: bold; color: #2563eb; letter-spacing: 1px; }
+    .title { font-size: 20px; font-weight: bold; margin-top: 10px; }
+    .content { font-size: 16px; margin-bottom: 20px; }
+    .button-container { text-align: center; margin: 30px 0; }
+    .btn { display: inline-block; padding: 12px 24px; background-color: #2563eb; color: #ffffff; text-decoration: none; border-radius: 6px; font-weight: bold; }
+    .items { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    .items th, .items td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+    .items th { background-color: #f8f9fa; }
+    .footer { font-size: 12px; color: #777; text-align: center; margin-top: 40px; border-top: 1px solid #ddd; padding-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">ZETRA ELECTRONICS</div>
+    </div>
+    
+    <div class="content">
+      <div class="title">🚚 Great news, {{name}}! Your order is on the way.</div>
+      <p>We are excited to let you know that your order <strong>#{{orderId}}</strong> has been packed, handed over to our delivery partner, and is currently on its way to you.</p>
+
+      {{#if trackingUrl}}
+      <p>You can track your package's exact location using the button below:</p>
+      <div class="button-container">
+        <a href="{{trackingUrl}}" class="btn">Track My Order</a>
+      </div>
+      <p><em>Or copy this link: <a href="{{trackingUrl}}">{{trackingUrl}}</a></em></p>
+      {{else}}
+      <p>Your package has been dispatched via standard delivery. You will receive it shortly.</p>
+      {{/if}}
+
+      <h3>What's in this shipment?</h3>
+      <table class="items">
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Qty</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{#each items}}
+          <tr>
+            <td>{{this.productName}}</td>
+            <td>{{this.quantity}}</td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+
+      <br>
+      <p>Thank you for choosing Zetra Electronics! If you have any questions about your delivery, feel free to contact us via our website.</p>
+    </div>
+
+    <div class="footer">
+      &copy; 2026 Zetra Electronics. All rights reserved.<br>
+      Automated Shipment Notification
+    </div>
+  </div>
+</body>
+</html>

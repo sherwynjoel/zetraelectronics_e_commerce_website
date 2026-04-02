@@ -160,14 +160,47 @@ export class OrdersService {
     });
   }
 
-  update(id: number, updateOrderDto: UpdateOrderDto) {
-    return this.prisma.order.update({
+  async update(id: number, updateOrderDto: UpdateOrderDto) {
+    const existingOrder = await this.prisma.order.findUnique({
+      where: { id },
+      include: { user: true, items: { include: { product: true } } }
+    });
+
+    if (!existingOrder) throw new NotFoundException('Order not found');
+
+    const updatedOrder = await this.prisma.order.update({
       where: { id },
       data: {
         status: updateOrderDto.status,
         trackingUrl: updateOrderDto.trackingUrl,
       },
+      include: { user: true, items: { include: { product: true } } }
     });
+
+    // If order was just marked as SHIPPED
+    if (updateOrderDto.status === 'SHIPPED' && existingOrder.status !== 'SHIPPED') {
+      try {
+        await this.mailerService.sendMail({
+          to: updatedOrder.user?.email || 'customer@example.com',
+          subject: `Your Zetra Electronics Order #${updatedOrder.id} has shipped!`,
+          template: 'order-shipped',
+          context: {
+            name: updatedOrder.user?.name || 'Customer',
+            orderId: updatedOrder.id,
+            trackingUrl: updatedOrder.trackingUrl || null,
+            items: updatedOrder.items.map(i => ({
+              productName: i.product.name,
+              quantity: i.quantity
+            }))
+          }
+        });
+        console.log(`[MAIL] Shipped email sent for order ${updatedOrder.id}`);
+      } catch (e) {
+        console.error(`[MAIL ERROR] Failed to send shipped email for order ${updatedOrder.id}`, e);
+      }
+    }
+
+    return updatedOrder;
   }
 
   remove(id: number) {
