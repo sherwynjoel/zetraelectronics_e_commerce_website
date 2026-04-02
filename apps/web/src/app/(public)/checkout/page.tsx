@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { ArrowLeft, CheckCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle, MapPin, AlertCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -17,15 +17,20 @@ export default function CheckoutPage() {
     const { user, token } = useAuthStore();
     const router = useRouter();
     const [loading, setLoading] = useState(false);
+    const [pincodeLoading, setPincodeLoading] = useState(false);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+    
     const [formData, setFormData] = useState({
         firstName: "",
         lastName: "",
         email: "",
         address: "",
         city: "",
+        state: "",
         zip: "",
         paymentMethod: "razorpay"
     });
+    
     const [taxRate, setTaxRate] = useState(0.18);
     const [freeShippingThreshold, setFreeShippingThreshold] = useState(0);
     const [flatShippingFee, setFlatShippingFee] = useState(0);
@@ -46,6 +51,27 @@ export default function CheckoutPage() {
             })
             .catch(err => console.error("Using default settings", err));
     }, []);
+
+    // 📍 Auto-verify Pincode and Fill City/State
+    useEffect(() => {
+        if (formData.zip.length === 6) {
+            setPincodeLoading(true);
+            fetch(`https://api.postalpincode.in/pincode/${formData.zip}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data[0].Status === "Success") {
+                        const postOffice = data[0].PostOffice[0];
+                        setFormData(prev => ({
+                            ...prev,
+                            city: postOffice.District,
+                            state: postOffice.State
+                        }));
+                    }
+                })
+                .catch(err => console.error("Pincode error:", err))
+                .finally(() => setPincodeLoading(false));
+        }
+    }, [formData.zip]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -69,15 +95,18 @@ export default function CheckoutPage() {
 
     const { subtotal, shipping, tax, total: finalTotal } = calculateTotals();
 
-    const handlePlaceOrder = async (e: React.FormEvent) => {
+    const handlePreOrder = (e: React.FormEvent) => {
         e.preventDefault();
-
         if (!user) {
             alert("Please login to place an order");
             router.push("/login");
             return;
         }
+        setShowConfirmModal(true);
+    };
 
+    const handlePlaceOrder = async () => {
+        setShowConfirmModal(false);
         setLoading(true);
 
         const orderData = {
@@ -86,12 +115,12 @@ export default function CheckoutPage() {
                 quantity: item.quantity,
                 price: item.price
             })),
-            // Backend will recalculate total, so this is just for reference/log
             total: finalTotal,
-            userId: user.id, // Real user ID
+            userId: user.id,
             address: {
                 street: formData.address,
                 city: formData.city,
+                state: formData.state,
                 zip: formData.zip
             },
             paymentMethod: formData.paymentMethod
@@ -113,21 +142,7 @@ export default function CheckoutPage() {
                 router.push(`/checkout/success?orderId=${order.id}`);
             } else {
                 const err = await res.json();
-                const msg = err.message || 'Unknown error';
-
-                // Handle "Product ID X not found" error
-                if (msg.includes("not found")) {
-                    const match = msg.match(/Product ID (\d+) not found/);
-                    if (match && match[1]) {
-                        const badId = parseInt(match[1]);
-                        // Remove the bad item directly from store state
-                        useCartStore.getState().removeItem(badId);
-                        alert(`Item (ID: ${badId}) is no longer available and has been removed from your cart. Please review your order and try again.`);
-                        return; // Stop here so user can review
-                    }
-                }
-
-                alert(`Order Failed: ${msg}`);
+                alert(`Order Failed: ${err.message || 'Unknown error'}`);
             }
         } catch (error) {
             console.error(error);
@@ -170,33 +185,61 @@ export default function CheckoutPage() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                     {/* Left: Form */}
-                    <form onSubmit={handlePlaceOrder} className="space-y-8">
+                    <form onSubmit={handlePreOrder} className="space-y-8">
                         <div className="bg-card p-6 rounded-xl border shadow-sm">
-                            <h2 className="text-xl font-bold mb-4">Shipping Details</h2>
+                            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                                <MapPin className="h-5 w-5 text-primary" /> Shipping Details
+                            </h2>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="text-sm font-medium mb-1 block">First Name</label>
-                                    <input required name="firstName" className="w-full border rounded-md p-2 bg-background" onChange={handleChange} />
+                                    <input required name="firstName" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" onChange={handleChange} />
                                 </div>
                                 <div>
                                     <label className="text-sm font-medium mb-1 block">Last Name</label>
-                                    <input required name="lastName" className="w-full border rounded-md p-2 bg-background" onChange={handleChange} />
-                                </div>
-                                <div className="col-span-2">
-                                    <label className="text-sm font-medium mb-1 block">Email Address</label>
-                                    <input required name="email" type="email" className="w-full border rounded-md p-2 bg-background" onChange={handleChange} />
+                                    <input required name="lastName" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" onChange={handleChange} />
                                 </div>
                                 <div className="col-span-2">
                                     <label className="text-sm font-medium mb-1 block">Street Address</label>
-                                    <input required name="address" className="w-full border rounded-md p-2 bg-background" onChange={handleChange} />
-                                </div>
-                                <div>
-                                    <label className="text-sm font-medium mb-1 block">City</label>
-                                    <input required name="city" className="w-full border rounded-md p-2 bg-background" onChange={handleChange} />
+                                    <input required name="address" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" onChange={handleChange} />
                                 </div>
                                 <div>
                                     <label className="text-sm font-medium mb-1 block">ZIP Code</label>
-                                    <input required name="zip" className="w-full border rounded-md p-2 bg-background" onChange={handleChange} />
+                                    <div className="relative">
+                                        <input 
+                                            required 
+                                            name="zip" 
+                                            maxLength={6}
+                                            placeholder="6-digit ZIP"
+                                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" 
+                                            onChange={handleChange} 
+                                        />
+                                        {pincodeLoading && (
+                                            <div className="absolute right-3 top-2.5">
+                                                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium mb-1 block">City</label>
+                                    <input 
+                                        required 
+                                        name="city" 
+                                        value={formData.city}
+                                        className="flex h-10 w-full rounded-md border border-input bg-muted/50 px-3 py-2 text-sm font-medium" 
+                                        readOnly 
+                                    />
+                                </div>
+                                <div className="col-span-2">
+                                    <label className="text-sm font-medium mb-1 block">State</label>
+                                    <input 
+                                        required 
+                                        name="state" 
+                                        value={formData.state}
+                                        className="flex h-10 w-full rounded-md border border-input bg-muted/50 px-3 py-2 text-sm font-medium" 
+                                        readOnly 
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -205,34 +248,14 @@ export default function CheckoutPage() {
                             <h2 className="text-xl font-bold mb-4">Payment Method</h2>
                             <div className="space-y-3">
                                 <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50 bg-primary/5 ring-1 ring-primary/20">
-                                    <input
-                                        type="radio"
-                                        name="paymentMethod"
-                                        value="razorpay"
-                                        checked={true}
-                                        readOnly
-                                    />
+                                    <input type="radio" checked readOnly />
                                     <span className="font-medium bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent italic font-bold text-lg">Razorpay</span>
                                     <span className="text-sm text-muted-foreground">(Cards, UPI, NetBanking)</span>
                                 </label>
-
-                                <AnimatePresence>
-                                    <motion.div
-                                        initial={{ opacity: 0, height: 0 }}
-                                        animate={{ opacity: 1, height: 'auto' }}
-                                        exit={{ opacity: 0, height: 0 }}
-                                        className="space-y-3 pl-8 py-2 border-l-2 border-primary/20"
-                                    >
-                                        <div className="text-xs text-muted-foreground flex items-center gap-1">
-                                            <CheckCircle className="h-3 w-3 text-green-500" />
-                                            <span>You will be redirected to the secure Razorpay checkout page after clicking Place Order.</span>
-                                        </div>
-                                    </motion.div>
-                                </AnimatePresence>
                             </div>
                         </div>
 
-                        <Button type="submit" size="lg" className="w-full text-lg" disabled={loading}>
+                        <Button type="submit" size="lg" className="w-full text-lg shadow-xl shadow-primary/20" disabled={loading}>
                             {loading ? "Processing..." : `Place Order (₹${finalTotal.toFixed(2)})`}
                         </Button>
                     </form>
@@ -254,9 +277,7 @@ export default function CheckoutPage() {
                                             <div className="text-sm font-medium truncate">{item.name}</div>
                                             <div className="text-sm text-muted-foreground">₹{item.price} each</div>
                                         </div>
-                                        <div className="font-bold">
-                                            ₹{(item.price * item.quantity).toFixed(2)}
-                                        </div>
+                                        <div className="font-bold">₹{(item.price * item.quantity).toFixed(2)}</div>
                                     </div>
                                 ))}
                             </div>
@@ -268,25 +289,68 @@ export default function CheckoutPage() {
                                 </div>
                                 <div className="flex justify-between text-sm">
                                     <span className="text-muted-foreground">Shipping</span>
-                                    {shipping === 0 && items.some(i => i.shippingCost > 0) ? (
-                                        <span className="text-green-600 font-bold">Free</span>
-                                    ) : (
-                                        <span>₹{shipping.toFixed(2)}</span>
-                                    )}
+                                    {shipping === 0 ? <span className="text-green-600 font-bold">Free</span> : <span>₹{shipping.toFixed(2)}</span>}
                                 </div>
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Tax ({(taxRate * 100).toFixed(0)}%)</span>
-                                    <span>₹{tax.toFixed(2)}</span>
-                                </div>
-                                <div className="flex justify-between text-lg font-bold">
+                                <div className="flex justify-between text-sm font-bold">
                                     <span>Total</span>
-                                    <span className="text-primary">₹{finalTotal.toFixed(2)}</span>
+                                    <span className="text-primary text-lg">₹{finalTotal.toFixed(2)}</span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* Address Confirmation Modal */}
+            <AnimatePresence>
+                {showConfirmModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                        <motion.div 
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="bg-card w-full max-w-md rounded-2xl shadow-2xl border overflow-hidden"
+                        >
+                            <div className="p-6 text-center border-b bg-muted/30">
+                                <AlertCircle className="h-10 w-10 text-primary mx-auto mb-2" />
+                                <h3 className="text-xl font-bold">Confirm Your Address</h3>
+                                <p className="text-sm text-muted-foreground mt-1">Please verify your delivery location before we ship.</p>
+                            </div>
+                            
+                            <div className="p-8">
+                                <div className="space-y-4 text-left">
+                                    <div className="flex gap-3">
+                                        <div className="text-primary mt-1"><MapPin className="h-5 w-5" /></div>
+                                        <div>
+                                            <div className="font-bold text-lg">{formData.firstName} {formData.lastName}</div>
+                                            <div className="text-muted-foreground leading-relaxed mt-1">
+                                                {formData.address}<br />
+                                                {formData.city}, {formData.state}<br />
+                                                <span className="font-bold text-foreground">{formData.zip}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2">
+                                <button 
+                                    onClick={() => setShowConfirmModal(false)}
+                                    className="p-4 bg-muted hover:bg-muted/80 font-medium transition-colors border-r"
+                                >
+                                    Edit Address
+                                </button>
+                                <button 
+                                    onClick={handlePlaceOrder}
+                                    className="p-4 bg-primary text-primary-foreground font-bold hover:bg-primary/90 transition-colors"
+                                >
+                                    Yes, Place Order
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

@@ -66,8 +66,7 @@ function SuccessContent() {
                 </Link>
                 {orderId && (
                     <Button
-                        variant="secondary"
-                        className="w-full gap-2 bg-slate-100 dark:bg-slate-800 border"
+                        className="w-full gap-2 bg-indigo-600 hover:bg-indigo-700 text-white border-0 shadow-lg shadow-indigo-200"
                         onClick={handleDownloadInvoice}
                         disabled={downloading}
                     >
