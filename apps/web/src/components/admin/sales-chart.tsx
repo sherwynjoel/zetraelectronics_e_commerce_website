@@ -12,11 +12,13 @@ import {
     Tooltip,
     ResponsiveContainer
 } from 'recharts';
+import { ZoomIn, ZoomOut } from "lucide-react";
 
 export function SalesChart() {
     const { token } = useAuthStore();
     const [chartData, setChartData] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [zoom, setZoom] = useState(30);
 
     useEffect(() => {
         if (!token) return;
@@ -45,6 +47,9 @@ export function SalesChart() {
             });
     }, [token]);
 
+    const handleZoomIn = () => setZoom(prev => Math.max(7, prev - 7));
+    const handleZoomOut = () => setZoom(prev => Math.min(90, prev + 7));
+
     if (loading) {
         return (
             <div className="w-full h-[350px] flex items-center justify-center border rounded-xl bg-card">
@@ -62,11 +67,33 @@ export function SalesChart() {
     }
 
     return (
-        <div className="w-full h-[400px] p-6 border rounded-xl bg-card shadow-sm">
-            <h3 className="text-lg font-bold mb-6 tracking-tight">Revenue Overview (Last 30 Days)</h3>
+        <div className="w-full h-[400px] p-6 border rounded-xl bg-card shadow-sm flex flex-col">
+            <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-bold tracking-tight">
+                    Revenue Overview <span className="text-muted-foreground font-normal text-sm ml-2">(Last {zoom} Days)</span>
+                </h3>
+                <div className="flex items-center gap-2">
+                    <button 
+                        onClick={handleZoomIn} 
+                        disabled={zoom <= 7}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 disabled:opacity-50 transition-all font-bold text-sm border border-blue-500/20"
+                        title="Zoom In (Show less history)"
+                    >
+                        <ZoomIn className="h-4 w-4" /> <span>+</span>
+                    </button>
+                    <button 
+                        onClick={handleZoomOut} 
+                        disabled={zoom >= 90}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 disabled:opacity-50 transition-all font-bold text-sm border border-blue-500/20"
+                        title="Zoom Out (Show more history)"
+                    >
+                        <ZoomOut className="h-4 w-4" /> <span>-</span>
+                    </button>
+                </div>
+            </div>
             <ResponsiveContainer width="100%" height="85%">
                 <AreaChart
-                    data={chartData}
+                    data={chartData.slice(-zoom)}
                     margin={{
                         top: 5,
                         right: 10,

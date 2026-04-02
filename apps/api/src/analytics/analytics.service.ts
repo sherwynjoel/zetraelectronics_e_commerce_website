@@ -32,7 +32,7 @@ export class AnalyticsService {
     }
 
     async getSalesChart() {
-        const daysToTrack = 30;
+        const daysToTrack = 90;
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - daysToTrack);
 
