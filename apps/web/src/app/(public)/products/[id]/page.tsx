@@ -2,6 +2,7 @@ import { API_URL } from '@/lib/api';
 import { AddToCartButton } from "@/components/add-to-cart";
 import { Button } from "@/components/ui/button";
 import { Star, ShoppingCart, Truck, Check, Share2, Download, FileText } from "lucide-react";
+import { formatImageUrl } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -72,7 +73,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
                         <div className="aspect-square relative bg-slate-50 dark:bg-slate-900 border rounded-2xl overflow-hidden flex items-center justify-center">
                             {product.image ? (
                                 <Image
-                                    src={product.image}
+                                    src={formatImageUrl(product.image)}
                                     alt={product.name}
                                     fill
                                     className="object-cover"

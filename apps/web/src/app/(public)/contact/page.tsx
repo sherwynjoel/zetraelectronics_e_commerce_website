@@ -36,12 +36,23 @@ export default function ContactPage() {
         e.preventDefault();
         setSubmitting(true);
 
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1500));
+                try {
+            const response = await fetch(`${API_URL}/contact`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
 
-        setSubmitting(false);
-        setSubmitted(true);
-        setFormData({ name: "", email: "", subject: "", message: "" });
+            if (!response.ok) throw new Error('Failed');
+
+            setSubmitting(false);
+            setSubmitted(true);
+            setFormData({ name: "", email: "", subject: "", message: "" });
+        } catch (error) {
+            console.error("Submission error:", error);
+            alert("Sorry, your message could not be sent. Please try again later.");
+            setSubmitting(false);
+        }
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

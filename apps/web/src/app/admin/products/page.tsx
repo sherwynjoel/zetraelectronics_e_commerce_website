@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import { ProductActions } from "@/components/admin/product-actions";
 import Image from "next/image";
+import { formatImageUrl } from "@/lib/utils";
 
 async function getProducts() {
     try {
@@ -64,7 +65,7 @@ export default async function AdminProductsPage({ searchParams }: { searchParams
                             <tr key={product.id} className="hover:bg-muted/50">
                                 <td className="p-4">
                                     <div className="relative h-10 w-10 bg-white border rounded">
-                                        {product.image && <img src={product.image} alt={product.name} className="h-full w-full object-contain p-1" />}
+                                        {product.image && <img src={formatImageUrl(product.image)} alt={product.name} className="h-full w-full object-contain p-1" />}
                                     </div>
                                 </td>
                                 <td className="p-4 font-medium">{product.name}</td>

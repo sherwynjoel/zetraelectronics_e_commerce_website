@@ -46,7 +46,7 @@ export class ProductsController {
   )
   uploadFile(@UploadedFile() file: Express.Multer.File) {
     return {
-      url: `http://localhost:4000/uploads/${file.filename}`,
+      url: `/uploads/${file.filename}`,
     };
   }
 

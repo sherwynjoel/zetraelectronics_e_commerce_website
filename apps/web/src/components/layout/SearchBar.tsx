@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import { formatImageUrl } from "@/lib/utils";
 
 export function SearchBar() {
     const [query, setQuery] = useState("");
@@ -129,7 +130,7 @@ export function SearchBar() {
                                             <div className="h-10 w-10 bg-white rounded-md overflow-hidden flex-shrink-0 relative border border-slate-700">
                                                 {product.image ? (
                                                     <img
-                                                        src={product.image.startsWith('http') ? product.image : `${API_URL}${product.image}`}
+                                                        src={formatImageUrl(product.image)}
                                                         alt={product.name}
                                                         referrerPolicy="no-referrer"
                                                         className="h-full w-full object-contain p-1 group-hover:scale-110 transition-transform duration-300"

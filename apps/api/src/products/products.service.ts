@@ -75,14 +75,13 @@ export class ProductsService {
 
   async remove(id: number) {
     try {
-      // Check if product is referenced in orders (soft-fail if needed)
+      // First, delete related OrderItems to avoid foreign key constraint errors
+      await this.prisma.orderItem.deleteMany({
+        where: { productId: id },
+      });
+      // Then, delete the product itself
       return await this.prisma.product.delete({ where: { id } });
     } catch (error) {
-      if (error?.code === 'P2003') { // Prisma foreign key constraint failed
-        throw new BadRequestException(
-          'Cannot delete product because it is part of existing orders. Please delete or archive the associated orders first.'
-        );
-      }
       throw new InternalServerErrorException('Error deleting product.');
     }
   }

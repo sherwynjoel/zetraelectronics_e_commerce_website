@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn, formatImageUrl } from "@/lib/utils";
 import { AddToCartButton } from "@/components/add-to-cart";
 
 interface Product {
@@ -18,17 +19,13 @@ export function ProductCard({ product }: { product: Product }) {
     return (
         <div className="bg-card text-card-foreground rounded-xl border overflow-hidden shadow-sm hover:shadow-md transition-shadow group">
             <Link href={`/products/${product.id}`} className="block relative aspect-square bg-slate-50 dark:bg-slate-900 border-b">
-                {product.image ? (
-                    <Image
-                        src={product.image}
-                        alt={product.name}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                        unoptimized
-                    />
-                ) : (
-                    <div className="flex items-center justify-center h-full text-muted-foreground">No Image</div>
-                )}
+                <Image
+                    src={formatImageUrl(product.image)}
+                    alt={product.name}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                    unoptimized
+                />
                 {product.stock > 0 ? (
                     <span className="absolute top-2 right-2 bg-green-500 text-white text-[10px] uppercase font-bold px-2 py-1 rounded-full">
                         In Stock
