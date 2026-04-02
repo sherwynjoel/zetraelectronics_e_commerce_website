@@ -19,7 +19,11 @@ export default function AdminOrdersPage() {
     useEffect(() => {
         if (!mounted) return;
         if (!token) { router.push('/login'); return; }
+        fetchOrders();
+    }, [mounted, token]);
 
+    const fetchOrders = () => {
+        if (!token) return;
         fetch(`${API_URL}/orders`, {
             headers: { "Authorization": `Bearer ${token}` },
         })
@@ -40,7 +44,7 @@ export default function AdminOrdersPage() {
                 console.error(err);
                 setLoading(false);
             });
-    }, [mounted, token]);
+    };
 
     const downloadInvoice = async (orderId: number) => {
         try {
@@ -126,6 +130,7 @@ export default function AdminOrdersPage() {
                                                 orderId={order.id}
                                                 currentStatus={order.status}
                                                 currentTracking={order.trackingUrl}
+                                                onSaved={fetchOrders}
                                             />
                                         </div>
                                     </td>

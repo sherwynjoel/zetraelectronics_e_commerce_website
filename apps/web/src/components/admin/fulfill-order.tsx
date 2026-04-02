@@ -13,10 +13,12 @@ export function FulfillOrder({
     orderId,
     currentStatus,
     currentTracking,
+    onSaved,
 }: {
     orderId: number;
     currentStatus: string;
     currentTracking?: string;
+    onSaved?: () => void;
 }) {
     const [isOpen, setIsOpen] = useState(false);
     const [trackingUrl, setTrackingUrl] = useState(currentTracking || "");
@@ -43,6 +45,7 @@ export function FulfillOrder({
                 setTimeout(() => {
                     setIsOpen(false);
                     setSuccess(false);
+                    if (onSaved) onSaved();
                     router.refresh();
                 }, 800);
             } else {
