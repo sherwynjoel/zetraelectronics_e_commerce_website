@@ -48,40 +48,6 @@ export default function LoginPage() {
         }
     };
 
-    const handleGoogleLogin = async () => {
-        setIsLoading(true);
-        setError("");
-
-        try {
-            const result = await signInWithPopup(auth, googleProvider);
-            const idToken = await result.user.getIdToken();
-
-            const res = await fetch(`${API_URL}/auth/google/firebase`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ token: idToken }),
-            });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                throw new Error(data.message || "Failed to authenticate with backend");
-            }
-
-            login(data.user, data.access_token);
-
-            if (data.user.role === 'ADMIN') {
-                router.push("/admin");
-            } else {
-                router.push("/");
-            }
-        } catch (err: any) {
-            console.error("Google Login Error:", err);
-            setError(err.message || "Failed to sign in with Google");
-        } finally {
-            setIsLoading(false);
-        }
-    };
 
     return (
         <div className="flex min-h-[80vh] items-center justify-center p-4 bg-muted/20">
