@@ -104,8 +104,21 @@
   "overrides": {
     "lodash": "4.17.21",
     "path-to-regexp": "8.0.0",
-    "brace-expansion": "1.1.11",
+    "brace-expansion": "2.0.1",
     "picomatch": "4.0.2",
-    "micromatch": "4.0.8"
+    "micromatch": "4.0.8",
+    "google-gax": "4.14.0",
+    "@google-cloud/firestore": "7.11.0",
+    "braces": "3.0.3",
+    "jsonwebtoken": "9.0.2",
+    "ws": "8.17.1",
+    "minimatch": "9.0.5",
+    "protobufjs": "7.4.0",
+    "express": "4.21.2",
+    "body-parser": "1.20.3",
+    "tar": "6.2.1",
+    "ip": "2.0.1",
+    "nodemailer": "6.9.9",
+    "ajv": "8.17.1"
   }
 }
