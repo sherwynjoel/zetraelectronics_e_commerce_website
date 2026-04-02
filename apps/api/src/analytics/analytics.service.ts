@@ -32,16 +32,14 @@ export class AnalyticsService {
     }
 
     async getSalesChart() {
-        // Group by day for the last 7 days
-        // This is complex in Prisma raw or requires processing in JS
-        // For now, let's just return a mock or simple aggregation
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        const daysToTrack = 30;
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - daysToTrack);
 
         const orders = await this.prisma.order.findMany({
             where: {
                 createdAt: {
-                    gte: sevenDaysAgo,
+                    gte: startDate,
                 },
             },
             select: {
@@ -50,14 +48,28 @@ export class AnalyticsService {
             },
         });
 
-        // Aggregate by date in JS
-        const chartData = {};
+        // Initialize last 30 days with 0 to ensure smooth chart rendering
+        const chartData: Record<string, { total: number; count: number }> = {};
+        for (let i = daysToTrack; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            const dateStr = d.toISOString().split('T')[0];
+            chartData[dateStr] = { total: 0, count: 0 };
+        }
+
+        // Aggregate real data
         orders.forEach(order => {
-            const date = order.createdAt.toISOString().split('T')[0];
-            if (!chartData[date]) chartData[date] = 0;
-            chartData[date] += Number(order.total);
+            const dateStr = order.createdAt.toISOString().split('T')[0];
+            if (chartData[dateStr]) {
+                chartData[dateStr].total += Number(order.total);
+                chartData[dateStr].count += 1;
+            }
         });
 
-        return Object.entries(chartData).map(([date, total]) => ({ date, total }));
+        return Object.entries(chartData).map(([date, stats]) => ({
+            date,
+            total: stats.total,
+            orders: stats.count
+        }));
     }
 }

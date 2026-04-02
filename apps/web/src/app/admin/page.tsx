@@ -7,6 +7,7 @@ import { Package, ShoppingCart, DollarSign, TrendingUp, Users } from "lucide-rea
 import { useEffect, useState } from "react";
 import { useAuthStore } from "@/lib/auth-store";
 import { useRouter } from "next/navigation";
+import { SalesChart } from "@/components/admin/sales-chart";
 
 interface DashboardStats {
     revenue: number;
@@ -103,6 +104,9 @@ export default function AdminDashboard() {
                     </div>
                 ))}
             </div>
+
+            {/* Sales Analytics Chart */}
+            <SalesChart />
 
             {/* Recent Orders */}
             <div className="bg-card rounded-xl border shadow-sm overflow-hidden">
