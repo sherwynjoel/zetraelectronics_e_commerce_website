@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-
 import { Button } from "@/components/ui/button";
 import {
     LayoutDashboard,
@@ -10,7 +9,8 @@ import {
     Users,
     Settings,
     LogOut,
-    Bell
+    Bell,
+    Tags
 } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "@/lib/auth-store";
@@ -20,6 +20,7 @@ import { useEffect, useState } from "react";
 const navItems = [
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
     { href: "/admin/products", label: "Products", icon: Package },
+    { href: "/admin/categories", label: "Categories", icon: Tags },
     { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
     { href: "/admin/customers", label: "Customers", icon: Users },
     { href: "/admin/settings", label: "Settings", icon: Settings },

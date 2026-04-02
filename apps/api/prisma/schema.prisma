@@ -63,3 +63,11 @@ model SystemSetting {
   value       String
   description String?
 }
+
+model Category {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

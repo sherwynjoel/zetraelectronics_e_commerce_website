@@ -15,6 +15,7 @@ import { SettingsModule } from './settings/settings.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { ContactModule } from './contact/contact.module';
+import { CategoriesModule } from './categories/categories.module';
 import { existsSync } from 'fs';
 
 @Module({
@@ -23,6 +24,7 @@ import { existsSync } from 'fs';
     ProductsModule,
     OrdersModule,
     ContactModule,
+    CategoriesModule,
     MailerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {

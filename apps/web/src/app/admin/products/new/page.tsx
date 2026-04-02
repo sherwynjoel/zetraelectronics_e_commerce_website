@@ -2,7 +2,7 @@
 
 import { API_URL } from '@/lib/api';
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ImageUpload } from "@/components/admin/image-upload";
 import { useAuthStore } from "@/lib/auth-store";
@@ -11,6 +11,8 @@ export default function CreateProductPage() {
     const router = useRouter();
     const { token } = useAuthStore();
     const [loading, setLoading] = useState(false);
+    const [categories, setCategories] = useState<{ id: number, name: string }[]>([]);
+    
     const [formData, setFormData] = useState({
         name: "",
         description: "",
@@ -21,6 +23,13 @@ export default function CreateProductPage() {
         specs: "",
         datasheet: "",
     });
+
+    useEffect(() => {
+        fetch(`${API_URL}/categories`)
+            .then(res => res.json())
+            .then(data => setCategories(data))
+            .catch(console.error);
+    }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -75,11 +84,9 @@ export default function CreateProductPage() {
                         <label className="block text-sm font-medium mb-1">Category</label>
                         <select name="category" required className="w-full border rounded-md p-2 bg-background" onChange={handleChange}>
                             <option value="">Select Category</option>
-                            <option value="Development Boards">Development Boards</option>
-                            <option value="Sensors">Sensors</option>
-                            <option value="Robotics">Robotics</option>
-                            <option value="IoT & Wireless">IoT & Wireless</option>
-                            <option value="Tools">Tools</option>
+                            {categories.map(c => (
+                                <option key={c.id} value={c.name}>{c.name}</option>
+                            ))}
                         </select>
                     </div>
 

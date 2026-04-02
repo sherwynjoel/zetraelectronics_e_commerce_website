@@ -15,6 +15,8 @@ export default function EditProductPage() {
 
     const [loading, setLoading] = useState(false);
     const [fetching, setFetching] = useState(true);
+    const [categories, setCategories] = useState<{ id: number, name: string }[]>([]);
+    
     const [formData, setFormData] = useState({
         name: "",
         description: "",
@@ -27,6 +29,11 @@ export default function EditProductPage() {
     });
 
     useEffect(() => {
+        fetch(`${API_URL}/categories`)
+            .then(res => res.json())
+            .then(data => setCategories(data))
+            .catch(console.error);
+
         if (!id) return;
         fetch(`${API_URL}/products/${id}`)
             .then(res => {
@@ -106,11 +113,9 @@ export default function EditProductPage() {
                         <label className="block text-sm font-medium mb-1">Category</label>
                         <select name="category" required className="w-full border rounded-md p-2 bg-background" value={formData.category} onChange={handleChange}>
                             <option value="">Select Category</option>
-                            <option value="Development Boards">Development Boards</option>
-                            <option value="Sensors">Sensors</option>
-                            <option value="Robotics">Robotics</option>
-                            <option value="IoT & Wireless">IoT & Wireless</option>
-                            <option value="Tools">Tools</option>
+                            {categories.map(c => (
+                                <option key={c.id} value={c.name}>{c.name}</option>
+                            ))}
                         </select>
                     </div>
 
