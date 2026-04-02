@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Search, HelpCircle, Truck, Package, CreditCard, RotateCcw, ChevronDown, ChevronUp, Mail, Phone, MessageSquare } from "lucide-react";
+import { Search, HelpCircle, Truck, Package, CreditCard, RotateCcw, ChevronDown, ChevronUp, Mail, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
@@ -164,8 +164,8 @@ export default function HelpPage() {
                             <Button size="lg" variant="secondary" className="gap-2 font-semibold bg-white text-primary hover:bg-slate-100">
                                 <Mail className="h-4 w-4" /> Email Support
                             </Button>
-                            <Button size="lg" variant="outline" className="gap-2 font-semibold border-white/30 text-white hover:bg-white hover:text-primary backdrop-blur-sm">
-                                <Phone className="h-4 w-4" /> +91 98765 43210
+                            <Button size="lg" className="gap-2 font-semibold bg-slate-900 text-white hover:bg-slate-800 border-0 shadow-xl">
+                                <Phone className="h-4 w-4" /> 8300592209
                             </Button>
                         </div>
                     </div>
