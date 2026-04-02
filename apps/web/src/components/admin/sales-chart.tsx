@@ -97,7 +97,7 @@ export function SalesChart() {
                     margin={{
                         top: 5,
                         right: 10,
-                        left: 10,
+                        left: 40,
                         bottom: 0,
                     }}
                 >
@@ -120,7 +120,7 @@ export function SalesChart() {
                         tickLine={false}
                         tick={{ fontSize: 12, fill: "#6b7280" }}
                         tickFormatter={(value) => `₹${value}`}
-                        width={60}
+                        width={80}
                     />
                     <Tooltip 
                         contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
