@@ -2,11 +2,15 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const configService = app.get(ConfigService);
+  
+  app.use(helmet());
+
   const corsOriginEnv = configService.get<string>('CORS_ORIGIN');
   const allowedOrigins = corsOriginEnv
     ? corsOriginEnv.split(',').map((origin) => origin.trim())
