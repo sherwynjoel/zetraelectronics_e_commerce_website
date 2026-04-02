@@ -100,5 +100,12 @@
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
+  },
+  "overrides": {
+    "lodash": "4.17.21",
+    "path-to-regexp": "8.0.0",
+    "brace-expansion": "1.1.11",
+    "picomatch": "4.0.2",
+    "micromatch": "4.0.8"
   }
 }
