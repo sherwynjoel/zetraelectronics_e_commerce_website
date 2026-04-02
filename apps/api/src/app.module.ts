@@ -17,6 +17,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
 import { ContactModule } from './contact/contact.module';
 import { CategoriesModule } from './categories/categories.module';
 import { existsSync } from 'fs';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -57,11 +58,22 @@ import { existsSync } from 'fs';
         };
       },
     }),
+    ThrottlerModule.forRoot([{
+      ttl: 60000,
+      limit: 10,
+    }]),
     AuthModule,
     SettingsModule,
     AnalyticsModule,
   ],
   controllers: [AppController, UploadsController],
-  providers: [AppService, PrismaService],
+  providers: [
+    AppService, 
+    PrismaService,
+    {
+      provide: 'APP_GUARD',
+      useClass: require('@nestjs/throttler').ThrottlerGuard,
+    }
+  ],
 })
 export class AppModule { }
