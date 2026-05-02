@@ -23,64 +23,35 @@
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
 }
 
-:root {
-  /* Light Mode - Tech Enterprise (Clean, White, Blue, Orange) */
+  /* Light Mode - Pure White & Blue Tech Theme */
   --background: #ffffff;
   --foreground: #0f172a; /* Slate 900 */
   
-  --primary: #0284c7; /* Sky 600 - Tech Blue */
+  --primary: #2563eb; /* Royal Blue 600 */
   --primary-foreground: #ffffff;
   
-  --secondary: #f97316; /* Orange 500 - Highlight/CTA */
-  --secondary-foreground: #ffffff;
+  --secondary: #dbeafe; /* Soft Blue 100 - Replaces Orange */
+  --secondary-foreground: #1e40af; /* Dark Blue 800 */
   
-  --accent: #f1f5f9; /* Slate 100 */
+  --accent: #f8fafc; /* Slate 50 */
   --accent-foreground: #0f172a;
   
   --destructive: #ef4444;
   --destructive-foreground: #ffffff;
   
-  --muted: #f8fafc; /* Slate 50 */
+  --muted: #f1f5f9; /* Slate 100 */
   --muted-foreground: #64748b; /* Slate 500 */
   
   --card: #ffffff;
   --card-foreground: #0f172a;
   
   --border: #e2e8f0; /* Slate 200 */
-  --input: #e2e8f0;
-  --ring: #0284c7;
+  --input: #f1f5f9;
+  --ring: #2563eb;
   
-  --radius: 0.5rem;
+  --radius: 0.75rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* Dark Mode - Cyber/Tech (Dark Slate, Neon Blue) */
-    --background: #020617; /* Slate 950 */
-    --foreground: #f8fafc; /* Slate 50 */
-    
-    --primary: #0ea5e9; /* Sky 500 */
-    --primary-foreground: #ffffff;
-    
-    --secondary: #f97316; /* Orange 500 */
-    --secondary-foreground: #ffffff;
-    
-    --accent: #1e293b; /* Slate 800 */
-    --accent-foreground: #f8fafc;
-    
-    --destructive: #ef4444;
-    --destructive-foreground: #ffffff;
-    
-    --muted: #0f172a; /* Slate 900 */
-    --muted-foreground: #94a3b8; /* Slate 400 */
-    
-    --card: #0f172a; /* Slate 900 */
-    --card-foreground: #f8fafc;
-    
-    --border: #1e293b; /* Slate 800 */
-    --input: #1e293b;
-    --ring: #0ea5e9;
-  }
 }
 
 body {

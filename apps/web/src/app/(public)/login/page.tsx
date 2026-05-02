@@ -28,7 +28,14 @@ export default function LoginPage() {
                 body: JSON.stringify({ email, password }),
             });
 
-            const data = await res.json();
+            const rawText = await res.text();
+            let data;
+            try {
+                data = JSON.parse(rawText);
+            } catch (e) {
+                console.error("Received non-JSON response:", rawText);
+                throw new Error("Server returned an invalid response. Is the backend running on port 4000?");
+            }
 
             if (!res.ok) {
                 throw new Error(data.message || "Failed to login");
