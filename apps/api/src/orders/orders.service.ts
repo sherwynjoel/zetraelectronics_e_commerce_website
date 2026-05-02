@@ -5,12 +5,20 @@ import { PrismaService } from '../prisma.service';
 import { MailerService } from '@nestjs-modules/mailer';
 import * as path from 'path';
 const PDFDocument = require('pdfkit');
+const Razorpay = require('razorpay');
+
 @Injectable()
 export class OrdersService {
   constructor(
     private prisma: PrismaService,
     private mailerService: MailerService
   ) { }
+  
+  private razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET,
+  });
+
 
   async create(createOrderDto: CreateOrderDto) {
     const { items, total, userId } = createOrderDto;
@@ -96,41 +104,108 @@ export class OrdersService {
       return order;
     });
 
-    // 3. Send Email Notification
-    try {
-      const invoiceBuffer = await this.generateInvoice(order.id);
+    // 3. Create Razorpay Order if payment method is RAZORPAY
+    if (order.paymentMethod === 'RAZORPAY') {
+      try {
+        const razorpayOrder = await this.razorpay.orders.create({
+          amount: Math.round(order.total * 100), // convert to paise
+          currency: 'INR',
+          receipt: `receipt_order_${order.id}`,
+        });
 
-      await this.mailerService.sendMail({
-        to: order.user?.email || 'customer@example.com',
-        subject: `Zetra Electronics: Order #${order.id} Confirmed`,
-        template: 'order-confirmation',
-        context: {
-          name: order.user?.name || 'Customer',
-          orderId: order.id,
-          total: order.total,
-          items: order.items.map(i => ({
-            productName: i.product.name,
-            quantity: i.quantity,
-            price: i.price
-          }))
-        },
-        attachments: [
-          {
-            filename: `invoice-${order.id}.pdf`,
-            content: invoiceBuffer,
-            contentType: 'application/pdf'
-          }
-        ]
-      });
-    } catch (e) {
-      console.error("------------- EMAIL ERROR -------------");
-      console.error(`Failed to send order email to ${order.user?.email || 'unknown'}`);
-      console.error("Reason:", e.message || e);
-      console.error("---------------------------------------");
+        // Update order with razorpayOrderId
+        await this.prisma.order.update({
+          where: { id: order.id },
+          data: { razorpayOrderId: razorpayOrder.id }
+        });
+
+        return {
+          ...order,
+          razorpayOrderId: razorpayOrder.id
+        };
+      } catch (error) {
+        console.error('Razorpay Order Error:', error);
+        throw new BadRequestException('Failed to create Razorpay order');
+      }
+    }
+
+    // 4. Send Email Notification (Only if NOT Razorpay, otherwise send after verification)
+    if (order.paymentMethod !== 'RAZORPAY') {
+      try {
+        const invoiceBuffer = await this.generateInvoice(order.id);
+        await this.sendConfirmationEmail(order, invoiceBuffer);
+      } catch (e) {
+        console.error("Email notification failed for non-razorpay order", e);
+      }
     }
 
     return order;
   }
+
+  async verifyPayment(orderId: number, razorpay_payment_id: string, razorpay_signature: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: { user: true, items: { include: { product: true } } }
+    });
+
+    if (!order) throw new NotFoundException('Order not found');
+
+    const crypto = require('crypto');
+    const hmac = crypto.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET);
+    hmac.update(order.razorpayOrderId + "|" + razorpay_payment_id);
+    const generated_signature = hmac.digest('hex');
+
+    if (generated_signature !== razorpay_signature) {
+      throw new BadRequestException('Invalid payment signature');
+    }
+
+    // Update order status
+    const updatedOrder = await this.prisma.order.update({
+      where: { id: orderId },
+      data: {
+        status: 'PAID',
+        razorpayPaymentId: razorpay_payment_id,
+        razorpaySignature: razorpay_signature
+      },
+      include: { items: { include: { product: true } }, user: true }
+    });
+
+    // Send Confirmation Email
+    try {
+      const invoiceBuffer = await this.generateInvoice(order.id);
+      await this.sendConfirmationEmail(updatedOrder, invoiceBuffer);
+    } catch (e) {
+      console.error("Confirmation email failed after payment verification", e);
+    }
+
+    return updatedOrder;
+  }
+
+  private async sendConfirmationEmail(order: any, invoiceBuffer: Buffer) {
+    await this.mailerService.sendMail({
+      to: order.user?.email || 'customer@example.com',
+      subject: `Zetra Electronics: Order #${order.id} Confirmed`,
+      template: 'order-confirmation',
+      context: {
+        name: order.user?.name || 'Customer',
+        orderId: order.id,
+        total: order.total,
+        items: order.items.map(i => ({
+          productName: i.product.name,
+          quantity: i.quantity,
+          price: i.price
+        }))
+      },
+      attachments: [
+        {
+          filename: `invoice-${order.id}.pdf`,
+          content: invoiceBuffer,
+          contentType: 'application/pdf'
+        }
+      ]
+    });
+  }
+
 
   findAll(page = 1, limit = 50) {
     const safePage = page < 1 ? 1 : page;

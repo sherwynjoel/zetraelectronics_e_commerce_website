@@ -14,9 +14,18 @@ export class OrdersController {
   @Post()
   @UseGuards(JwtAuthGuard)
   create(@Request() req, @Body() createOrderDto: CreateOrderDto) {
-    // Override userId with the one from JWT
     createOrderDto.userId = req.user.userId;
     return this.ordersService.create(createOrderDto);
+  }
+
+  @Post('verify-payment')
+  @UseGuards(JwtAuthGuard)
+  verifyPayment(
+    @Body('orderId') orderId: number,
+    @Body('razorpay_payment_id') razorpay_payment_id: string,
+    @Body('razorpay_signature') razorpay_signature: string,
+  ) {
+    return this.ordersService.verifyPayment(orderId, razorpay_payment_id, razorpay_signature);
   }
 
   @Get()

@@ -44,6 +44,9 @@ model Order {
   paymentMethod   String   @default("RAZORPAY")
   shippingAddress String?
   shippingCost    Float    @default(0)
+  razorpayOrderId String?
+  razorpayPaymentId String?
+  razorpaySignature String?
   createdAt       DateTime @default(now())
   items           OrderItem[]
 }

@@ -7,5 +7,8 @@
     "dev:api": "cd apps/api && npm run start:dev",
     "dev:web": "cd apps/web && npm run dev",
     "install:all": "cd apps/api && npm install && cd ../web && npm install"
+  },
+  "dependencies": {
+    "razorpay": "^2.9.6"
   }
 }

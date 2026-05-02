@@ -9,6 +9,8 @@ import Image from "next/image";
 import { ArrowLeft, CheckCircle, MapPin, AlertCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
+import Script from "next/script";
+
 
 import { useAuthStore } from "@/lib/auth-store";
 
@@ -140,19 +142,79 @@ export default function CheckoutPage() {
 
             if (res.ok) {
                 const order = await res.json();
-                clearCart();
-                router.push(`/checkout/success?orderId=${order.id}`);
+                
+                // If Razorpay order was created, trigger modal
+                if (order.razorpayOrderId) {
+                    const options = {
+                        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+                        amount: Math.round(order.total * 100),
+                        currency: "INR",
+                        name: "Zetra Electronics",
+                        description: `Payment for Order #${order.id}`,
+                        order_id: order.razorpayOrderId,
+                        handler: async function (response: any) {
+                            try {
+                                const verifyRes = await fetch(`${API_URL}/orders/verify-payment`, {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                        "Authorization": `Bearer ${token}`
+                                    },
+                                    body: JSON.stringify({
+                                        orderId: order.id,
+                                        razorpay_payment_id: response.razorpay_payment_id,
+                                        razorpay_signature: response.razorpay_signature
+                                    })
+                                });
+
+                                if (verifyRes.ok) {
+                                    clearCart();
+                                    router.push(`/checkout/success?orderId=${order.id}`);
+                                } else {
+                                    alert("Payment verification failed. Please contact support.");
+                                }
+                            } catch (err) {
+                                console.error("Verification error:", err);
+                                alert("Error verifying payment.");
+                            }
+                        },
+                        prefill: {
+                            name: `${formData.firstName} ${formData.lastName}`,
+                            email: user.email,
+                        },
+                        theme: {
+                            color: "#0f172a",
+                        },
+                        modal: {
+                            ondismiss: function() {
+                                setLoading(false);
+                            }
+                        }
+                    };
+
+                    const rzp = new (window as any).Razorpay(options);
+                    rzp.on('payment.failed', function (response: any) {
+                        alert(`Payment Failed: ${response.error.description}`);
+                        setLoading(false);
+                    });
+                    rzp.open();
+                } else {
+                    // Fallback or non-razorpay payment
+                    clearCart();
+                    router.push(`/checkout/success?orderId=${order.id}`);
+                }
             } else {
                 const err = await res.json();
                 alert(`Order Failed: ${err.message || 'Unknown error'}`);
+                setLoading(false);
             }
         } catch (error) {
             console.error(error);
             alert("Failed to place order. Check network connection.");
-        } finally {
             setLoading(false);
         }
     };
+
 
     if (items.length === 0) {
         return (
@@ -178,7 +240,9 @@ export default function CheckoutPage() {
 
     return (
         <div className="min-h-screen bg-muted/10 pb-20">
+            <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
             <div className="container mx-auto px-4 py-8">
+
                 <Link href="/cart" className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6">
                     <ArrowLeft className="h-4 w-4" /> Back to Cart
                 </Link>
