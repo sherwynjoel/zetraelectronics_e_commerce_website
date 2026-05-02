@@ -106,7 +106,7 @@
   },
   "overrides": {
     "lodash": "4.17.21",
-    "path-to-regexp": "8.0.0",
+    "path-to-regexp": "3.3.0",
     "brace-expansion": "2.0.1",
     "picomatch": "4.0.2",
     "micromatch": "4.0.8",
