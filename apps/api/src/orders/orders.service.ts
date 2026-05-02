@@ -105,7 +105,9 @@ export class OrdersService {
     });
 
     // 3. Create Razorpay Order if payment method is RAZORPAY
-    if (order.paymentMethod === 'RAZORPAY') {
+    const isRazorpay = order.paymentMethod.toUpperCase() === 'RAZORPAY';
+    
+    if (isRazorpay) {
       try {
         const razorpayOrder = await this.razorpay.orders.create({
           amount: Math.round(order.total * 100), // convert to paise
@@ -113,19 +115,17 @@ export class OrdersService {
           receipt: `receipt_order_${order.id}`,
         });
 
-        // Update order with razorpayOrderId
-        await this.prisma.order.update({
+        // Update order in DB with razorpayOrderId
+        const updatedOrder = await this.prisma.order.update({
           where: { id: order.id },
-          data: { razorpayOrderId: razorpayOrder.id }
+          data: { razorpayOrderId: razorpayOrder.id },
+          include: { items: { include: { product: true } }, user: true }
         });
 
-        return {
-          ...order,
-          razorpayOrderId: razorpayOrder.id
-        };
+        return updatedOrder;
       } catch (error) {
         console.error('Razorpay Order Error:', error);
-        throw new BadRequestException('Failed to create Razorpay order');
+        throw new BadRequestException('Failed to create Razorpay order: ' + error.message);
       }
     }
 
