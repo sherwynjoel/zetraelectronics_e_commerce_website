@@ -43,8 +43,9 @@ export default async function Home() {
         <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="space-y-6 max-w-2xl">
 
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
-              Build the Future with <span className="text-primary">Zetra Electronics</span>
+            <h1 className="text-5xl md:text-7xl font-black tracking-tighter leading-tight">
+              Build the Future with <br />
+              <span className="text-primary italic">Zetra Electronics</span>
             </h1>
             <p className="text-lg text-slate-300">
               {heroSubtext}
