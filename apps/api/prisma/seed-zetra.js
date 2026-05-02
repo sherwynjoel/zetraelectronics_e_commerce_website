@@ -61,6 +61,7 @@ async function main() {
         });
         console.log(`✅ Reset Test Customer credentials: ${customerEmail}`);
     }
+}
 
 main()
     .catch((e) => {
