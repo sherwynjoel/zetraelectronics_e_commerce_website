@@ -177,6 +177,26 @@ export default function LoginPage() {
                     <Link href="#" className="hover:text-primary hover:underline">Forgot password?</Link>
                     <Link href="/register" className="hover:text-primary hover:underline">Create account</Link>
                 </div>
+
+                {/* Test Account Section for Razorpay/Testing */}
+                <div className="mt-8 pt-6 border-t border-dashed">
+                    <div className="bg-primary/5 rounded-lg p-4 border border-primary/10">
+                        <h4 className="text-xs font-bold text-primary uppercase tracking-wider mb-2">Reviewer Test Account</h4>
+                        <div className="space-y-1">
+                            <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">Email:</span>
+                                <span className="font-mono font-medium">test@zetra.com</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-muted-foreground">Password:</span>
+                                <span className="font-mono font-medium">Zetra@Test123</span>
+                            </div>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground mt-3 italic leading-tight">
+                            Use these credentials to test the checkout and Razorpay payment flow.
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
     )

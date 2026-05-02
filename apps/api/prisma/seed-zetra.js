@@ -33,7 +33,34 @@ async function main() {
         });
         console.log(`✅ Updated existing user to Admin: ${adminEmail}`);
     }
-}
+
+    // Create a Test Customer for Razorpay Review/Testing
+    const customerEmail = 'test@zetra.com';
+    const customerPassword = 'Zetra@Test123';
+    const existingCustomer = await prisma.user.findUnique({ where: { email: customerEmail } });
+
+    if (!existingCustomer) {
+        const hashedCustomerPassword = await bcrypt.hash(customerPassword, 10);
+        await prisma.user.create({
+            data: {
+                email: customerEmail,
+                password: hashedCustomerPassword,
+                name: 'Test Customer',
+                role: 'USER',
+            },
+        });
+        console.log(`✅ Created Test Customer: ${customerEmail}`);
+    } else {
+        const hashedCustomerPassword = await bcrypt.hash(customerPassword, 10);
+        await prisma.user.update({
+            where: { email: customerEmail },
+            data: {
+                password: hashedCustomerPassword,
+                role: 'USER',
+            }
+        });
+        console.log(`✅ Reset Test Customer credentials: ${customerEmail}`);
+    }
 
 main()
     .catch((e) => {
