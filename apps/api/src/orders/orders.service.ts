@@ -109,8 +109,14 @@ export class OrdersService {
     
     if (isRazorpay) {
       try {
+        const amountInPaise = Math.round(order.total * 100);
+        
+        if (amountInPaise < 100) {
+          throw new BadRequestException('Order amount must be at least ₹1.00 for online payment');
+        }
+
         const razorpayOrder = await this.razorpay.orders.create({
-          amount: Math.round(order.total * 100), // convert to paise
+          amount: amountInPaise,
           currency: 'INR',
           receipt: `receipt_order_${order.id}`,
         });
@@ -179,6 +185,56 @@ export class OrdersService {
     }
 
     return updatedOrder;
+  }
+
+  async handleWebhook(body: any, signature: string) {
+    const crypto = require('crypto');
+    const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+    
+    if (!secret) {
+      console.warn('RAZORPAY_WEBHOOK_SECRET not set, skipping verification');
+    } else {
+      const expectedSignature = crypto
+        .createHmac('sha256', secret)
+        .update(JSON.stringify(body))
+        .digest('hex');
+
+      if (expectedSignature !== signature) {
+        throw new BadRequestException('Invalid webhook signature');
+      }
+    }
+
+    const event = body.event;
+    const payload = body.payload;
+
+    if (event === 'payment.captured') {
+      const razorpayOrderId = payload.payment.entity.order_id;
+      const razorpayPaymentId = payload.payment.entity.id;
+
+      const order = await this.prisma.order.findFirst({
+        where: { razorpayOrderId }
+      });
+
+      if (order && order.status === 'PENDING') {
+        const updatedOrder = await this.prisma.order.update({
+          where: { id: order.id },
+          data: {
+            status: 'PAID',
+            razorpayPaymentId: razorpayPaymentId
+          },
+          include: { items: { include: { product: true } }, user: true }
+        });
+
+        try {
+          const invoiceBuffer = await this.generateInvoice(updatedOrder.id);
+          await this.sendConfirmationEmail(updatedOrder, invoiceBuffer);
+        } catch (e) {
+          console.error("Webhook confirmation email failed", e);
+        }
+      }
+    }
+
+    return { status: 'ok' };
   }
 
   private async sendConfirmationEmail(order: any, invoiceBuffer: Buffer) {

@@ -28,6 +28,15 @@ export class OrdersController {
     return this.ordersService.verifyPayment(orderId, razorpay_payment_id, razorpay_signature);
   }
 
+  @Post('webhook')
+  async handleWebhook(
+    @Body() body: any,
+    @Request() req: any,
+  ) {
+    const signature = req.headers['x-razorpay-signature'];
+    return this.ordersService.handleWebhook(body, signature);
+  }
+
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
