@@ -161,7 +161,7 @@ export default function CheckoutPage() {
                                         "Authorization": `Bearer ${token}`
                                     },
                                     body: JSON.stringify({
-                                        orderId: order.id,
+                                        orderId: order.razorpayOrderId,
                                         razorpay_payment_id: response.razorpay_payment_id,
                                         razorpay_signature: response.razorpay_signature
                                     })

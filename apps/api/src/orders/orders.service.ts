@@ -67,9 +67,9 @@ export class OrdersService {
     }
   }
 
-  async verifyPayment(orderId: any, razorpay_payment_id: string, razorpay_signature: string) {
+  async verifyPayment(razorpayOrderId: string, razorpay_payment_id: string, razorpay_signature: string) {
     const keySecret = this.configService.get<string>('RAZORPAY_KEY_SECRET');
-    const body = orderId + '|' + razorpay_payment_id;
+    const body = razorpayOrderId + '|' + razorpay_payment_id;
     const expectedSignature = crypto
       .createHmac('sha256', keySecret!)
       .update(body.toString())
