@@ -39,7 +39,7 @@ export default function CheckoutPage() {
 
     useEffect(() => {
         // Fetch dynamic settings
-        fetch(\`\${API_URL}/settings\`)
+        fetch(`${API_URL}/settings`)
             .then(res => res.ok ? res.json() : [])
             .then((data: any[]) => {
                 const gst = data.find(s => s.key === 'GST_PERCENTAGE');
@@ -58,7 +58,7 @@ export default function CheckoutPage() {
     useEffect(() => {
         if (formData.zip.length === 6) {
             setPincodeLoading(true);
-            fetch(\`https://api.postalpincode.in/pincode/\${formData.zip}\`)
+            fetch(`https://api.postalpincode.in/pincode/${formData.zip}`)
                 .then(res => res.json())
                 .then(data => {
                     if (data[0].Status === "Success") {
@@ -131,11 +131,11 @@ export default function CheckoutPage() {
         };
 
         try {
-            const res = await fetch(\`\${API_URL}/orders\`, {
+            const res = await fetch(`${API_URL}/orders`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "Authorization": \`Bearer \${token}\`
+                    "Authorization": `Bearer ${token}`
                 },
                 body: JSON.stringify(orderData)
             });
@@ -150,15 +150,15 @@ export default function CheckoutPage() {
                         amount: Math.round(order.total * 100),
                         currency: "INR",
                         name: "Zetra Electronics",
-                        description: \`Payment for Order #\${order.id}\`,
+                        description: `Payment for Order #${order.id}`,
                         order_id: order.razorpayOrderId,
                         handler: async function (response: any) {
                             try {
-                                const verifyRes = await fetch(\`\${API_URL}/orders/verify-payment\`, {
+                                const verifyRes = await fetch(`${API_URL}/orders/verify-payment`, {
                                     method: "POST",
                                     headers: {
                                         "Content-Type": "application/json",
-                                        "Authorization": \`Bearer \${token}\`
+                                        "Authorization": `Bearer ${token}`
                                     },
                                     body: JSON.stringify({
                                         orderId: order.id,
@@ -169,7 +169,7 @@ export default function CheckoutPage() {
 
                                 if (verifyRes.ok) {
                                     clearCart();
-                                    router.push(\`/checkout/success?orderId=\${order.id}\`);
+                                    router.push(`/checkout/success?orderId=${order.id}`);
                                 } else {
                                     alert("Payment verification failed. Please contact support.");
                                 }
@@ -179,7 +179,7 @@ export default function CheckoutPage() {
                             }
                         },
                         prefill: {
-                            name: \`\${formData.firstName} \${formData.lastName}\`,
+                            name: `${formData.firstName} ${formData.lastName}`,
                             email: user.email,
                         },
                         theme: {
@@ -194,18 +194,18 @@ export default function CheckoutPage() {
 
                     const rzp = new (window as any).Razorpay(options);
                     rzp.on('payment.failed', function (response: any) {
-                        alert(\`Payment Failed: \${response.error.description}\`);
+                        alert(`Payment Failed: ${response.error.description}`);
                         setLoading(false);
                     });
                     rzp.open();
                 } else {
                     // Fallback or non-razorpay payment
                     clearCart();
-                    router.push(\`/checkout/success?orderId=\${order.id}\`);
+                    router.push(`/checkout/success?orderId=${order.id}`);
                 }
             } else {
                 const err = await res.json();
-                alert(\`Order Failed: \${err.message || 'Unknown error'}\`);
+                alert(`Order Failed: ${err.message || 'Unknown error'}`);
                 setLoading(false);
             }
         } catch (error) {
@@ -322,7 +322,7 @@ export default function CheckoutPage() {
                         </div>
 
                         <Button type="submit" size="lg" className="w-full text-lg shadow-xl shadow-primary/20" disabled={loading}>
-                            {loading ? "Processing..." : \`Place Order (₹\${finalTotal.toFixed(2)})\`}
+                            {loading ? "Processing..." : `Place Order (₹${finalTotal.toFixed(2)})`}
                         </Button>
                     </form>
 
