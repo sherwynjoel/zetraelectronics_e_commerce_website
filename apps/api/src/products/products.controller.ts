@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, Query, UseGuards, BadRequestException } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { extname, join } from 'path';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -19,13 +19,13 @@ export class ProductsController {
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
-        destination: './uploads',
+        destination: join(process.cwd(), 'uploads'),
         filename: (req, file, cb) => {
           const randomName = Array(32)
             .fill(null)
             .map(() => Math.round(Math.random() * 16).toString(16))
             .join('');
-          return cb(null, `${randomName}${extname(file.originalname)}`);
+          return cb(null, \`\${randomName}\${extname(file.originalname)}\`);
         },
       }),
       fileFilter: (req, file, cb) => {
@@ -45,8 +45,9 @@ export class ProductsController {
     }),
   )
   uploadFile(@UploadedFile() file: Express.Multer.File) {
+    if (!file) throw new BadRequestException('File upload failed');
     return {
-      url: `/uploads/${file.filename}`,
+      url: \`/uploads/\${file.filename}\`,
     };
   }
 

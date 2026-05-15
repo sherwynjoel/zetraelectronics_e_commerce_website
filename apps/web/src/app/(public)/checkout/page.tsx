@@ -146,7 +146,7 @@ export default function CheckoutPage() {
                 // If Razorpay order was created, trigger modal
                 if (order.razorpayOrderId) {
                     const options = {
-                        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+                        key: "rzp_test_SpZb1NKJTUHjWC",
                         amount: Math.round(order.total * 100),
                         currency: "INR",
                         name: "Zetra Electronics",

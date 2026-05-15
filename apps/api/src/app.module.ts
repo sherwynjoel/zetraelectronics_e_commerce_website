@@ -22,6 +22,10 @@ import { ThrottlerModule } from '@nestjs/throttler';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ServeStaticModule.forRoot({
+      rootPath: join(process.cwd(), 'uploads'),
+      serveRoot: '/uploads',
+    }),
     ProductsModule,
     OrdersModule,
     ContactModule,
@@ -68,7 +72,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
   ],
   controllers: [AppController, UploadsController],
   providers: [
-    AppService, 
+    AppService,
     PrismaService,
     {
       provide: 'APP_GUARD',
