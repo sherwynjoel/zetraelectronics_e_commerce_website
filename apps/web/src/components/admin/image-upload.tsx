@@ -39,7 +39,7 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
             onChange(data.url);
         } catch (error) {
             console.error(error);
-            alert("Failed to upload image");
+            alert("Upload failed. Check console for details.");
         } finally {
             setIsUploading(false);
         }

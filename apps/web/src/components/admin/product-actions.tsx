@@ -32,7 +32,7 @@ export function ProductActions({ productId }: ProductActionsProps) {
             }
 
             alert("Product successfully deleted!");
-            router.refresh();
+            window.location.reload();
         } catch (e) {
             alert("Failed to connect to the server to delete.");
             console.error(e);
