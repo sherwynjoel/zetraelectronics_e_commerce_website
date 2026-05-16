@@ -157,10 +157,19 @@ export class OrdersService {
     }
   }
 
-  async handleWebhook(body: any, signature: string) {
+  async handleWebhook(body: any, signature: string, timestamp?: string) {
     const secret = this.configService.get<string>('RAZORPAY_WEBHOOK_SECRET');
     if (!secret) {
       throw new InternalServerErrorException('Webhook secret is not configured');
+    }
+
+    // Reject replayed webhooks older than 5 minutes
+    if (timestamp) {
+      const ts = Number(timestamp);
+      const ageSeconds = (Date.now() / 1000) - ts;
+      if (isNaN(ts) || ageSeconds > 300 || ageSeconds < -60) {
+        throw new UnauthorizedException('Webhook timestamp out of range');
+      }
     }
 
     const expectedSignature = crypto

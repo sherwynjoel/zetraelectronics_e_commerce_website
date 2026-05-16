@@ -31,8 +31,9 @@ export class OrdersController {
   handleWebhook(
     @Body() body: any,
     @Headers('x-razorpay-signature') signature: string,
+    @Headers('x-razorpay-timestamp') timestamp: string,
   ) {
-    return this.ordersService.handleWebhook(body, signature);
+    return this.ordersService.handleWebhook(body, signature, timestamp);
   }
 
   @Get()

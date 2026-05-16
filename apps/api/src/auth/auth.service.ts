@@ -76,7 +76,7 @@ export class AuthService {
     async googleLogin(token: string) {
         if (!admin.apps.length) {
             admin.initializeApp({
-                projectId: 'zetraelectronics-c55c1'
+                projectId: this.configService.get<string>('FIREBASE_PROJECT_ID') || 'zetraelectronics-c55c1',
             });
         }
 
@@ -93,7 +93,7 @@ export class AuthService {
             });
 
             if (!user) {
-                const generatedPassword = Math.random().toString(36).slice(-8) + 'A1!';
+                const generatedPassword = crypto.randomBytes(16).toString('hex');
                 const hashedPassword = await bcrypt.hash(generatedPassword, 10);
                 user = await this.prisma.user.create({
                     data: {

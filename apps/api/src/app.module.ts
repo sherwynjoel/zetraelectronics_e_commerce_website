@@ -63,10 +63,11 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
         };
       },
     }),
-    ThrottlerModule.forRoot([{
-      ttl: 60000,
-      limit: 10,
-    }]),
+    ThrottlerModule.forRoot([
+      { name: 'default', ttl: 60000, limit: 30 },
+      { name: 'auth', ttl: 60000, limit: 5 },
+      { name: 'strict', ttl: 60000, limit: 3 },
+    ]),
     AuthModule,
     SettingsModule,
     AnalyticsModule,
