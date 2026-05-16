@@ -22,7 +22,19 @@ export class CategoriesService {
     });
   }
 
-  remove(id: number) {
+  async remove(id: number) {
+    const category = await this.prisma.category.findUnique({ where: { id } });
+    if (!category) throw new BadRequestException('Category not found');
+
+    const productCount = await this.prisma.product.count({
+      where: { category: category.name },
+    });
+    if (productCount > 0) {
+      throw new BadRequestException(
+        `Cannot delete "${category.name}" — ${productCount} product(s) are assigned to it. Reassign them first.`,
+      );
+    }
+
     return this.prisma.category.delete({ where: { id } });
   }
 }

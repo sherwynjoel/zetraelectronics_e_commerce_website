@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaService } from './prisma.service';
@@ -17,7 +18,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
 import { ContactModule } from './contact/contact.module';
 import { CategoriesModule } from './categories/categories.module';
 import { existsSync } from 'fs';
-import { ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -75,8 +76,8 @@ import { ThrottlerModule } from '@nestjs/throttler';
     AppService,
     PrismaService,
     {
-      provide: 'APP_GUARD',
-      useClass: require('@nestjs/throttler').ThrottlerGuard,
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     }
   ],
 })

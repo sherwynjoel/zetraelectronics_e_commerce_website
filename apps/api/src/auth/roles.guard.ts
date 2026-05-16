@@ -18,7 +18,6 @@ export class RolesGuard implements CanActivate {
         const { user } = context.switchToHttp().getRequest();
         const userRole = (user?.role || '').toUpperCase();
 
-        // Support both exact match and includes (e.g. role = 'ADMIN' or 'ROLE_ADMIN')
-        return requiredRoles.some((role) => userRole === role.toUpperCase() || userRole.includes(role.toUpperCase()));
+        return requiredRoles.some((role) => userRole === role.toUpperCase());
     }
 }

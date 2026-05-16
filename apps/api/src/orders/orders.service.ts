@@ -30,50 +30,54 @@ export class OrdersService {
       throw new BadRequestException('Invalid order data');
     }
 
-    // Validate stock and collect product data
-    for (const item of items) {
-      const productId = Number(item.productId || item.id);
-      const qty = Number(item.quantity);
-      const product = await this.prisma.product.findUnique({ where: { id: productId } });
-      if (!product) {
-        throw new BadRequestException(`Product #${productId} no longer exists. Please clear your cart.`);
-      }
-      if (product.stock < qty) {
-        throw new BadRequestException(`Only ${product.stock} unit(s) of "${product.name}" available.`);
-      }
-    }
-
     try {
+      // Create Razorpay order before the DB transaction (external API call)
       const razorpayOrder = await this.razorpay.orders.create({
         amount: Math.round(totalAmount * 100),
         currency: 'INR',
         receipt: `receipt_${Date.now()}`,
       });
 
-      const order = await this.prisma.order.create({
-        data: {
-          user: { connect: { id: userId } },
-          total: totalAmount,
-          shippingAddress: typeof shippingAddress === 'object' ? JSON.stringify(shippingAddress) : shippingAddress,
-          status: 'PENDING',
-          razorpayOrderId: razorpayOrder.id,
-          items: {
-            create: items.map((item: any) => ({
-              product: { connect: { id: Number(item.productId || item.id) } },
-              quantity: Number(item.quantity),
-              price: Number(item.price),
-            })),
-          },
-        },
-      });
+      // Atomic: validate stock, create order, decrement stock in one transaction
+      const order = await this.prisma.$transaction(async (tx) => {
+        for (const item of items) {
+          const productId = Number(item.productId || item.id);
+          const qty = Number(item.quantity);
+          const product = await tx.product.findUnique({ where: { id: productId } });
+          if (!product) {
+            throw new BadRequestException(`Product #${productId} no longer exists. Please clear your cart.`);
+          }
+          if (product.stock < qty) {
+            throw new BadRequestException(`Only ${product.stock} unit(s) of "${product.name}" available.`);
+          }
+        }
 
-      // Decrement stock for each item
-      for (const item of items) {
-        await this.prisma.product.update({
-          where: { id: Number(item.productId || item.id) },
-          data: { stock: { decrement: Number(item.quantity) } },
+        const created = await tx.order.create({
+          data: {
+            user: { connect: { id: userId } },
+            total: totalAmount,
+            shippingAddress: typeof shippingAddress === 'object' ? JSON.stringify(shippingAddress) : shippingAddress,
+            status: 'PENDING',
+            razorpayOrderId: razorpayOrder.id,
+            items: {
+              create: items.map((item: any) => ({
+                product: { connect: { id: Number(item.productId || item.id) } },
+                quantity: Number(item.quantity),
+                price: Number(item.price),
+              })),
+            },
+          },
         });
-      }
+
+        for (const item of items) {
+          await tx.product.update({
+            where: { id: Number(item.productId || item.id) },
+            data: { stock: { decrement: Number(item.quantity) } },
+          });
+        }
+
+        return created;
+      });
 
       return order;
     } catch (error: any) {

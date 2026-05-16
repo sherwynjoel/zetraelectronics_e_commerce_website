@@ -16,6 +16,10 @@ export class ContactController {
         if (!name || !email || !message) {
             throw new HttpException('Name, email, and message are required', HttpStatus.BAD_REQUEST);
         }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            throw new HttpException('Invalid email address', HttpStatus.BAD_REQUEST);
+        }
 
         const settings = await this.prisma.systemSetting.findMany();
         const s: any = settings.reduce((acc, item) => ({ ...acc, [item.key]: item.value }), {});
