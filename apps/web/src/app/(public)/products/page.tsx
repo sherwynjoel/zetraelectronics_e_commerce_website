@@ -14,6 +14,17 @@ async function getProducts(params: Record<string, string>) {
     }
 }
 
+async function getCategories(): Promise<string[]> {
+    try {
+        const res = await fetch(`${API_URL}/categories`, { next: { revalidate: 60 } });
+        if (!res.ok) return [];
+        const data: { id: number; name: string }[] = await res.json();
+        return data.map(c => c.name);
+    } catch (e) {
+        return [];
+    }
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function ProductsPage({
@@ -32,7 +43,10 @@ export default async function ProductsPage({
         }
     }
 
-    const products = await getProducts(flatParams);
+    const [products, categories] = await Promise.all([
+        getProducts(flatParams),
+        getCategories(),
+    ]);
 
     return (
         <div className="container mx-auto px-4 py-8">
@@ -41,14 +55,14 @@ export default async function ProductsPage({
             <div className="lg:flex lg:gap-8">
                 {/* Desktop Sidebar — hidden on mobile via ProductFilters */}
                 <aside className="hidden lg:block w-64 flex-shrink-0">
-                    <ProductFilters />
+                    <ProductFilters categories={categories} />
                 </aside>
 
                 {/* Main column */}
                 <div className="flex-1 min-w-0">
                     {/* Mobile: sticky filter bar + slide-in drawer */}
                     <div className="lg:hidden">
-                        <ProductFilters />
+                        <ProductFilters categories={categories} />
                     </div>
 
                     {/* Product Grid */}

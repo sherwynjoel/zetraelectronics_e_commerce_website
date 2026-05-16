@@ -5,14 +5,6 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { SlidersHorizontal, X, ChevronDown, ChevronUp } from "lucide-react";
 
-const categories = [
-    "Development Boards",
-    "Sensors",
-    "Robotics",
-    "IoT & Wireless",
-    "Tools",
-    "Components"
-];
 
 const priceRanges = [
     { label: "Under ₹500", min: 0, max: 500 },
@@ -170,7 +162,7 @@ function FilterContent({
     );
 }
 
-export function ProductFilters() {
+export function ProductFilters({ categories }: { categories: string[] }) {
     const router = useRouter();
     const searchParams = useSearchParams();
     const [drawerOpen, setDrawerOpen] = useState(false);
