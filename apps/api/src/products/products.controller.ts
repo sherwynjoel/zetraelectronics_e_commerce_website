@@ -1,28 +1,33 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile, Query, UseGuards, BadRequestException } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { memoryStorage } from 'multer';
-import { extname } from 'path';
+import { diskStorage } from 'multer';
+import { extname, join } from 'path';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
-import { CloudinaryService } from './cloudinary.service';
 
 @Controller('products')
 export class ProductsController {
-  constructor(
-    private readonly productsService: ProductsService,
-    private readonly cloudinaryService: CloudinaryService,
-  ) { }
+  constructor(private readonly productsService: ProductsService) { }
 
   @Post('upload')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: memoryStorage(),
+      storage: diskStorage({
+        destination: join(process.cwd(), 'uploads'),
+        filename: (req, file, cb) => {
+          const randomName = Array(32)
+            .fill(null)
+            .map(() => Math.round(Math.random() * 16).toString(16))
+            .join('');
+          return cb(null, `${randomName}${extname(file.originalname)}`);
+        },
+      }),
       fileFilter: (req, file, cb) => {
         const allowedExtensions = ['.png', '.jpg', '.jpeg', '.webp'];
         const ext = extname(file.originalname).toLowerCase();
@@ -34,10 +39,9 @@ export class ProductsController {
       limits: { fileSize: 5 * 1024 * 1024 },
     }),
   )
-  async uploadFile(@UploadedFile() file: Express.Multer.File) {
+  uploadFile(@UploadedFile() file: Express.Multer.File) {
     if (!file) throw new BadRequestException('File upload failed');
-    const url = await this.cloudinaryService.uploadBuffer(file.buffer);
-    return { url };
+    return { url: `/uploads/${file.filename}` };
   }
 
   @Post()
