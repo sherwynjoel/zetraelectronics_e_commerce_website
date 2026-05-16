@@ -95,7 +95,10 @@ export default function AdminOrdersPage() {
                             {orders.map((order: any) => (
                                 <tr key={order.id} className="hover:bg-muted/50">
                                     <td className="p-4 font-medium">#{order.id.toString().padStart(5, '0')}</td>
-                                    <td className="p-4 text-muted-foreground">{new Date(order.createdAt).toLocaleDateString()}</td>
+                                    <td className="p-4 text-muted-foreground">
+                                        <div>{new Date(order.createdAt).toLocaleDateString('en-IN')}</div>
+                                        <div className="text-xs">{new Date(order.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}</div>
+                                    </td>
                                     <td className="p-4">{order.user?.email || "Guest"}</td>
                                     <td className="p-4">
                                         <span className={`px-2 py-1 rounded-full text-xs font-bold ${
