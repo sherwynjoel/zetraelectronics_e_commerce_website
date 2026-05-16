@@ -1,5 +1,6 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Res, BadRequestException, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Res, BadRequestException, ForbiddenException, Request, Headers } from '@nestjs/common';
 import { OrdersService } from './orders.service';
+import { UpdateOrderDto } from './dto/update-order.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -27,8 +28,10 @@ export class OrdersController {
   }
 
   @Post('webhook')
-  handleWebhook(@Body() body: any, @Res() res: express.Response) {
-    const signature = res.req.headers['x-razorpay-signature'] as string;
+  handleWebhook(
+    @Body() body: any,
+    @Headers('x-razorpay-signature') signature: string,
+  ) {
     return this.ordersService.handleWebhook(body, signature);
   }
 
@@ -44,22 +47,33 @@ export class OrdersController {
 
   @Get('user/:userId')
   @UseGuards(JwtAuthGuard)
-  async findAllByUser(@Param('userId') userId: string) {
+  async findAllByUser(@Param('userId') userId: string, @Request() req: any) {
     const id = Number(userId);
     if (isNaN(id)) throw new BadRequestException('Invalid user ID');
+    if (req.user.userId !== id && req.user.role !== 'ADMIN') {
+      throw new ForbiddenException('You can only view your own orders');
+    }
     return await this.ordersService.findAllByUser(id);
   }
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  findOne(@Param('id') id: string) {
-    return this.ordersService.findOne(+id);
+  async findOne(@Param('id') id: string, @Request() req: any) {
+    const order = await this.ordersService.findOne(+id);
+    if (order.userId !== req.user.userId && req.user.role !== 'ADMIN') {
+      throw new ForbiddenException('You can only view your own orders');
+    }
+    return order;
   }
 
   @Get(':id/invoice')
   @UseGuards(JwtAuthGuard)
-  async generateInvoice(@Param('id') id: string, @Res() res: express.Response) {
-    const buffer = await this.ordersService.generateInvoice(+id);
+  async generateInvoice(@Param('id') id: string, @Request() req: any, @Res() res: express.Response) {
+    const order = await this.ordersService.findOne(+id);
+    if (order.userId !== req.user.userId && req.user.role !== 'ADMIN') {
+      throw new ForbiddenException('You can only download your own invoices');
+    }
+    const buffer = await this.ordersService.generateInvoice(order as any);
     res.set({
       'Content-Type': 'application/pdf',
       'Content-Disposition': `attachment; filename=invoice-${id}.pdf`,
@@ -71,7 +85,7 @@ export class OrdersController {
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
-  update(@Param('id') id: string, @Body() updateOrderDto: any) {
+  update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
     return this.ordersService.update(+id, updateOrderDto);
   }
 
