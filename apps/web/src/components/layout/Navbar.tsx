@@ -190,16 +190,14 @@ export function Navbar() {
 
                         {/* Logo */}
                         <Link href="/" className="flex-shrink-0 flex items-center group mr-6 md:mr-10">
-                            <div className="relative h-10 w-10 md:h-12 md:w-12 flex-shrink-0">
-                                <div className="absolute inset-0 scale-[1.7] md:scale-[1.9] origin-left group-hover:scale-[1.75] md:group-hover:scale-[1.95] transition-transform duration-300">
-                                    <Image
-                                        src="/logo.png"
-                                        alt="Zetra Logo"
-                                        fill
-                                        className="object-contain"
-                                        priority
-                                    />
-                                </div>
+                            <div className="relative h-16 w-16 md:h-20 md:w-20 flex-shrink-0">
+                                <Image
+                                    src="/logo.png"
+                                    alt="Zetra Logo"
+                                    fill
+                                    className="object-contain group-hover:scale-105 transition-transform duration-300"
+                                    priority
+                                />
                             </div>
                         </Link>
 
