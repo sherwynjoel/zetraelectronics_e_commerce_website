@@ -17,7 +17,7 @@ const securityHeaders = [
       "img-src 'self' data: blob: https://images.unsplash.com https://m.media-amazon.com https://plus.unsplash.com https://zetraelectronics.com",
       "font-src 'self' data:",
       "connect-src 'self' https://zetraelectronics.com https://api.razorpay.com https://lumberjack.razorpay.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com",
-      "frame-src https://api.razorpay.com https://accounts.google.com https://zetraelectronics.com",
+      "frame-src https://api.razorpay.com https://accounts.google.com https://zetraelectronics.com https://zetraelectronics-c55c1.firebaseapp.com",
       "object-src 'none'",
       "base-uri 'self'",
       "form-action 'self'",
