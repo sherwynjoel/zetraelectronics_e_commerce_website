@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Res, BadRequestException, ForbiddenException, Request, Headers } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { OrdersService } from './orders.service';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -12,6 +13,7 @@ export class OrdersController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   create(@Request() req: any, @Body() createOrderDto: any) {
     createOrderDto.userId = req.user.userId;
     return this.ordersService.create(createOrderDto);

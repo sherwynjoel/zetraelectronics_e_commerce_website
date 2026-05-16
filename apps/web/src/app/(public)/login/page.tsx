@@ -3,10 +3,10 @@
 import { API_URL } from '@/lib/api';
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/auth-store";
-import { auth, googleProvider, signInWithPopup } from "@/lib/firebase";
+import { auth, googleProvider, signInWithPopup, signInWithRedirect, getRedirectResult, isMobileBrowser } from "@/lib/firebase";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -15,6 +15,29 @@ export default function LoginPage() {
     const [password, setPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
+
+    // Handle redirect result on page load (mobile Google sign-in)
+    useEffect(() => {
+        setIsLoading(true);
+        getRedirectResult(auth)
+            .then(async (result) => {
+                if (!result) return;
+                const idToken = await result.user.getIdToken();
+                const res = await fetch(`${API_URL}/auth/google/firebase`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ token: idToken }),
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || "Failed to authenticate");
+                login(data.user, data.access_token);
+                router.push(data.user.role === 'ADMIN' ? "/admin" : "/");
+            })
+            .catch((err) => {
+                if (err?.message) setError(err.message);
+            })
+            .finally(() => setIsLoading(false));
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -41,6 +64,11 @@ export default function LoginPage() {
         setIsLoading(true);
         setError("");
         try {
+            if (isMobileBrowser()) {
+                // On mobile, redirect is more reliable than popup
+                await signInWithRedirect(auth, googleProvider);
+                return; // page will reload; result handled in useEffect above
+            }
             const result = await signInWithPopup(auth, googleProvider);
             const idToken = await result.user.getIdToken();
             const res = await fetch(`${API_URL}/auth/google/firebase`, {

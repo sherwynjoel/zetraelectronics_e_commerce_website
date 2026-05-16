@@ -8,34 +8,49 @@ datasource db {
 }
 
 model User {
-  id                  Int       @id @default(autoincrement())
-  email               String    @unique
+  id                  Int        @id @default(autoincrement())
+  email               String     @unique
   password            String
   name                String?
-  role                String    @default("CUSTOMER") // ADMIN, STAFF, CUSTOMER
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+  role                String     @default("CUSTOMER") // ADMIN, STAFF, CUSTOMER
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
   orders              Order[]
+  cartItems           CartItem[]
   passwordResetToken  String?
   passwordResetExpiry DateTime?
-  emailVerified       Boolean   @default(false)
+  emailVerified       Boolean    @default(false)
   emailVerifyToken    String?
 }
 
 model Product {
-  id          Int      @id @default(autoincrement())
+  id          Int        @id @default(autoincrement())
   name        String
   description String?
   price       Float
-  stock       Int      @default(0)
+  stock       Int        @default(0)
   category    String
   image       String?
   datasheet   String?
-  specs       String? // JSON string for flexibility in SQLite
-  shippingCost Float   @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  specs       String?
+  shippingCost Float     @default(0)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
   orderItems  OrderItem[]
+  cartItems   CartItem[]
+}
+
+model CartItem {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, productId])
 }
 
 model Order {

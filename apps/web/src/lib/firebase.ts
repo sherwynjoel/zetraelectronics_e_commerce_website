@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult } from "firebase/auth";
 
 const firebaseConfig = {
     apiKey: "AIzaSyB7r9NJ3BVwItC37_e4n7zpZ7VLorR9Qec",
@@ -16,4 +16,9 @@ const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
-export { app, auth, googleProvider, signInWithPopup };
+export function isMobileBrowser(): boolean {
+    if (typeof navigator === "undefined") return false;
+    return /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(navigator.userAgent);
+}
+
+export { app, auth, googleProvider, signInWithPopup, signInWithRedirect, getRedirectResult };

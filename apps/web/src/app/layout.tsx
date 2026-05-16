@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Outfit } from "next/font/google";
 import "./globals.css";
 import { CookieConsent } from "@/components/cookie-consent";
+import { CartSyncProvider } from "@/components/cart-sync-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,6 +36,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${outfit.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+        <CartSyncProvider />
         <CookieConsent />
       </body>
     </html>

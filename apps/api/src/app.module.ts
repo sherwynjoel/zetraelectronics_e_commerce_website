@@ -17,6 +17,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { ContactModule } from './contact/contact.module';
 import { CategoriesModule } from './categories/categories.module';
+import { CartModule } from './cart/cart.module';
 import { existsSync } from 'fs';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 
@@ -31,6 +32,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
     OrdersModule,
     ContactModule,
     CategoriesModule,
+    CartModule,
     MailerModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
