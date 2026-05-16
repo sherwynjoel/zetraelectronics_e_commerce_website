@@ -31,18 +31,42 @@ export class AuthService {
 
         const hashedPassword = await bcrypt.hash(registerDto.password, 10);
 
+            const verifyToken = crypto.randomBytes(32).toString('hex');
+
         const user = await this.prisma.user.create({
             data: {
                 email: registerDto.email,
                 password: hashedPassword,
                 name: registerDto.name,
+                emailVerifyToken: verifyToken,
+                emailVerified: false,
             },
         });
 
+        const frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'https://zetraelectronics.com';
+        const verifyLink = `${frontendUrl}/verify-email?token=${verifyToken}`;
+
+        this.mailerService.sendMail({
+            to: user.email,
+            subject: 'Verify your Zetra Electronics email',
+            template: 'verify-email',
+            context: { name: user.name || 'Customer', verifyLink },
+        }).catch(err => console.error('Verify email send failed:', err));
+
         return {
-            message: 'User registered successfully',
+            message: 'Registration successful! Please check your email to verify your account.',
             user: { id: user.id, email: user.email, name: user.name }
         };
+    }
+
+    async verifyEmail(token: string) {
+        const user = await this.prisma.user.findFirst({ where: { emailVerifyToken: token } });
+        if (!user) throw new BadRequestException('Invalid or expired verification link');
+        await this.prisma.user.update({
+            where: { id: user.id },
+            data: { emailVerified: true, emailVerifyToken: null },
+        });
+        return { message: 'Email verified successfully. You can now log in.' };
     }
 
     async login(loginDto: LoginDto) {

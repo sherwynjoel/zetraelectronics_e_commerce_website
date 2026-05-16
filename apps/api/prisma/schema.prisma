@@ -18,6 +18,8 @@ model User {
   orders              Order[]
   passwordResetToken  String?
   passwordResetExpiry DateTime?
+  emailVerified       Boolean   @default(false)
+  emailVerifyToken    String?
 }
 
 model Product {

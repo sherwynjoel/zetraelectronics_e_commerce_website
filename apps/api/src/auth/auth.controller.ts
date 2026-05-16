@@ -57,6 +57,13 @@ export class AuthController {
         return this.authService.updateProfile(req.user.userId, body);
     }
 
+    @Post('verify-email')
+    @HttpCode(HttpStatus.OK)
+    verifyEmail(@Body('token') token: string) {
+        if (!token) throw new BadRequestException('Token is required');
+        return this.authService.verifyEmail(token);
+    }
+
     @Post('forgot-password')
     @HttpCode(HttpStatus.OK)
     @Throttle({ strict: { limit: 3, ttl: 60000 } })
