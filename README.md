@@ -78,9 +78,6 @@ npm run dev
 | http://localhost:3000/admin/customers | Customer list |
 | http://localhost:3000/admin/settings | Store settings |
 
-**Default admin credentials:**
-- Email: `admin@zetraelectronics.com`
-- Password: `Zetra@13122024`
 
 ## Tech Stack
 
