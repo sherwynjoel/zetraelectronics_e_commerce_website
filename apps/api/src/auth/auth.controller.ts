@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, UseGuards, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, Get, UseGuards, HttpCode, HttpStatus, BadRequestException } from '@nestjs/common';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { RolesGuard } from './roles.guard';
 import { Roles } from './roles.decorator';
@@ -24,6 +24,19 @@ export class AuthController {
     @Post('register')
     register(@Body() registerDto: RegisterDto) {
         return this.authService.register(registerDto);
+    }
+
+    @Post('forgot-password')
+    @HttpCode(HttpStatus.OK)
+    forgotPassword(@Body('email') email: string) {
+        if (!email) throw new BadRequestException('Email is required');
+        return this.authService.forgotPassword(email);
+    }
+
+    @Post('reset-password')
+    @HttpCode(HttpStatus.OK)
+    resetPassword(@Body('token') token: string, @Body('newPassword') newPassword: string) {
+        return this.authService.resetPassword(token, newPassword);
     }
 
     @Get('users')

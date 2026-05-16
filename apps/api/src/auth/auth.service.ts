@@ -1,7 +1,10 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
+import { MailerService } from '@nestjs-modules/mailer';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 import * as admin from 'firebase-admin';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -11,6 +14,8 @@ export class AuthService {
     constructor(
         private prisma: PrismaService,
         private jwtService: JwtService,
+        private configService: ConfigService,
+        private mailerService: MailerService,
     ) { }
 
     async register(registerDto: RegisterDto) {
@@ -116,6 +121,54 @@ export class AuthService {
             throw new UnauthorizedException('Invalid Google token');
         }
     }
+    async forgotPassword(email: string) {
+        const user = await this.prisma.user.findUnique({ where: { email } });
+        // Always return success to prevent user enumeration
+        if (!user) return { message: 'If that email exists, a reset link has been sent.' };
+
+        const token = crypto.randomBytes(32).toString('hex');
+        const expiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+        await this.prisma.user.update({
+            where: { email },
+            data: { passwordResetToken: token, passwordResetExpiry: expiry },
+        });
+
+        const frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'https://zetraelectronics.com';
+        const resetLink = `${frontendUrl}/reset-password?token=${token}`;
+
+        await this.mailerService.sendMail({
+            to: email,
+            subject: 'Reset your Zetra Electronics password',
+            template: 'password-reset',
+            context: { name: user.name || 'Customer', resetLink },
+        });
+
+        return { message: 'If that email exists, a reset link has been sent.' };
+    }
+
+    async resetPassword(token: string, newPassword: string) {
+        if (!token || !newPassword) throw new BadRequestException('Token and new password are required');
+
+        const user = await this.prisma.user.findFirst({
+            where: {
+                passwordResetToken: token,
+                passwordResetExpiry: { gt: new Date() },
+            },
+        });
+
+        if (!user) throw new BadRequestException('Reset link is invalid or has expired');
+
+        const hashed = await bcrypt.hash(newPassword, 10);
+
+        await this.prisma.user.update({
+            where: { id: user.id },
+            data: { password: hashed, passwordResetToken: null, passwordResetExpiry: null },
+        });
+
+        return { message: 'Password updated successfully. You can now log in.' };
+    }
+
     async findAllUsers() {
         return this.prisma.user.findMany({
             select: {

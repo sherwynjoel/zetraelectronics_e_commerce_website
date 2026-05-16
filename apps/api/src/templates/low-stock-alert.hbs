@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #1e293b; background-color: #f8fafc; margin: 0; padding: 0; }
+        .wrapper { background-color: #f8fafc; padding: 40px 20px; }
+        .container { max-width: 560px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .header { background-color: #dc2626; color: white; padding: 36px 20px; text-align: center; }
+        .header h1 { margin: 0; font-size: 22px; letter-spacing: -0.025em; }
+        .badge { display: inline-block; background-color: rgba(255,255,255,0.15); color: white; padding: 4px 14px; border-radius: 999px; font-size: 13px; font-weight: 700; margin-top: 10px; }
+        .content { padding: 36px 40px; }
+        .content p { margin: 0 0 16px; font-size: 15px; color: #334155; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; font-size: 11px; text-transform: uppercase; color: #64748b; padding: 10px 16px; background-color: #f8fafc; letter-spacing: 0.04em; border-bottom: 1px solid #e2e8f0; }
+        td { padding: 12px 16px; font-size: 14px; border-bottom: 1px solid #f1f5f9; }
+        .stock-low { color: #dc2626; font-weight: 700; }
+        .stock-zero { color: #7f1d1d; font-weight: 700; background-color: #fef2f2; }
+        .table-wrap { border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; margin-bottom: 24px; }
+        .footer { text-align: center; padding: 24px 40px; font-size: 12px; color: #94a3b8; border-top: 1px solid #f1f5f9; }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="container">
+            <div class="header">
+                <h1>ZETRA ELECTRONICS</h1>
+                <div class="badge">⚠ Low Stock Alert</div>
+            </div>
+            <div class="content">
+                <p>The following product(s) have dropped to or below the low-stock threshold of <strong>{{threshold}} units</strong>. Please restock soon to avoid missed orders.</p>
+
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Category</th>
+                                <th style="text-align:right;">Stock Remaining</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#each products}}
+                            <tr>
+                                <td>{{this.name}}</td>
+                                <td style="color:#64748b;">{{this.category}}</td>
+                                <td style="text-align:right;" class="{{#if this.isZero}}stock-zero{{else}}stock-low{{/if}}">
+                                    {{this.stockLabel}}
+                                </td>
+                            </tr>
+                            {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+
+                <p style="font-size:13px; color:#64748b; margin:0;">Log in to the admin panel to update stock levels: <a href="https://zetraelectronics.com/admin/inventory" style="color:#3b82f6;">Admin Inventory</a></p>
+            </div>
+            <div class="footer">
+                <p>This is an automated alert from Zetra Electronics Admin System.</p>
+                <p>&copy; 2026 Zetra Electronics. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

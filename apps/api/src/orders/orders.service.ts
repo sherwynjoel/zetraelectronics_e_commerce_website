@@ -110,6 +110,12 @@ export class OrdersService {
         return created;
       });
 
+      // Fire low-stock alert in background after successful order
+      const orderedProductIds = items.map((item: any) => Number(item.productId || item.id));
+      this.checkAndAlertLowStock(orderedProductIds).catch((err) =>
+        console.error('Low-stock alert failed:', err),
+      );
+
       return order;
     } catch (error: any) {
       if (error instanceof BadRequestException) throw error;
@@ -230,6 +236,33 @@ export class OrdersService {
 
   async remove(id: number) {
     return this.prisma.order.delete({ where: { id: Number(id) } });
+  }
+
+  private async checkAndAlertLowStock(productIds: number[]): Promise<void> {
+    const settings = await this.prisma.systemSetting.findMany();
+    const s: Record<string, string> = settings.reduce((acc, r) => ({ ...acc, [r.key]: r.value }), {});
+    const threshold = parseInt(s['LOW_STOCK_THRESHOLD'] || '5', 10);
+    const adminEmail = this.configService.get<string>('ADMIN_EMAIL') || 'admin@zetraelectronics.com';
+
+    const lowStockProducts = await this.prisma.product.findMany({
+      where: { id: { in: productIds }, stock: { lte: threshold } },
+      select: { id: true, name: true, stock: true, category: true },
+    });
+
+    if (lowStockProducts.length === 0) return;
+
+    const products = lowStockProducts.map((p) => ({
+      ...p,
+      stockLabel: p.stock === 0 ? `0 — OUT OF STOCK` : `${p.stock} unit${p.stock === 1 ? '' : 's'}`,
+      isZero: p.stock === 0,
+    }));
+
+    await this.mailerService.sendMail({
+      to: adminEmail,
+      subject: `[Low Stock Alert] ${products.length} product(s) running low — Zetra Electronics`,
+      template: 'low-stock-alert',
+      context: { products, threshold },
+    });
   }
 
   private async sendInvoiceEmails(order: any): Promise<void> {
