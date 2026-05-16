@@ -73,6 +73,22 @@ export class AuthService {
         };
     }
 
+    async googleLoginByEmail(email: string, name: string) {
+        let user = await this.prisma.user.findUnique({ where: { email } });
+        if (!user) {
+            const hashedPassword = await bcrypt.hash(crypto.randomBytes(16).toString('hex'), 10);
+            user = await this.prisma.user.create({
+                data: { email, password: hashedPassword, name },
+            });
+        }
+        const payload = { sub: user.id, email: user.email, role: user.role };
+        const jwtToken = this.jwtService.sign(payload);
+        return {
+            access_token: jwtToken,
+            user: { id: user.id, email: user.email, name: user.name, role: user.role },
+        };
+    }
+
     async googleLogin(token: string) {
         if (!admin.apps.length) {
             admin.initializeApp({

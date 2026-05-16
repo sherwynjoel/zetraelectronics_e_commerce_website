@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/auth-store";
-import { auth, googleProvider, signInWithRedirect, getRedirectResult } from "@/lib/firebase";
 export default function LoginPage() {
     const router = useRouter();
     const login = useAuthStore((state) => state.login);
@@ -15,27 +14,20 @@ export default function LoginPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
 
-    // Handle the result when Google redirects back to this page
+    // Handle token returned from server-side Google OAuth callback
     useEffect(() => {
-        getRedirectResult(auth)
-            .then(async (result) => {
-                if (!result) return; // normal page load, no redirect
-                setIsLoading(true);
-                const idToken = await result.user.getIdToken();
-                const res = await fetch(`${API_URL}/auth/google/firebase`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ token: idToken }),
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.message || "Failed to authenticate");
-                login(data.user, data.access_token);
-                router.push(data.user.role === "ADMIN" ? "/admin" : "/");
-            })
-            .catch((err) => {
-                setIsLoading(false);
-                setError(err.message || "Google sign-in failed");
-            });
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get("token");
+        const userStr = params.get("user");
+        if (token && userStr) {
+            try {
+                const user = JSON.parse(decodeURIComponent(userStr));
+                login(user, token);
+                router.push(user.role === "ADMIN" ? "/admin" : "/");
+            } catch {
+                setError("Google sign-in failed. Please try again.");
+            }
+        }
     }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -78,10 +70,8 @@ export default function LoginPage() {
         }
     };
 
-    const handleGoogleLogin = async () => {
-        setError("");
-        await signInWithRedirect(auth, googleProvider);
-        // Page will redirect to Google, then come back — result handled in useEffect
+    const handleGoogleLogin = () => {
+        window.location.href = `${API_URL}/auth/google`;
     };
 
     return (
