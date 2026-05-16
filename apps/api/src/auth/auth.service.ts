@@ -5,7 +5,8 @@ import { ConfigService } from '@nestjs/config';
 import { MailerService } from '@nestjs-modules/mailer';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
-import * as admin from 'firebase-admin';
+import * as jwt from 'jsonwebtoken';
+import * as https from 'https';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 
@@ -89,51 +90,53 @@ export class AuthService {
         };
     }
 
-    async googleLogin(token: string) {
-        if (!admin.apps.length) {
-            admin.initializeApp({
-                projectId: this.configService.get<string>('FIREBASE_PROJECT_ID') || 'zetraelectronics-c55c1',
+    private fetchGooglePublicKeys(): Promise<Record<string, string>> {
+        return new Promise((resolve, reject) => {
+            https.get('https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com', (res) => {
+                let data = '';
+                res.on('data', chunk => data += chunk);
+                res.on('end', () => resolve(JSON.parse(data)));
+                res.on('error', reject);
             });
-        }
+        });
+    }
 
+    async googleLogin(idToken: string) {
         try {
-            const decodedToken = await admin.auth().verifyIdToken(token);
-            const email = decodedToken.email;
+            const publicKeys = await this.fetchGooglePublicKeys();
+            const decoded = jwt.decode(idToken, { complete: true });
+            if (!decoded || typeof decoded === 'string') throw new Error('Invalid token');
 
-            if (!email) {
-                throw new UnauthorizedException('Google token did not contain an email');
-            }
+            const publicKey = publicKeys[(decoded.header as any).kid];
+            if (!publicKey) throw new Error('Unknown key');
 
-            let user = await this.prisma.user.findUnique({
-                where: { email },
-            });
+            const projectId = 'zetraelectronics-c55c1';
+            const payload = jwt.verify(idToken, publicKey, {
+                algorithms: ['RS256'],
+                audience: projectId,
+                issuer: `https://securetoken.google.com/${projectId}`,
+            }) as any;
 
+            const email: string = payload.email;
+            const name: string = payload.name || payload.email;
+
+            if (!email) throw new Error('No email in token');
+
+            let user = await this.prisma.user.findUnique({ where: { email } });
             if (!user) {
-                const generatedPassword = crypto.randomBytes(16).toString('hex');
-                const hashedPassword = await bcrypt.hash(generatedPassword, 10);
+                const hashedPassword = await bcrypt.hash(crypto.randomBytes(16).toString('hex'), 10);
                 user = await this.prisma.user.create({
-                    data: {
-                        email,
-                        password: hashedPassword,
-                        name: decodedToken.name || 'Google User',
-                    },
+                    data: { email, password: hashedPassword, name },
                 });
             }
 
-            const payload = { sub: user.id, email: user.email, role: user.role };
-            const jwtToken = this.jwtService.sign(payload);
-
+            const jwtPayload = { sub: user.id, email: user.email, role: user.role };
             return {
-                access_token: jwtToken,
-                user: {
-                    id: user.id,
-                    email: user.email,
-                    name: user.name,
-                    role: user.role
-                }
+                access_token: this.jwtService.sign(jwtPayload),
+                user: { id: user.id, email: user.email, name: user.name, role: user.role },
             };
         } catch (error) {
-            console.error('Firebase Auth Error:', error);
+            console.error('Google token verification failed:', error.message);
             throw new UnauthorizedException('Invalid Google token');
         }
     }
