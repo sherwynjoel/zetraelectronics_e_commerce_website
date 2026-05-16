@@ -98,6 +98,21 @@ export default function ProfilePage() {
         }
     };
 
+    const cancelOrder = async (orderId: number) => {
+        if (!confirm('Are you sure you want to cancel this order?')) return;
+        try {
+            const res = await fetch(`${API_URL}/orders/${orderId}/cancel`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || 'Failed to cancel order');
+            setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'CANCELLED' } : o));
+        } catch (err: any) {
+            alert(err.message || 'Could not cancel order. Please try again.');
+        }
+    };
+
     const downloadInvoice = async (orderId: number) => {
         try {
             const res = await fetch(`${API_URL}/orders/${orderId}/invoice`, {
@@ -257,6 +272,14 @@ export default function ProfilePage() {
                                             >
                                                 <Download className="h-3 w-3" /> Invoice
                                             </button>
+                                            {order.status === 'PENDING' && (
+                                                <button
+                                                    onClick={() => cancelOrder(order.id)}
+                                                    className="flex items-center gap-1 text-xs font-medium text-red-600 hover:underline px-3 py-1.5 bg-red-50 rounded-full cursor-pointer border-0"
+                                                >
+                                                    Cancel Order
+                                                </button>
+                                            )}
                                             <span className={`px-2 py-1 rounded-full text-xs font-bold ${statusColor(order.status)}`}>
                                                 {order.status}
                                             </span>

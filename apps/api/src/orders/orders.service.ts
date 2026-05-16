@@ -205,6 +205,33 @@ export class OrdersService {
     return { received: true };
   }
 
+  async cancelOrder(orderId: number, userId: number, role: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: { items: true },
+    });
+    if (!order) throw new NotFoundException('Order not found');
+    if (order.userId !== userId && role !== 'ADMIN') {
+      throw new UnauthorizedException('You can only cancel your own orders');
+    }
+    if (order.status !== 'PENDING') {
+      throw new BadRequestException(`Cannot cancel an order with status "${order.status}". Only PENDING orders can be cancelled.`);
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.order.update({ where: { id: orderId }, data: { status: 'CANCELLED' } });
+      // Restore stock
+      for (const item of order.items) {
+        await tx.product.update({
+          where: { id: item.productId },
+          data: { stock: { increment: item.quantity } },
+        });
+      }
+    });
+
+    return { message: 'Order cancelled successfully' };
+  }
+
   async findAll(page: number = 1, limit: number = 50) {
     return this.prisma.order.findMany({
       skip: (page - 1) * limit,
