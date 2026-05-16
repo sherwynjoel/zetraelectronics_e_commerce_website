@@ -3,11 +3,10 @@
 import { API_URL } from '@/lib/api';
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/auth-store";
-import { auth, googleProvider, signInWithPopup } from "@/lib/firebase";
-
+import { auth, googleProvider, signInWithRedirect, getRedirectResult } from "@/lib/firebase";
 export default function LoginPage() {
     const router = useRouter();
     const login = useAuthStore((state) => state.login);
@@ -15,6 +14,29 @@ export default function LoginPage() {
     const [password, setPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
+
+    // Handle the result when Google redirects back to this page
+    useEffect(() => {
+        getRedirectResult(auth)
+            .then(async (result) => {
+                if (!result) return; // normal page load, no redirect
+                setIsLoading(true);
+                const idToken = await result.user.getIdToken();
+                const res = await fetch(`${API_URL}/auth/google/firebase`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ token: idToken }),
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || "Failed to authenticate");
+                login(data.user, data.access_token);
+                router.push(data.user.role === "ADMIN" ? "/admin" : "/");
+            })
+            .catch((err) => {
+                setIsLoading(false);
+                setError(err.message || "Google sign-in failed");
+            });
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -57,38 +79,9 @@ export default function LoginPage() {
     };
 
     const handleGoogleLogin = async () => {
-        setIsLoading(true);
         setError("");
-
-        try {
-            const result = await signInWithPopup(auth, googleProvider);
-            const idToken = await result.user.getIdToken();
-
-            const res = await fetch(`${API_URL}/auth/google/firebase`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ token: idToken }),
-            });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                throw new Error(data.message || "Failed to authenticate with backend");
-            }
-
-            login(data.user, data.access_token);
-
-            if (data.user.role === 'ADMIN') {
-                router.push("/admin");
-            } else {
-                router.push("/");
-            }
-        } catch (err: any) {
-            console.error("Google Login Error:", err);
-            setError(err.message || "Failed to sign in with Google");
-        } finally {
-            setIsLoading(false);
-        }
+        await signInWithRedirect(auth, googleProvider);
+        // Page will redirect to Google, then come back — result handled in useEffect
     };
 
     return (
