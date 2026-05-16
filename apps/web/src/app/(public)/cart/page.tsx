@@ -7,6 +7,7 @@ import { Trash2, Plus, Minus, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { formatImageUrl } from "@/lib/utils";
 
 export default function CartPage() {
     const { items, removeItem, updateQuantity, total, clearCart } = useCartStore();
@@ -72,7 +73,7 @@ export default function CartPage() {
                             <div key={item.id} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 flex gap-6 items-center shadow-sm hover:shadow-md transition-shadow group">
                                 <div className="relative h-28 w-28 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 flex-shrink-0 flex items-center justify-center overflow-hidden">
                                     {item.image ? (
-                                        <Image src={item.image} alt={item.name} fill className="object-contain p-4 mix-blend-multiply dark:mix-blend-normal group-hover:scale-110 transition-transform duration-300" unoptimized />
+                                        <Image src={formatImageUrl(item.image)} alt={item.name} fill className="object-contain p-4 mix-blend-multiply dark:mix-blend-normal group-hover:scale-110 transition-transform duration-300" unoptimized />
                                     ) : (
                                         <div className="text-xs text-muted-foreground uppercase font-bold tracking-widest">No Img</div>
                                     )}
