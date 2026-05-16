@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Res, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Res, BadRequestException, Request } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../auth/roles.guard';
@@ -11,7 +11,8 @@ export class OrdersController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  create(@Body() createOrderDto: any) {
+  create(@Request() req: any, @Body() createOrderDto: any) {
+    createOrderDto.userId = req.user.userId;
     return this.ordersService.create(createOrderDto);
   }
 
@@ -44,7 +45,9 @@ export class OrdersController {
   @Get('user/:userId')
   @UseGuards(JwtAuthGuard)
   async findAllByUser(@Param('userId') userId: string) {
-    return await this.ordersService.findAllByUser(Number(userId));
+    const id = Number(userId);
+    if (isNaN(id)) throw new BadRequestException('Invalid user ID');
+    return await this.ordersService.findAllByUser(id);
   }
 
   @Get(':id')

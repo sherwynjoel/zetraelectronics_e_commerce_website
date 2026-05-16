@@ -3,11 +3,14 @@
 import { useCartStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, Plus, Minus } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export function AddToCartButton({ product, size = "default" }: { product: any, size?: "default" | "sm" | "lg" | "icon" }) {
     const { addItem, removeItem, updateQuantity, items } = useCartStore();
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => setMounted(true), []);
 
-    const cartItem = items.find((item) => item.id === product.id);
+    const cartItem = mounted ? items.find((item) => item.id === product.id) : null;
     const quantity = cartItem?.quantity ?? 0;
 
     const handleAdd = (e: React.MouseEvent) => {
