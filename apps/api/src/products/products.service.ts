@@ -45,9 +45,9 @@ export class ProductsService {
     }
     if (search) {
       where.OR = [
-        { name: { contains: search } },
-        { description: { contains: search } },
-        { category: { contains: search } },
+        { name: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+        { category: { contains: search, mode: 'insensitive' } },
       ];
     }
 

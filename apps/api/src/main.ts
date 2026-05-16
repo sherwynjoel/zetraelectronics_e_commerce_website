@@ -4,7 +4,9 @@ import { ValidationPipe } from '@nestjs/common';
 import helmet from 'helmet';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  // rawBody: true makes NestJS preserve the original request body buffer
+  // needed for Razorpay webhook HMAC signature verification
+  const app = await NestFactory.create(AppModule, { rawBody: true });
 
   app.use(helmet());
 

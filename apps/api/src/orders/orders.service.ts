@@ -157,7 +157,7 @@ export class OrdersService {
     }
   }
 
-  async handleWebhook(body: any, signature: string, timestamp?: string) {
+  async handleWebhook(rawBody: string, parsed: any, signature: string, timestamp?: string) {
     const secret = this.configService.get<string>('RAZORPAY_WEBHOOK_SECRET');
     if (!secret) {
       throw new InternalServerErrorException('Webhook secret is not configured');
@@ -172,16 +172,17 @@ export class OrdersService {
       }
     }
 
+    // Use raw body string for HMAC — Razorpay signs the exact bytes it sends
     const expectedSignature = crypto
       .createHmac('sha256', secret)
-      .update(JSON.stringify(body))
+      .update(rawBody)
       .digest('hex');
 
     if (expectedSignature !== signature) {
       throw new UnauthorizedException('Invalid webhook signature');
     }
 
-    const { order_id } = body?.payload?.payment?.entity ?? {};
+    const { order_id } = parsed?.payload?.payment?.entity ?? {};
     if (order_id) {
       await this.prisma.order.updateMany({
         where: { razorpayOrderId: order_id },
@@ -201,7 +202,7 @@ export class OrdersService {
         );
       }
     }
-    return { status: 'ok' };
+    return { received: true };
   }
 
   async findAll(page: number = 1, limit: number = 50) {

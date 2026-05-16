@@ -11,6 +11,8 @@ import { RegisterDto } from './dto/register.dto';
 
 @Injectable()
 export class AuthService {
+    private googlePublicKeysCache: { keys: Record<string, string>; expiresAt: number } | null = null;
+
     constructor(
         private prisma: PrismaService,
         private jwtService: JwtService,
@@ -90,13 +92,26 @@ export class AuthService {
     }
 
     private fetchGooglePublicKeys(): Promise<Record<string, string>> {
+        const now = Date.now();
+        if (this.googlePublicKeysCache && this.googlePublicKeysCache.expiresAt > now) {
+            return Promise.resolve(this.googlePublicKeysCache.keys);
+        }
         return new Promise((resolve, reject) => {
             https.get('https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com', (res) => {
                 let data = '';
                 res.on('data', chunk => data += chunk);
-                res.on('end', () => resolve(JSON.parse(data)));
+                res.on('end', () => {
+                    try {
+                        const keys = JSON.parse(data);
+                        // Cache for 1 hour
+                        this.googlePublicKeysCache = { keys, expiresAt: now + 60 * 60 * 1000 };
+                        resolve(keys);
+                    } catch (e) {
+                        reject(new Error('Failed to parse Google public keys'));
+                    }
+                });
                 res.on('error', reject);
-            });
+            }).on('error', reject);
         });
     }
 

@@ -1,4 +1,5 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Res, BadRequestException, ForbiddenException, Request, Headers } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Res, BadRequestException, ForbiddenException, Request, Headers, RawBodyRequest } from '@nestjs/common';
+import { Request as ExpressRequest } from 'express';
 import { OrdersService } from './orders.service';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -29,11 +30,13 @@ export class OrdersController {
 
   @Post('webhook')
   handleWebhook(
+    @Request() req: RawBodyRequest<ExpressRequest>,
     @Body() body: any,
     @Headers('x-razorpay-signature') signature: string,
     @Headers('x-razorpay-timestamp') timestamp: string,
   ) {
-    return this.ordersService.handleWebhook(body, signature, timestamp);
+    const rawBody = req.rawBody?.toString('utf8') ?? JSON.stringify(body);
+    return this.ordersService.handleWebhook(rawBody, body, signature, timestamp);
   }
 
   @Get()
