@@ -2,6 +2,7 @@ import {
   Injectable,
   BadRequestException,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -62,8 +63,10 @@ export class ProductsService {
     });
   }
 
-  findOne(id: number) {
-    return this.prisma.product.findUnique({ where: { id } });
+  async findOne(id: number) {
+    const product = await this.prisma.product.findUnique({ where: { id } });
+    if (!product) throw new NotFoundException(`Product #${id} not found`);
+    return product;
   }
 
   update(id: number, updateProductDto: UpdateProductDto) {
