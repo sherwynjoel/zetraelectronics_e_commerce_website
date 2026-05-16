@@ -57,18 +57,18 @@ export default function AdminCustomersPage() {
                             <th className="p-4 font-medium text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y text-slate-700 dark:text-slate-300">
+                    <tbody className="divide-y">
                         {customers.map((customer: any) => (
                             <tr key={customer.id} className="hover:bg-muted/50">
-                                <td className="p-4 font-medium">
+                                <td className="p-4 font-semibold text-foreground">
                                     <div className="flex items-center gap-2">
-                                        <div className="h-8 w-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs">
+                                        <div className="h-8 w-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs flex-shrink-0">
                                             {customer.name?.charAt(0) || customer.email.charAt(0).toUpperCase()}
                                         </div>
                                         {customer.name || "N/A"}
                                     </div>
                                 </td>
-                                <td className="p-4">{customer.email}</td>
+                                <td className="p-4 text-foreground">{customer.email}</td>
                                 <td className="p-4">
                                     <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${customer.role === 'ADMIN'
                                         ? 'bg-purple-100 text-purple-800'
@@ -78,7 +78,7 @@ export default function AdminCustomersPage() {
                                         {customer.role}
                                     </div>
                                 </td>
-                                <td className="p-4 font-medium">{customer._count?.orders || 0}</td>
+                                <td className="p-4 font-semibold text-foreground">{customer._count?.orders || 0}</td>
                                 <td className="p-4 text-muted-foreground">
                                     {new Date(customer.createdAt).toLocaleDateString()}
                                 </td>
