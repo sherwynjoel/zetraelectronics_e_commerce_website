@@ -21,6 +21,8 @@ model User {
   passwordResetExpiry DateTime?
   emailVerified       Boolean    @default(false)
   emailVerifyToken    String?
+  failedLoginAttempts Int        @default(0)
+  lockoutUntil        DateTime?
 }
 
 model Product {

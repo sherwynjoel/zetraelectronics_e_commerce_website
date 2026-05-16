@@ -74,16 +74,35 @@ export class AuthService {
             where: { email: loginDto.email },
         });
 
-        if (!user) {
+        // Check lockout before doing anything else
+        if (user?.lockoutUntil && new Date() < user.lockoutUntil) {
+            const minutesLeft = Math.ceil((user.lockoutUntil.getTime() - Date.now()) / 60000);
+            throw new UnauthorizedException(`Account is temporarily locked. Try again in ${minutesLeft} minute(s).`);
+        }
+
+        const isMatch = user ? await bcrypt.compare(loginDto.password, user.password) : false;
+
+        if (!user || !isMatch) {
+            // Increment failed attempts and lock after 10
+            if (user) {
+                const attempts = user.failedLoginAttempts + 1;
+                const lockoutUntil = attempts >= 10 ? new Date(Date.now() + 15 * 60 * 1000) : null;
+                await this.prisma.user.update({
+                    where: { id: user.id },
+                    data: {
+                        failedLoginAttempts: attempts,
+                        ...(lockoutUntil ? { lockoutUntil } : {}),
+                    },
+                });
+            }
             throw new UnauthorizedException('Invalid credentials');
         }
 
-        const isMatch = await bcrypt.compare(loginDto.password, user.password);
-
-        if (!isMatch) {
-            throw new UnauthorizedException('Invalid credentials');
-        }
-
+        // Successful login — reset lockout counters
+        await this.prisma.user.update({
+            where: { id: user.id },
+            data: { failedLoginAttempts: 0, lockoutUntil: null },
+        });
 
         const payload = { sub: user.id, email: user.email, role: user.role };
         const token = this.jwtService.sign(payload);

@@ -8,4 +8,6 @@ coverage
 apps/api/uploads
 *.db
 vps.py
+deploy.py
+test_api.py
 apps/api/prisma/prisma/
