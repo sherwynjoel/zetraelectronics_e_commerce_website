@@ -6,3 +6,6 @@ dist
 coverage
 .turbo
 apps/api/uploads
+*.db
+vps.py
+apps/api/prisma/prisma/
