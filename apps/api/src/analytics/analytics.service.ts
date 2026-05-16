@@ -19,7 +19,7 @@ export class AnalyticsService {
         const recentOrders = await this.prisma.order.findMany({
             take: 5,
             orderBy: { createdAt: 'desc' },
-            include: { user: true },
+            include: { user: { select: { id: true, email: true, name: true, role: true } } },
         });
 
         return {
