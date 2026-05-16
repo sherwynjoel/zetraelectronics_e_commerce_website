@@ -34,7 +34,7 @@ export class OrdersService {
         where: { id: Number(item.productId || item.id) }
       });
       if (!product) {
-        throw new BadRequestException(\`Product #\${item.productId || item.id} no longer exists. Please clear your cart.\`);
+        throw new BadRequestException(`Product #${item.productId || item.id} no longer exists. Please clear your cart.`);
       }
     }
 
@@ -42,7 +42,7 @@ export class OrdersService {
       const razorpayOrder = await this.razorpay.orders.create({
         amount: Math.round(totalAmount * 100),
         currency: 'INR',
-        receipt: \`receipt_\${Date.now()}\`,
+        receipt: `receipt_${Date.now()}`,
       });
 
       return this.prisma.order.create({
@@ -77,7 +77,7 @@ export class OrdersService {
 
     if (expectedSignature === razorpay_signature) {
       await this.prisma.order.updateMany({
-        where: { razorpayOrderId: orderId.toString() },
+        where: { razorpayOrderId: razorpayOrderId },
         data: { status: 'PAID' },
       });
       return { success: true };
@@ -142,6 +142,6 @@ export class OrdersService {
 
   async generateInvoice(id: number) {
     const order = await this.findOne(id);
-    return Buffer.from(\`Invoice for Order #\${order.id}\`);
+    return Buffer.from(`Invoice for Order #${order.id}`);
   }
 }
