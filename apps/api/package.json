@@ -108,7 +108,6 @@
     "seed": "ts-node prisma/seed.ts"
   },
   "overrides": {
-    "lodash": "4.17.21",
     "brace-expansion": "2.0.1",
     "picomatch": "4.0.2",
     "micromatch": "4.0.8",
