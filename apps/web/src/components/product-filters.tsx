@@ -14,6 +14,7 @@ const priceRanges = [
 ];
 
 interface FilterContentProps {
+    categories: string[];
     currentCategory: string | null;
     currentMin: string | null;
     currentMax: string | null;
@@ -28,7 +29,7 @@ interface FilterContentProps {
 }
 
 function FilterContent({
-    currentCategory, currentMin, currentMax,
+    categories, currentCategory, currentMin, currentMax,
     min, max, setMin, setMax,
     updateFilter, applyPrice, clearFilters, onClose,
 }: FilterContentProps) {
@@ -205,7 +206,7 @@ export function ProductFilters({ categories }: { categories: string[] }) {
         setDrawerOpen(false);
     };
 
-    const sharedProps = { currentCategory, currentMin, currentMax, min, max, setMin, setMax, updateFilter, applyPrice, clearFilters };
+    const sharedProps = { categories, currentCategory, currentMin, currentMax, min, max, setMin, setMax, updateFilter, applyPrice, clearFilters };
 
     return (
         <>
