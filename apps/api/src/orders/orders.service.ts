@@ -1,6 +1,7 @@
 import { Injectable, InternalServerErrorException, UnauthorizedException, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { ConfigService } from '@nestjs/config';
+import { MailerService } from '@nestjs-modules/mailer';
 const Razorpay = require('razorpay');
 import * as crypto from 'crypto';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -13,6 +14,7 @@ export class OrdersService {
   constructor(
     private prisma: PrismaService,
     private configService: ConfigService,
+    private mailerService: MailerService,
   ) {
     this.razorpay = new Razorpay({
       key_id: this.configService.get<string>('RAZORPAY_KEY_ID'),
@@ -129,6 +131,20 @@ export class OrdersService {
         where: { razorpayOrderId: razorpayOrderId },
         data: { status: 'PAID', razorpayPaymentId: razorpay_payment_id, razorpaySignature: razorpay_signature },
       });
+
+      const order = await this.prisma.order.findFirst({
+        where: { razorpayOrderId: razorpayOrderId },
+        include: {
+          user: { select: { id: true, email: true, name: true, role: true } },
+          items: { include: { product: true } },
+        },
+      });
+      if (order) {
+        this.sendInvoiceEmails(order as any).catch((err) =>
+          console.error('Invoice email failed:', err),
+        );
+      }
+
       return { success: true };
     } else {
       throw new UnauthorizedException('Invalid payment signature');
@@ -156,6 +172,19 @@ export class OrdersService {
         where: { razorpayOrderId: order_id },
         data: { status: 'PAID' },
       });
+
+      const order = await this.prisma.order.findFirst({
+        where: { razorpayOrderId: order_id },
+        include: {
+          user: { select: { id: true, email: true, name: true, role: true } },
+          items: { include: { product: true } },
+        },
+      });
+      if (order) {
+        this.sendInvoiceEmails(order as any).catch((err) =>
+          console.error('Invoice email failed (webhook):', err),
+        );
+      }
     }
     return { status: 'ok' };
   }
@@ -201,6 +230,66 @@ export class OrdersService {
 
   async remove(id: number) {
     return this.prisma.order.delete({ where: { id: Number(id) } });
+  }
+
+  private async sendInvoiceEmails(order: any): Promise<void> {
+    try {
+      const pdfBuffer = await this.generateInvoice(order);
+      const adminEmail =
+        this.configService.get<string>('ADMIN_EMAIL') || 'admin@zetraelectronics.com';
+      const customerName = order.user?.name || 'Valued Customer';
+      const customerEmail = order.user?.email;
+
+      const items = order.items.map((item: any) => ({
+        productName: item.product?.name ?? `Product #${item.productId}`,
+        quantity: item.quantity,
+        price: Number(item.price).toFixed(2),
+        lineTotal: (item.price * item.quantity).toFixed(2),
+      }));
+
+      const attachment = {
+        filename: `invoice-ORD-${order.id}.pdf`,
+        content: pdfBuffer,
+        contentType: 'application/pdf',
+      };
+
+      if (customerEmail) {
+        await this.mailerService.sendMail({
+          to: customerEmail,
+          subject: `Your Invoice for Order #ORD-${order.id} — Zetra Electronics`,
+          template: 'order-confirmation',
+          context: {
+            name: customerName,
+            orderId: order.id,
+            items,
+            total: Number(order.total).toFixed(2),
+          },
+          attachments: [attachment],
+        });
+      }
+
+      await this.mailerService.sendMail({
+        to: adminEmail,
+        subject: `[New Order] #ORD-${order.id} — ₹${Number(order.total).toFixed(2)} from ${customerName}`,
+        template: 'admin-order-notification',
+        context: {
+          orderId: order.id,
+          customerName,
+          customerEmail: customerEmail || 'N/A',
+          total: Number(order.total).toFixed(2),
+          items,
+          paymentId: order.razorpayPaymentId || 'N/A',
+          orderDate: new Date(order.createdAt).toLocaleDateString('en-IN', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          }),
+        },
+        attachments: [attachment],
+      });
+    } catch (error) {
+      console.error('Failed to send invoice emails:', error);
+    }
   }
 
   async generateInvoice(order: Awaited<ReturnType<typeof this.findOne>>) {

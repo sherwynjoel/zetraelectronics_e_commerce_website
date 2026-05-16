@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #1e293b; background-color: #f8fafc; margin: 0; padding: 0; }
+        .wrapper { background-color: #f8fafc; padding: 40px 20px; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .header { background-color: #0f172a; color: white; padding: 40px 20px; text-align: center; }
+        .header h1 { margin: 0; font-size: 24px; letter-spacing: -0.025em; }
+        .badge { display: inline-block; background-color: #22c55e; color: white; padding: 4px 14px; border-radius: 999px; font-size: 13px; font-weight: 600; margin-top: 10px; }
+        .content { padding: 40px; }
+        .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 28px; }
+        .meta-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; }
+        .meta-label { font-size: 11px; text-transform: uppercase; color: #94a3b8; font-weight: 600; letter-spacing: 0.05em; }
+        .meta-value { font-size: 15px; font-weight: 600; color: #0f172a; margin-top: 4px; }
+        .section-title { font-size: 13px; font-weight: 700; text-transform: uppercase; color: #64748b; letter-spacing: 0.05em; margin-bottom: 10px; }
+        .order-details { border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; margin-bottom: 28px; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; font-size: 11px; text-transform: uppercase; color: #64748b; padding: 12px 20px; background-color: #f8fafc; letter-spacing: 0.04em; }
+        td { padding: 14px 20px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+        .total-row td { background-color: #f1f5f9; font-weight: 700; font-size: 15px; border-bottom: none; }
+        .payment-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 14px 16px; margin-bottom: 28px; }
+        .payment-box .meta-label { color: #166534; }
+        .payment-box .meta-value { color: #15803d; font-family: monospace; }
+        .footer { text-align: center; padding: 30px 40px; font-size: 12px; color: #94a3b8; border-top: 1px solid #f1f5f9; }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="container">
+            <div class="header">
+                <h1>ZETRA ELECTRONICS</h1>
+                <p style="margin-top: 8px; opacity: 0.7; font-size: 14px; margin-bottom: 4px;">Admin Notification</p>
+                <span class="badge">New Order Paid</span>
+            </div>
+            <div class="content">
+                <p style="font-size: 16px; font-weight: 600; margin-top: 0;">Order <span style="color:#3b82f6;">#ORD-{{orderId}}</span> has been paid successfully.</p>
+
+                <div class="meta-grid">
+                    <div class="meta-box">
+                        <div class="meta-label">Customer Name</div>
+                        <div class="meta-value">{{customerName}}</div>
+                    </div>
+                    <div class="meta-box">
+                        <div class="meta-label">Customer Email</div>
+                        <div class="meta-value" style="font-size:13px; word-break:break-all;">{{customerEmail}}</div>
+                    </div>
+                    <div class="meta-box">
+                        <div class="meta-label">Order Date</div>
+                        <div class="meta-value">{{orderDate}}</div>
+                    </div>
+                    <div class="meta-box">
+                        <div class="meta-label">Order Total</div>
+                        <div class="meta-value" style="color:#16a34a;">₹{{total}}</div>
+                    </div>
+                </div>
+
+                <div class="payment-box">
+                    <div class="meta-label">Razorpay Payment ID</div>
+                    <div class="meta-value">{{paymentId}}</div>
+                </div>
+
+                <div class="section-title">Items Ordered</div>
+                <div class="order-details">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th style="text-align:center;">Qty</th>
+                                <th style="text-align:right;">Unit Price</th>
+                                <th style="text-align:right;">Line Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{#each items}}
+                            <tr>
+                                <td>{{this.productName}}</td>
+                                <td style="text-align:center;">{{this.quantity}}</td>
+                                <td style="text-align:right;">₹{{this.price}}</td>
+                                <td style="text-align:right;">₹{{this.lineTotal}}</td>
+                            </tr>
+                            {{/each}}
+                            <tr class="total-row">
+                                <td colspan="3" style="text-align:right;">Grand Total</td>
+                                <td style="text-align:right;">₹{{total}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <p style="font-size:13px; color:#64748b; margin:0;">The customer invoice PDF is attached to this email. Please process and ship the order at the earliest.</p>
+            </div>
+            <div class="footer">
+                <p>This is an automated notification from Zetra Electronics Admin System.</p>
+                <p>&copy; 2026 Zetra Electronics. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
