@@ -5,7 +5,6 @@ import { ConfigService } from '@nestjs/config';
 import { MailerService } from '@nestjs-modules/mailer';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
-import * as jwt from 'jsonwebtoken';
 import * as https from 'https';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
@@ -101,33 +100,43 @@ export class AuthService {
         });
     }
 
+    private verifyFirebaseJwt(idToken: string, publicKey: string, projectId: string): any {
+        const parts = idToken.split('.');
+        if (parts.length !== 3) throw new Error('Invalid token format');
+        const [headerB64, payloadB64, sigB64] = parts;
+
+        const verifier = crypto.createVerify('RSA-SHA256');
+        verifier.update(`${headerB64}.${payloadB64}`);
+        const sig = Buffer.from(sigB64.replace(/-/g, '+').replace(/_/g, '/'), 'base64');
+        if (!verifier.verify(publicKey, sig)) throw new Error('Invalid signature');
+
+        const payload = JSON.parse(Buffer.from(payloadB64, 'base64').toString('utf8'));
+        const now = Math.floor(Date.now() / 1000);
+        if (payload.exp < now) throw new Error('Token expired');
+        if (payload.aud !== projectId) throw new Error('Invalid audience');
+        if (payload.iss !== `https://securetoken.google.com/${projectId}`) throw new Error('Invalid issuer');
+        return payload;
+    }
+
     async googleLogin(idToken: string) {
         try {
-            const publicKeys = await this.fetchGooglePublicKeys();
-            const decoded = jwt.decode(idToken, { complete: true });
-            if (!decoded || typeof decoded === 'string') throw new Error('Invalid token');
-
-            const publicKey = publicKeys[(decoded.header as any).kid];
-            if (!publicKey) throw new Error('Unknown key');
-
             const projectId = 'zetraelectronics-c55c1';
-            const payload = jwt.verify(idToken, publicKey, {
-                algorithms: ['RS256'],
-                audience: projectId,
-                issuer: `https://securetoken.google.com/${projectId}`,
-            }) as any;
+            const publicKeys = await this.fetchGooglePublicKeys();
 
+            const headerB64 = idToken.split('.')[0];
+            const header = JSON.parse(Buffer.from(headerB64, 'base64').toString('utf8'));
+            const publicKey = publicKeys[header.kid];
+            if (!publicKey) throw new Error('Unknown signing key');
+
+            const payload = this.verifyFirebaseJwt(idToken, publicKey, projectId);
             const email: string = payload.email;
-            const name: string = payload.name || payload.email;
-
+            const name: string = payload.name || email;
             if (!email) throw new Error('No email in token');
 
             let user = await this.prisma.user.findUnique({ where: { email } });
             if (!user) {
                 const hashedPassword = await bcrypt.hash(crypto.randomBytes(16).toString('hex'), 10);
-                user = await this.prisma.user.create({
-                    data: { email, password: hashedPassword, name },
-                });
+                user = await this.prisma.user.create({ data: { email, password: hashedPassword, name } });
             }
 
             const jwtPayload = { sub: user.id, email: user.email, role: user.role };
