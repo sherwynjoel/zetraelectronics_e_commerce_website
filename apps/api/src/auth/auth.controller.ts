@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, UseGuards, HttpCode, HttpStatus, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Patch, Body, Get, UseGuards, HttpCode, HttpStatus, BadRequestException, Request } from '@nestjs/common';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { RolesGuard } from './roles.guard';
 import { Roles } from './roles.decorator';
@@ -24,6 +24,12 @@ export class AuthController {
     @Post('register')
     register(@Body() registerDto: RegisterDto) {
         return this.authService.register(registerDto);
+    }
+
+    @Patch('profile')
+    @UseGuards(JwtAuthGuard)
+    updateProfile(@Request() req: any, @Body() body: { name?: string; currentPassword?: string; newPassword?: string }) {
+        return this.authService.updateProfile(req.user.userId, body);
     }
 
     @Post('forgot-password')

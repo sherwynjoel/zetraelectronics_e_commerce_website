@@ -121,6 +121,33 @@ export class AuthService {
             throw new UnauthorizedException('Invalid Google token');
         }
     }
+    async updateProfile(userId: number, data: { name?: string; currentPassword?: string; newPassword?: string }) {
+        const user = await this.prisma.user.findUnique({ where: { id: userId } });
+        if (!user) throw new NotFoundException('User not found');
+
+        const updateData: Record<string, any> = {};
+
+        if (data.name !== undefined && data.name.trim()) {
+            updateData.name = data.name.trim();
+        }
+
+        if (data.newPassword) {
+            if (!data.currentPassword) throw new BadRequestException('Current password is required');
+            const isMatch = await bcrypt.compare(data.currentPassword, user.password);
+            if (!isMatch) throw new UnauthorizedException('Current password is incorrect');
+            if (data.newPassword.length < 8) throw new BadRequestException('New password must be at least 8 characters');
+            updateData.password = await bcrypt.hash(data.newPassword, 10);
+        }
+
+        if (Object.keys(updateData).length === 0) {
+            throw new BadRequestException('No changes provided');
+        }
+
+        await this.prisma.user.update({ where: { id: userId }, data: updateData });
+
+        return { message: 'Profile updated successfully', name: updateData.name ?? user.name };
+    }
+
     async forgotPassword(email: string) {
         const user = await this.prisma.user.findUnique({ where: { email } });
         // Always return success to prevent user enumeration

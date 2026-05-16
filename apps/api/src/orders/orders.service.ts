@@ -228,9 +228,40 @@ export class OrdersService {
   }
 
   async update(id: number, updateOrderDto: any) {
-    return this.prisma.order.update({
+    const updated = await this.prisma.order.update({
       where: { id: Number(id) },
       data: updateOrderDto,
+      include: {
+        user: { select: { id: true, email: true, name: true, role: true } },
+        items: { include: { product: true } },
+      },
+    });
+
+    if (updateOrderDto.status === 'SHIPPED' && updated.user?.email) {
+      this.sendShippedEmail(updated as any).catch((err) =>
+        console.error('Shipped email failed:', err),
+      );
+    }
+
+    return updated;
+  }
+
+  private async sendShippedEmail(order: any): Promise<void> {
+    const items = order.items.map((item: any) => ({
+      productName: item.product?.name ?? `Product #${item.productId}`,
+      quantity: item.quantity,
+    }));
+
+    await this.mailerService.sendMail({
+      to: order.user.email,
+      subject: `Your order #ORD-${order.id} has been shipped — Zetra Electronics`,
+      template: 'order-shipped',
+      context: {
+        name: order.user.name || 'Valued Customer',
+        orderId: order.id,
+        trackingUrl: order.trackingUrl || null,
+        items,
+      },
     });
   }
 

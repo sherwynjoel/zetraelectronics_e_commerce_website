@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/auth-store";
 import { Button } from "@/components/ui/button";
-import { Package, User, LogOut, Download, MapPin } from "lucide-react";
+import { Package, User, LogOut, Download, MapPin, Pencil } from "lucide-react";
 
 interface Order {
     id: number;
@@ -21,11 +21,21 @@ interface Order {
 }
 
 export default function ProfilePage() {
-    const { user, token, logout } = useAuthStore();
+    const { user, token, login, logout } = useAuthStore();
     const router = useRouter();
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
     const [ordersError, setOrdersError] = useState<string | null>(null);
+
+    // Edit profile state
+    const [editOpen, setEditOpen] = useState(false);
+    const [editName, setEditName] = useState("");
+    const [currentPassword, setCurrentPassword] = useState("");
+    const [newPassword, setNewPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [editLoading, setEditLoading] = useState(false);
+    const [editError, setEditError] = useState("");
+    const [editSuccess, setEditSuccess] = useState("");
 
     const fetchOrders = (uid: number, tok: string) => {
         setLoading(true);
@@ -50,6 +60,43 @@ export default function ProfilePage() {
         if (!user || !token) { router.push("/login"); return; }
         fetchOrders(user.id, token);
     }, [user, token]);
+
+    const openEdit = () => {
+        setEditName(user?.name || "");
+        setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
+        setEditError(""); setEditSuccess("");
+        setEditOpen(true);
+    };
+
+    const handleEditSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (newPassword && newPassword !== confirmPassword) {
+            setEditError("New passwords do not match."); return;
+        }
+        setEditLoading(true); setEditError(""); setEditSuccess("");
+        try {
+            const body: Record<string, string> = {};
+            if (editName.trim()) body.name = editName.trim();
+            if (newPassword) { body.currentPassword = currentPassword; body.newPassword = newPassword; }
+
+            const res = await fetch(`${API_URL}/auth/profile`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                body: JSON.stringify(body),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || "Failed to update profile");
+
+            // Update auth store with new name
+            if (user && data.name) login({ ...user, name: data.name }, token!);
+            setEditSuccess("Profile updated successfully.");
+            setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
+        } catch (err: any) {
+            setEditError(err.message || "Something went wrong.");
+        } finally {
+            setEditLoading(false);
+        }
+    };
 
     const downloadInvoice = async (orderId: number) => {
         try {
@@ -96,9 +143,70 @@ export default function ProfilePage() {
                             <span className="inline-block mt-2 px-2 py-1 bg-muted rounded text-xs font-medium uppercase">{user.role}</span>
                         </div>
                     </div>
-                    <Button variant="destructive" className="w-full gap-2" onClick={() => { logout(); router.push("/"); }}>
-                        <LogOut className="h-4 w-4" /> Sign Out
-                    </Button>
+                    <div className="flex gap-2">
+                        <Button variant="outline" className="flex-1 gap-2" onClick={openEdit}>
+                            <Pencil className="h-4 w-4" /> Edit Profile
+                        </Button>
+                        <Button variant="destructive" className="flex-1 gap-2" onClick={() => { logout(); router.push("/"); }}>
+                            <LogOut className="h-4 w-4" /> Sign Out
+                        </Button>
+                    </div>
+
+                    {editOpen && (
+                        <form onSubmit={handleEditSubmit} className="mt-4 space-y-3 border-t pt-4">
+                            {editError && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{editError}</p>}
+                            {editSuccess && <p className="text-sm text-green-700 bg-green-50 p-2 rounded">{editSuccess}</p>}
+
+                            <div className="space-y-1">
+                                <label className="text-xs font-medium text-muted-foreground">Name</label>
+                                <input
+                                    type="text"
+                                    value={editName}
+                                    onChange={(e) => setEditName(e.target.value)}
+                                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                    placeholder="Your name"
+                                />
+                            </div>
+
+                            <p className="text-xs font-medium text-muted-foreground pt-1">Change Password <span className="font-normal">(leave blank to keep current)</span></p>
+                            <div className="space-y-1">
+                                <input
+                                    type="password"
+                                    value={currentPassword}
+                                    onChange={(e) => setCurrentPassword(e.target.value)}
+                                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                    placeholder="Current password"
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <input
+                                    type="password"
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                    placeholder="New password (min 8 chars)"
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <input
+                                    type="password"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                    placeholder="Confirm new password"
+                                />
+                            </div>
+
+                            <div className="flex gap-2 pt-1">
+                                <Button type="submit" size="sm" className="flex-1" disabled={editLoading}>
+                                    {editLoading ? "Saving..." : "Save Changes"}
+                                </Button>
+                                <Button type="button" size="sm" variant="ghost" className="flex-1" onClick={() => setEditOpen(false)}>
+                                    Cancel
+                                </Button>
+                            </div>
+                        </form>
+                    )}
                 </div>
 
                 {/* Orders List */}

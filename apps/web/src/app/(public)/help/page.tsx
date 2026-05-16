@@ -15,7 +15,7 @@ export default function HelpPage() {
     };
 
     const categories = [
-        { icon: <Package className="h-6 w-6" />, title: "Orders", desc: "Track, modify, or cancel orders" },
+        { icon: <Package className="h-6 w-6" />, title: "Orders", desc: "Track and view your orders" },
         { icon: <Truck className="h-6 w-6" />, title: "Shipping", desc: "Delivery times and methods" },
         { icon: <RotateCcw className="h-6 w-6" />, title: "Returns", desc: "Return policy and refunds" },
         { icon: <CreditCard className="h-6 w-6" />, title: "Payments", desc: "Payment methods and security" },
@@ -29,10 +29,6 @@ export default function HelpPage() {
         {
             question: "What payment methods do you accept?",
             answer: "We accept all major credit/debit cards (Visa, MasterCard), UPI, Net Banking, and Cash on Delivery (COD) for eligible locations."
-        },
-        {
-            question: "Can I cancel my order?",
-            answer: "Orders can be cancelled within 2 hours of placement if they haven't been shipped yet. Please contact support immediately or check your order details page."
         },
         {
             question: "Do you offer international shipping?",
