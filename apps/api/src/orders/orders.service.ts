@@ -23,33 +23,59 @@ export class OrdersService {
   async create(createOrderDto: any) {
     const userId = Number(createOrderDto.userId);
     const items = createOrderDto.items || [];
-    const totalAmount = Number(createOrderDto.totalAmount || createOrderDto.total || 0);
     const shippingAddress = createOrderDto.address || createOrderDto.shippingAddress || '';
 
-    if (!userId || totalAmount <= 0 || items.length === 0) {
+    if (!userId || items.length === 0) {
       throw new BadRequestException('Invalid order data');
     }
 
+    // Fetch tax/shipping settings
+    const settings = await this.prisma.systemSetting.findMany();
+    const s: Record<string, string> = settings.reduce((acc, r) => ({ ...acc, [r.key]: r.value }), {});
+    const taxRate = parseFloat(s['GST_PERCENTAGE'] || '18') / 100;
+    const freeShippingThreshold = parseFloat(s['FREE_SHIPPING_THRESHOLD'] || '0');
+    const flatShippingFee = parseFloat(s['FLAT_SHIPPING_FEE'] || '0');
+
+    // Validate stock and calculate total from DB prices (never trust frontend)
+    let subtotal = 0;
+    let shippingTotal = 0;
+    const dbProducts: Record<number, any> = {};
+
+    for (const item of items) {
+      const productId = Number(item.productId || item.id);
+      const qty = Number(item.quantity);
+      const product = await this.prisma.product.findUnique({ where: { id: productId } });
+      if (!product) throw new BadRequestException(`Product #${productId} no longer exists. Please clear your cart.`);
+      if (product.stock < qty) throw new BadRequestException(`Only ${product.stock} unit(s) of "${product.name}" available.`);
+      subtotal += product.price * qty;
+      shippingTotal += product.shippingCost * qty;
+      dbProducts[productId] = product;
+    }
+
+    let shipping = shippingTotal;
+    if (freeShippingThreshold > 0 && subtotal >= freeShippingThreshold) {
+      shipping = 0;
+    } else if (flatShippingFee > 0) {
+      shipping = flatShippingFee;
+    }
+    const tax = (subtotal + shipping) * taxRate;
+    const totalAmount = Math.round((subtotal + shipping + tax) * 100) / 100;
+
     try {
-      // Create Razorpay order before the DB transaction (external API call)
       const razorpayOrder = await this.razorpay.orders.create({
         amount: Math.round(totalAmount * 100),
         currency: 'INR',
         receipt: `receipt_${Date.now()}`,
       });
 
-      // Atomic: validate stock, create order, decrement stock in one transaction
       const order = await this.prisma.$transaction(async (tx) => {
+        // Re-check stock atomically inside transaction
         for (const item of items) {
           const productId = Number(item.productId || item.id);
           const qty = Number(item.quantity);
           const product = await tx.product.findUnique({ where: { id: productId } });
-          if (!product) {
-            throw new BadRequestException(`Product #${productId} no longer exists. Please clear your cart.`);
-          }
-          if (product.stock < qty) {
-            throw new BadRequestException(`Only ${product.stock} unit(s) of "${product.name}" available.`);
-          }
+          if (!product) throw new BadRequestException(`Product #${productId} no longer exists.`);
+          if (product.stock < qty) throw new BadRequestException(`Only ${product.stock} unit(s) of "${product.name}" available.`);
         }
 
         const created = await tx.order.create({
@@ -60,11 +86,14 @@ export class OrdersService {
             status: 'PENDING',
             razorpayOrderId: razorpayOrder.id,
             items: {
-              create: items.map((item: any) => ({
-                product: { connect: { id: Number(item.productId || item.id) } },
-                quantity: Number(item.quantity),
-                price: Number(item.price),
-              })),
+              create: items.map((item: any) => {
+                const productId = Number(item.productId || item.id);
+                return {
+                  product: { connect: { id: productId } },
+                  quantity: Number(item.quantity),
+                  price: dbProducts[productId].price, // always DB price
+                };
+              }),
             },
           },
         });

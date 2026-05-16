@@ -1,20 +1,22 @@
-import { Controller, Get, Param, Res, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Param, Res, NotFoundException, BadRequestException } from '@nestjs/common';
 import { existsSync } from 'fs';
-import { join } from 'path';
+import { join, normalize, resolve } from 'path';
 import type { Response } from 'express';
 
 @Controller('uploads')
 export class UploadsController {
+    private readonly uploadsDir = resolve(process.cwd(), 'uploads');
+
     @Get(':filename')
     getFile(@Param('filename') filename: string, @Res() res: Response) {
-        // Ensure we are looking in the correct folder: apps/api/uploads
-        // process.cwd() should be apps/api
-        const filePath = join(process.cwd(), 'uploads', filename);
+        const filePath = normalize(join(this.uploadsDir, filename));
+
+        // Prevent path traversal: resolved path must stay inside uploads dir
+        if (!filePath.startsWith(this.uploadsDir + '/') && filePath !== this.uploadsDir) {
+            throw new BadRequestException('Invalid filename');
+        }
 
         if (!existsSync(filePath)) {
-            // Fallback: try relative to __dirname (dist/src/...) -> dist/uploads or similar?
-            // Let's stick to process.cwd() for now as it matches where multer saves.
-            // If file missing, maybe 404.
             throw new NotFoundException('File not found');
         }
 
