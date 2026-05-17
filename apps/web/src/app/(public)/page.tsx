@@ -27,11 +27,23 @@ async function getSettings() {
   }
 }
 
+async function getCategories() {
+  try {
+    const res = await fetch(`${API_URL}/categories`, { cache: "no-store" });
+    if (!res.ok) return [];
+    return res.json();
+  } catch (e) {
+    console.error("Failed to fetch categories:", e);
+    return [];
+  }
+}
+
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const products = await getProducts();
   const settingsData = await getSettings();
+  const categories = await getCategories();
   
   const heroImage = settingsData.find((s: any) => s.key === "HOME_HERO_IMAGE")?.value || "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=1000";
   const heroSubtext = settingsData.find((s: any) => s.key === "HOME_HERO_SUBTEXT")?.value || "Your premium destination for electronic components, sensors, IoT modules, and robotics kits. Enterprise-grade quality for hobbyists and professionals.";
@@ -74,13 +86,15 @@ export default async function Home() {
         <div className="container mx-auto px-4">
           <h2 className="text-2xl font-bold mb-8">Popular Categories</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {["Development Boards", "Sensors", "Robotics", "IoT & Wireless", "Tools", "Batteries"].map((cat) => (
-              <Link key={cat} href={`/products?category=${encodeURIComponent(cat)}`}>
+            {categories.length > 0 ? categories.map((cat: any) => (
+              <Link key={cat.id} href={`/products?category=${encodeURIComponent(cat.name)}`}>
                 <div className="bg-card p-4 rounded-xl border hover:border-primary transition-all cursor-pointer shadow-sm hover:shadow-md text-center group h-full">
-                  <div className="font-semibold group-hover:text-primary transition-colors text-sm md:text-base">{cat}</div>
+                  <div className="font-semibold group-hover:text-primary transition-colors text-sm md:text-base">{cat.name}</div>
                 </div>
               </Link>
-            ))}
+            )) : (
+              <div className="col-span-full text-sm text-muted-foreground text-center py-4">No categories found</div>
+            )}
           </div>
         </div>
       </section>
