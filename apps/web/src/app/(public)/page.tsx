@@ -4,6 +4,18 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { HeroSearchBar } from "@/components/layout/HeroSearchBar";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "Zetra Electronics | Buy Electronic Components Online India",
+    description: "India's premium destination for electronic components, sensors, IoT modules, development boards, and robotics kits. Fast shipping, best prices.",
+    alternates: { canonical: "https://zetraelectronics.com" },
+    openGraph: {
+        title: "Zetra Electronics | Buy Electronic Components Online India",
+        description: "India's premium destination for electronic components, sensors, IoT modules, and robotics kits.",
+        url: "https://zetraelectronics.com",
+    },
+};
 
 async function getProducts() {
   try {
@@ -48,8 +60,19 @@ export default async function Home() {
   const heroImage = settingsData.find((s: any) => s.key === "HOME_HERO_IMAGE")?.value || "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=1000";
   const heroSubtext = settingsData.find((s: any) => s.key === "HOME_HERO_SUBTEXT")?.value || "Your premium destination for electronic components, sensors, IoT modules, and robotics kits. Enterprise-grade quality for hobbyists and professionals.";
 
+  const orgJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Zetra Electronics",
+    url: "https://zetraelectronics.com",
+    logo: "https://zetraelectronics.com/logo.png",
+    description: "India's premium destination for electronic components, sensors, IoT modules, and robotics kits.",
+    contactPoint: { "@type": "ContactPoint", contactType: "customer service", areaServed: "IN" },
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }} />
       {/* Hero Section */}
       <section className="bg-white text-slate-900 py-12 md:py-20">
         <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-8">

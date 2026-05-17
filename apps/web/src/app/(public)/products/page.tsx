@@ -1,6 +1,18 @@
 import { API_URL } from '@/lib/api';
 import { ProductCard } from "@/components/product-card";
 import { ProductFilters } from "@/components/product-filters";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "All Products",
+    description: "Browse our full catalog of electronic components, sensors, IoT modules, development boards, and robotics kits. Fast delivery across India.",
+    alternates: { canonical: "https://zetraelectronics.com/products" },
+    openGraph: {
+        title: "All Products | Zetra Electronics",
+        description: "Browse electronic components, sensors, IoT modules, and robotics kits at Zetra Electronics.",
+        url: "https://zetraelectronics.com/products",
+    },
+};
 
 async function getProducts(params: Record<string, string>) {
     try {

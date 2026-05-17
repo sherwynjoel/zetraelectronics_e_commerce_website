@@ -5,6 +5,7 @@ import { Star, ShoppingCart, Truck, Check, Share2, Download, FileText } from "lu
 import { formatImageUrl } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
+import type { Metadata } from "next";
 
 interface Product {
     id: number;
@@ -31,6 +32,29 @@ async function getProduct(id: string) {
     }
 }
 
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+    const { id } = await params;
+    const product = await getProduct(id);
+    if (!product) return { title: "Product Not Found" };
+
+    const imageUrl = product.image?.startsWith('http')
+        ? product.image
+        : `https://zetraelectronics.com${product.image}`;
+
+    return {
+        title: product.name,
+        description: product.description?.slice(0, 160) || `Buy ${product.name} online at Zetra Electronics. Best price in India.`,
+        keywords: [product.name, product.category, "buy online India", "Zetra Electronics"],
+        openGraph: {
+            title: `${product.name} | Zetra Electronics`,
+            description: product.description?.slice(0, 160) || `Buy ${product.name} at best price in India.`,
+            images: [{ url: imageUrl, alt: product.name }],
+            type: "website",
+        },
+        alternates: { canonical: `https://zetraelectronics.com/products/${id}` },
+    };
+}
+
 export default async function ProductPage({ params }: { params: { id: string } }) {
     // Await params correctly in Next.js 15+
     const { id } = await params;
@@ -54,8 +78,26 @@ export default async function ProductPage({ params }: { params: { id: string } }
         }
     } catch (e) { }
 
+    const jsonLd = {
+        "@context": "https://schema.org",
+        "@type": "Product",
+        name: product.name,
+        description: product.description,
+        image: product.image ? formatImageUrl(product.image) : undefined,
+        sku: product.id.toString().padStart(6, '0'),
+        brand: { "@type": "Brand", name: "Zetra Electronics" },
+        offers: {
+            "@type": "Offer",
+            price: Number(product.price).toFixed(2),
+            priceCurrency: "INR",
+            availability: product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+            seller: { "@type": "Organization", name: "Zetra Electronics" },
+        },
+    };
+
     return (
         <div className="bg-background min-h-screen pb-20">
+            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
             <div className="container mx-auto px-4 py-8">
 
                 {/* Breadcrumb */}
