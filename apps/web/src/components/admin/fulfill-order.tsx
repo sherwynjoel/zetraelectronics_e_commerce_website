@@ -133,7 +133,13 @@ export function FulfillOrder({
                             <p className="text-[11px] text-muted-foreground">
                                 This URL will be shown to the customer on their Order History page.
                                 {status === "SHIPPED" && (
-                                    <span className="block mt-1 text-blue-500 font-medium">📬 Checking "SHIPPED" will automatically email this to the customer!</span>
+                                    <span className="block mt-1 text-blue-500 font-medium">📬 Customer will be emailed with the tracking URL when saved.</span>
+                                )}
+                                {status === "DELIVERED" && (
+                                    <span className="block mt-1 text-green-600 font-medium">📬 Customer will be emailed a delivery confirmation when saved.</span>
+                                )}
+                                {status === "CANCELLED" && (
+                                    <span className="block mt-1 text-red-500 font-medium">📬 Customer will be emailed a cancellation notice when saved.</span>
                                 )}
                             </p>
                         </div>

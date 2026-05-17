@@ -274,27 +274,54 @@ export class OrdersService {
       },
     });
 
-    if (updateOrderDto.status === 'SHIPPED' && updated.user?.email) {
-      this.sendShippedEmail(updated as any).catch((err) =>
-        console.error('Shipped email failed:', err),
-      );
+    if (updated.user?.email) {
+      const status = updateOrderDto.status;
+      if (status === 'SHIPPED') {
+        this.sendStatusEmail(updated as any, 'SHIPPED').catch((err) =>
+          console.error('Shipped email failed:', err),
+        );
+      } else if (status === 'DELIVERED') {
+        this.sendStatusEmail(updated as any, 'DELIVERED').catch((err) =>
+          console.error('Delivered email failed:', err),
+        );
+      } else if (status === 'CANCELLED') {
+        this.sendStatusEmail(updated as any, 'CANCELLED').catch((err) =>
+          console.error('Cancelled email failed:', err),
+        );
+      }
     }
 
     return updated;
   }
 
-  private async sendShippedEmail(order: any): Promise<void> {
+  private async sendStatusEmail(order: any, status: 'SHIPPED' | 'DELIVERED' | 'CANCELLED'): Promise<void> {
     const items = order.items.map((item: any) => ({
       productName: item.product?.name ?? `Product #${item.productId}`,
       quantity: item.quantity,
     }));
+    const name = order.user.name || 'Valued Customer';
+
+    const config: Record<string, { subject: string; template: string }> = {
+      SHIPPED: {
+        subject: `Your order #ORD-${order.id} has been shipped — Zetra Electronics`,
+        template: 'order-shipped',
+      },
+      DELIVERED: {
+        subject: `Your order #ORD-${order.id} has been delivered — Zetra Electronics`,
+        template: 'order-delivered',
+      },
+      CANCELLED: {
+        subject: `Your order #ORD-${order.id} has been cancelled — Zetra Electronics`,
+        template: 'order-cancelled',
+      },
+    };
 
     await this.mailerService.sendMail({
       to: order.user.email,
-      subject: `Your order #ORD-${order.id} has been shipped — Zetra Electronics`,
-      template: 'order-shipped',
+      subject: config[status].subject,
+      template: config[status].template,
       context: {
-        name: order.user.name || 'Valued Customer',
+        name,
         orderId: order.id,
         trackingUrl: order.trackingUrl || null,
         items,

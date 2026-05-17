@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+    .header { text-align: center; border-bottom: 2px solid #dc2626; padding-bottom: 10px; margin-bottom: 20px; }
+    .logo { font-size: 24px; font-weight: bold; color: #dc2626; letter-spacing: 1px; }
+    .title { font-size: 20px; font-weight: bold; margin-top: 10px; }
+    .content { font-size: 16px; margin-bottom: 20px; }
+    .badge { display: inline-block; background: #fee2e2; color: #dc2626; font-weight: bold; padding: 6px 16px; border-radius: 999px; font-size: 14px; margin: 10px 0; }
+    .items { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    .items th, .items td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+    .items th { background-color: #f8f9fa; }
+    .footer { font-size: 12px; color: #777; text-align: center; margin-top: 40px; border-top: 1px solid #ddd; padding-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">ZETRA ELECTRONICS</div>
+    </div>
+    <div class="content">
+      <div class="title">❌ Order Cancelled — #ORD-{{orderId}}</div>
+      <p>Hi {{name}},</p>
+      <p>We're writing to let you know that your order <strong>#ORD-{{orderId}}</strong> has been cancelled.</p>
+      <span class="badge">CANCELLED</span>
+
+      {{#if reason}}
+      <p><strong>Reason:</strong> {{reason}}</p>
+      {{/if}}
+
+      <p>If a payment was made, a refund will be processed to your original payment method within 5–7 business days.</p>
+
+      <h3>Cancelled Items</h3>
+      <table class="items">
+        <thead>
+          <tr><th>Product</th><th>Qty</th></tr>
+        </thead>
+        <tbody>
+          {{#each items}}
+          <tr><td>{{this.productName}}</td><td>{{this.quantity}}</td></tr>
+          {{/each}}
+        </tbody>
+      </table>
+
+      <br>
+      <p>If you have any questions, please reach out to us through our website. We apologise for any inconvenience caused.</p>
+    </div>
+    <div class="footer">
+      &copy; 2026 Zetra Electronics. All rights reserved.<br>
+      Automated Cancellation Notification
+    </div>
+  </div>
+</body>
+</html>

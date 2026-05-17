@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+    .header { text-align: center; border-bottom: 2px solid #16a34a; padding-bottom: 10px; margin-bottom: 20px; }
+    .logo { font-size: 24px; font-weight: bold; color: #16a34a; letter-spacing: 1px; }
+    .title { font-size: 20px; font-weight: bold; margin-top: 10px; }
+    .content { font-size: 16px; margin-bottom: 20px; }
+    .badge { display: inline-block; background: #dcfce7; color: #16a34a; font-weight: bold; padding: 6px 16px; border-radius: 999px; font-size: 14px; margin: 10px 0; }
+    .items { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    .items th, .items td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+    .items th { background-color: #f8f9fa; }
+    .footer { font-size: 12px; color: #777; text-align: center; margin-top: 40px; border-top: 1px solid #ddd; padding-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">ZETRA ELECTRONICS</div>
+    </div>
+    <div class="content">
+      <div class="title">✅ Order Delivered, {{name}}!</div>
+      <p>Great news! Your order <strong>#ORD-{{orderId}}</strong> has been successfully delivered.</p>
+      <span class="badge">DELIVERED</span>
+      <p>We hope you love your purchase. If you have any issues with your order, please contact us through our website and we'll make it right.</p>
+
+      <h3>Items Delivered</h3>
+      <table class="items">
+        <thead>
+          <tr><th>Product</th><th>Qty</th></tr>
+        </thead>
+        <tbody>
+          {{#each items}}
+          <tr><td>{{this.productName}}</td><td>{{this.quantity}}</td></tr>
+          {{/each}}
+        </tbody>
+      </table>
+
+      <br>
+      <p>Thank you for shopping with <strong>Zetra Electronics</strong>! We hope to see you again soon.</p>
+    </div>
+    <div class="footer">
+      &copy; 2026 Zetra Electronics. All rights reserved.<br>
+      Automated Delivery Notification
+    </div>
+  </div>
+</body>
+</html>
