@@ -70,7 +70,7 @@ export function HeroSearchBar() {
                         onChange={(e) => setQuery(e.target.value)}
                         onFocus={() => query.length > 1 && setIsOpen(true)}
                         placeholder="Search for components, parts, or brands..."
-                        className="w-full pl-12 pr-4 py-4 rounded-2xl border-0 bg-white/10 backdrop-blur-md text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all shadow-lg text-lg"
+                        className="w-full pl-12 pr-4 py-4 rounded-2xl border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all shadow-md text-lg"
                     />
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-6 w-6 text-slate-400 group-hover:text-primary transition-colors" />
                     {isLoading && (

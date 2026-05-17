@@ -51,7 +51,7 @@ export default async function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white py-20">
+      <section className="bg-white text-slate-900 py-20">
         <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="space-y-6 max-w-2xl">
 
@@ -59,7 +59,7 @@ export default async function Home() {
               Build the Future with <br />
               <span className="text-primary italic">Zetra Electronics</span>
             </h1>
-            <p className="text-lg text-slate-300">
+            <p className="text-lg text-slate-500">
               {heroSubtext}
             </p>
             <HeroSearchBar />
@@ -72,7 +72,7 @@ export default async function Home() {
             </div>
           </div>
           {/* Abstract Tech Graphic Placeholder */}
-          <div className="w-full max-w-md h-64 bg-slate-800/50 rounded-2xl border border-white/10 relative overflow-hidden flex items-center justify-center">
+          <div className="w-full max-w-md h-64 bg-slate-100 rounded-2xl border border-slate-200 relative overflow-hidden flex items-center justify-center">
             <div 
               className="absolute inset-0 bg-cover bg-center"
               style={{ backgroundImage: `url('${heroImage}')` }}
