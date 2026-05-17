@@ -58,24 +58,32 @@ export default function AdminSettingsPage() {
         setMessage(null);
 
         try {
-            const updates = Object.entries(settings).map(([key, value]) => {
-                return fetch(`${API_URL}/settings/${key}`, {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${token}`,
-                    },
-                    body: JSON.stringify({
-                        value,
-                        description: getDescription(key)
+            const responses = await Promise.all(
+                Object.entries(settings).map(([key, value]) =>
+                    fetch(`${API_URL}/settings/${key}`, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${token}`,
+                        },
+                        body: JSON.stringify({
+                            value,
+                            description: getDescription(key)
+                        })
                     })
-                });
-            });
+                )
+            );
 
-            await Promise.all(updates);
-            setMessage({ type: 'success', text: "All settings updated successfully" });
+            const failed = responses.find(r => !r.ok);
+            if (failed) {
+                const errData = await failed.json().catch(() => ({}));
+                const msg = (errData as any).message || `HTTP ${failed.status}`;
+                setMessage({ type: 'error', text: `Save failed: ${msg}` });
+            } else {
+                setMessage({ type: 'success', text: "All settings updated successfully" });
+            }
         } catch (error) {
-            setMessage({ type: 'error', text: "Failed to update some settings" });
+            setMessage({ type: 'error', text: "Network error — could not save settings" });
         } finally {
             setSaving(false);
         }
