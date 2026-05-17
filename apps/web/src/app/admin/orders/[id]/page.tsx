@@ -127,6 +127,28 @@ export default async function AdminOrderDetailPage({ params }: { params: { id: s
                             )}
                         </div>
                     </div>
+
+                    {/* Shipping Address */}
+                    {(() => {
+                        try {
+                            const addr = typeof order.shippingAddress === 'string'
+                                ? JSON.parse(order.shippingAddress)
+                                : order.shippingAddress;
+                            if (!addr || (!addr.street && !addr.city)) return null;
+                            return (
+                                <div className="border rounded-xl bg-card p-6 shadow-sm">
+                                    <h3 className="font-semibold mb-4 text-lg">Shipping Address</h3>
+                                    <div className="text-sm space-y-1">
+                                        {addr.street && <div className="font-medium">{addr.street}</div>}
+                                        {(addr.city || addr.state) && (
+                                            <div className="text-muted-foreground">{[addr.city, addr.state].filter(Boolean).join(', ')}</div>
+                                        )}
+                                        {addr.zip && <div className="text-muted-foreground">{addr.zip}</div>}
+                                    </div>
+                                </div>
+                            );
+                        } catch { return null; }
+                    })()}
                 </div>
             </div>
         </div>

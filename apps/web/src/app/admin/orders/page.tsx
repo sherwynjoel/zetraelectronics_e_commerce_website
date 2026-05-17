@@ -99,7 +99,18 @@ export default function AdminOrdersPage() {
                                         <div>{new Date(order.createdAt).toLocaleDateString('en-IN')}</div>
                                         <div className="text-xs">{new Date(order.createdAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}</div>
                                     </td>
-                                    <td className="p-4">{order.user?.email || "Guest"}</td>
+                                    <td className="p-4">
+                                        <div>{order.user?.email || "Guest"}</div>
+                                        {(() => {
+                                            try {
+                                                const addr = typeof order.shippingAddress === 'string'
+                                                    ? JSON.parse(order.shippingAddress)
+                                                    : order.shippingAddress;
+                                                const line = [addr?.city, addr?.state].filter(Boolean).join(', ');
+                                                return line ? <div className="text-xs text-muted-foreground">{line}</div> : null;
+                                            } catch { return null; }
+                                        })()}
+                                    </td>
                                     <td className="p-4">
                                         <span className={`px-2 py-1 rounded-full text-xs font-bold ${
                                             order.status === 'DELIVERED' ? 'bg-green-100 text-green-700' :
