@@ -2,7 +2,7 @@
 
 import { API_URL } from '@/lib/api';
 import { useEffect, useState } from "react";
-import { Download, Eye } from "lucide-react";
+import { Download, Eye, Printer } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -66,6 +66,63 @@ export default function AdminOrdersPage() {
             console.error(err);
             alert("Error downloading invoice.");
         }
+    };
+
+    const printAddress = (order: any) => {
+        let addr: any = {};
+        try {
+            addr = typeof order.shippingAddress === 'string'
+                ? JSON.parse(order.shippingAddress)
+                : (order.shippingAddress || {});
+        } catch { /* use empty addr */ }
+
+        const orderId = `#${order.id.toString().padStart(5, '0')}`;
+        const name = addr.name || order.user?.name || 'N/A';
+        const phone = addr.phone || '—';
+        const street = addr.street || '—';
+        const cityState = [addr.city, addr.state].filter(Boolean).join(', ') || '—';
+        const pin = addr.zip || '—';
+
+        const win = window.open('', '_blank', 'width=420,height=320');
+        if (!win) { alert('Allow pop-ups to print the address label.'); return; }
+        win.document.write(`<!DOCTYPE html>
+<html>
+<head>
+  <title>Address Label – ${orderId}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; padding: 24px; }
+    .label { border: 2px dashed #555; border-radius: 8px; padding: 20px 24px; max-width: 380px; }
+    .from { font-size: 10px; color: #777; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+    .from-name { font-size: 12px; font-weight: bold; color: #333; }
+    .divider { border-top: 1px solid #ccc; margin: 12px 0; }
+    .to-label { font-size: 10px; color: #777; text-transform: uppercase; letter-spacing: 1px; }
+    .name { font-size: 18px; font-weight: bold; margin: 4px 0; }
+    .phone { font-size: 14px; color: #333; margin-bottom: 6px; }
+    .address { font-size: 13px; line-height: 1.6; color: #444; }
+    .order-id { margin-top: 12px; font-size: 11px; color: #888; border-top: 1px solid #eee; padding-top: 8px; }
+    @media print { body { padding: 0; } }
+  </style>
+</head>
+<body>
+  <div class="label">
+    <div class="from">From</div>
+    <div class="from-name">Zetra Electronics — zetraelectronics.com</div>
+    <div class="divider"></div>
+    <div class="to-label">Ship To</div>
+    <div class="name">${name}</div>
+    <div class="phone">📞 ${phone}</div>
+    <div class="address">
+      ${street}<br/>
+      ${cityState}<br/>
+      PIN: ${pin}
+    </div>
+    <div class="order-id">Order ${orderId} · ${new Date(order.createdAt).toLocaleDateString('en-IN')}</div>
+  </div>
+  <script>window.onload = () => { window.print(); window.onafterprint = () => window.close(); }</script>
+</body>
+</html>`);
+        win.document.close();
     };
 
     if (loading) return <div className="p-8">Loading orders...</div>;
@@ -145,6 +202,13 @@ export default function AdminOrdersPage() {
                                                     <Eye className="h-3.5 w-3.5 mr-1.5" /> View
                                                 </button>
                                             </Link>
+                                            <button
+                                                onClick={() => printAddress(order)}
+                                                className="inline-flex h-8 items-center justify-center rounded-md border border-input bg-background px-3 text-xs font-medium shadow-sm hover:bg-accent hover:text-accent-foreground cursor-pointer"
+                                                title="Print address label"
+                                            >
+                                                <Printer className="h-3.5 w-3.5 mr-1.5" /> Print
+                                            </button>
                                             <button
                                                 onClick={() => downloadInvoice(order.id)}
                                                 className="inline-flex h-8 items-center justify-center rounded-md border border-input bg-background px-3 text-xs font-medium shadow-sm hover:bg-accent hover:text-accent-foreground cursor-pointer"
