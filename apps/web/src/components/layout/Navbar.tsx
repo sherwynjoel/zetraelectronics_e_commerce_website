@@ -15,25 +15,6 @@ import { ClientCartBadge } from "@/components/client-cart-badge";
 import { ClientAuthButtons } from "@/components/client-auth-buttons";
 import { SearchBar } from "./SearchBar";
 
-const allCategories = [
-    "Electronic Components",
-    "Sensors",
-    "IoT & Wireless",
-    "Robotics",
-    "Development Boards",
-    "Tools & Equipment",
-    "Battery & Power",
-    "Wire & Cables",
-    "3D Printing",
-    "Displays",
-    "Enclosures",
-    "Connectors",
-    "Soldering",
-    "Test Instruments"
-];
-
-const quickAccessCategories = allCategories.slice(0, 8);
-
 // Icon map for category pills on mobile
 const categoryIcons: Record<string, React.ReactNode> = {
     "Electronic Components": <Cpu className="h-3.5 w-3.5" />,
@@ -51,6 +32,7 @@ export function Navbar() {
     const [categorySearch, setCategorySearch] = useState("");
     const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
     const [settings, setSettings] = useState<Record<string, string>>({});
+    const [allCategories, setAllCategories] = useState<string[]>([]);
     const categoryMenuRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -61,6 +43,11 @@ export function Navbar() {
                 data.forEach(item => s[item.key] = item.value);
                 setSettings(s);
             })
+            .catch(console.error);
+
+        fetch(`${API_URL}/categories`)
+            .then(res => res.ok ? res.json() : [])
+            .then((data: any[]) => setAllCategories(data.map(c => c.name)))
             .catch(console.error);
     }, []);
 
@@ -171,7 +158,7 @@ export function Navbar() {
                                             )}
                                         </div>
                                         <div className="p-3 bg-slate-950/30 border-t border-slate-800 text-[10px] text-center text-slate-500 uppercase tracking-widest font-bold">
-                                            browse all {allCategories.length} categories
+                                            browse all {filteredCategories.length} categories
                                         </div>
                                     </div>
                                 )}
