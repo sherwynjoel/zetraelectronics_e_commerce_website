@@ -22,7 +22,7 @@ export async function Footer() {
     const settings = await getSettings();
 
     return (
-        <footer className="bg-slate-900 text-slate-200 mt-auto border-t border-slate-800" style={{ fontFamily: 'var(--font-playfair), Georgia, serif' }}>
+        <footer className="bg-slate-900 text-slate-200 mt-auto border-t border-slate-800">
             <div className="max-w-[1440px] mx-auto px-6 lg:px-12 py-12">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
                     {/* Brand */}
@@ -31,7 +31,7 @@ export async function Footer() {
                             <div className="relative h-24 w-24 flex-shrink-0">
                                 <Image src="/logo.png" alt="Zetra" fill className="object-contain group-hover:scale-105 transition-transform duration-300" />
                             </div>
-                            <span className="font-bold text-2xl text-white tracking-tight">
+                            <span className="font-bold text-2xl text-white tracking-tight" style={{ fontFamily: 'var(--font-playfair), Georgia, serif' }}>
                                 Zetra <span className="text-primary">Electronics</span>
                             </span>
                         </Link>
