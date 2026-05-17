@@ -8,9 +8,31 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { formatImageUrl } from "@/lib/utils";
+import { useAuthStore } from "@/lib/auth-store";
+import { removeItemFromBackend, clearBackendCart, addItemToBackend } from "@/lib/cart-api";
 
 export default function CartPage() {
     const { items, removeItem, updateQuantity, total, clearCart } = useCartStore();
+    const { token } = useAuthStore();
+
+    const handleRemoveItem = (id: number) => {
+        removeItem(id);
+        if (token) removeItemFromBackend(token, id);
+    };
+
+    const handleUpdateQuantity = (id: number, quantity: number) => {
+        if (quantity < 1) {
+            handleRemoveItem(id);
+            return;
+        }
+        updateQuantity(id, quantity);
+        if (token) addItemToBackend(token, id, quantity);
+    };
+
+    const handleClearCart = () => {
+        clearCart();
+        if (token) clearBackendCart(token);
+    };
     const [mounted, setMounted] = useState(false);
     const [taxRate, setTaxRate] = useState(0.18);
     const [freeShippingThreshold, setFreeShippingThreshold] = useState(0);
@@ -87,14 +109,14 @@ export default function CartPage() {
                                 <div className="flex flex-col items-end gap-4">
                                     <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl h-10 px-1 border border-slate-200 dark:border-slate-700">
                                         <button
-                                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                            onClick={() => handleUpdateQuantity(item.id, item.quantity - 1)}
                                             className="w-8 h-8 hover:bg-white dark:hover:bg-slate-700 rounded-lg flex items-center justify-center transition-colors shadow-sm"
                                         >
                                             <Minus className="h-3.5 w-3.5" />
                                         </button>
                                         <span className="w-10 text-center text-sm font-bold">{item.quantity}</span>
                                         <button
-                                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                            onClick={() => handleUpdateQuantity(item.id, item.quantity + 1)}
                                             className="w-8 h-8 hover:bg-white dark:hover:bg-slate-700 rounded-lg flex items-center justify-center transition-colors shadow-sm"
                                         >
                                             <Plus className="h-3.5 w-3.5" />
@@ -104,7 +126,7 @@ export default function CartPage() {
                                         variant="ghost" 
                                         size="sm" 
                                         className="text-slate-400 hover:text-destructive hover:bg-destructive/5 rounded-xl h-9" 
-                                        onClick={() => removeItem(item.id)}
+                                        onClick={() => handleRemoveItem(item.id)}
                                     >
                                         <Trash2 className="h-4 w-4 mr-2" />
                                         Remove
@@ -122,7 +144,7 @@ export default function CartPage() {
                             <Button 
                                 variant="outline" 
                                 className="text-slate-400 hover:text-destructive hover:bg-destructive/5 border-slate-200 dark:border-slate-800 rounded-xl" 
-                                onClick={() => clearCart()}
+                                onClick={() => handleClearCart()}
                             >
                                 Clear All
                             </Button>
