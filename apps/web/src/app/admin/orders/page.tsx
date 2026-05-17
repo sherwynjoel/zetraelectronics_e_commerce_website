@@ -2,9 +2,10 @@
 
 import { API_URL } from '@/lib/api';
 import { useEffect, useState } from "react";
-import { Download } from "lucide-react";
+import { Download, Eye } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { FulfillOrder } from "@/components/admin/fulfill-order";
 
 export default function AdminOrdersPage() {
@@ -134,6 +135,11 @@ export default function AdminOrdersPage() {
                                     </td>
                                     <td className="p-4 text-right">
                                         <div className="flex items-center justify-end gap-2">
+                                            <Link href={`/admin/orders/${order.id}`}>
+                                                <button className="inline-flex h-8 items-center justify-center rounded-md border border-input bg-background px-3 text-xs font-medium shadow-sm hover:bg-accent hover:text-accent-foreground cursor-pointer">
+                                                    <Eye className="h-3.5 w-3.5 mr-1.5" /> View
+                                                </button>
+                                            </Link>
                                             <button
                                                 onClick={() => downloadInvoice(order.id)}
                                                 className="inline-flex h-8 items-center justify-center rounded-md border border-input bg-background px-3 text-xs font-medium shadow-sm hover:bg-accent hover:text-accent-foreground cursor-pointer"

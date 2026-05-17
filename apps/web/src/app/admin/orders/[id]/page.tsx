@@ -1,23 +1,42 @@
+"use client";
+
 import { API_URL } from '@/lib/api';
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowLeft, Check, Package } from "lucide-react";
+import { ArrowLeft, Package } from "lucide-react";
 import Image from "next/image";
 import { FulfillOrder } from "@/components/admin/fulfill-order";
+import { useAuthStore } from "@/lib/auth-store";
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { formatImageUrl } from "@/lib/utils";
 
-async function getOrder(id: string) {
-    try {
-        const res = await fetch(`${API_URL}/orders/${id}`, { cache: "no-store" });
-        if (!res.ok) return null;
-        return res.json();
-    } catch (e) {
-        return null;
-    }
-}
+export default function AdminOrderDetailPage() {
+    const { id } = useParams<{ id: string }>();
+    const { token } = useAuthStore();
+    const router = useRouter();
+    const [order, setOrder] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+    const [mounted, setMounted] = useState(false);
 
-export default async function AdminOrderDetailPage({ params }: { params: { id: string } }) {
-    const { id } = await params;
-    const order = await getOrder(id);
+    useEffect(() => { setMounted(true); }, []);
+
+    useEffect(() => {
+        if (!mounted || !token) return;
+        fetch(`${API_URL}/orders/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+            cache: "no-store",
+        } as any)
+            .then(res => {
+                if (res.status === 401 || res.status === 403) { router.push('/login'); return null; }
+                if (!res.ok) return null;
+                return res.json();
+            })
+            .then(data => { setOrder(data); setLoading(false); })
+            .catch(() => setLoading(false));
+    }, [mounted, token, id]);
+
+    if (loading) return <div className="p-8">Loading order...</div>;
 
     if (!order) {
         return (
@@ -29,6 +48,14 @@ export default async function AdminOrderDetailPage({ params }: { params: { id: s
             </div>
         );
     }
+
+    const addr = (() => {
+        try {
+            return typeof order.shippingAddress === 'string'
+                ? JSON.parse(order.shippingAddress)
+                : order.shippingAddress;
+        } catch { return null; }
+    })();
 
     return (
         <div className="space-y-6">
@@ -44,15 +71,12 @@ export default async function AdminOrderDetailPage({ params }: { params: { id: s
                         Placed on {new Date(order.createdAt).toLocaleString()}
                     </p>
                 </div>
-                <div className="ml-auto flex gap-3 relative">
+                <div className="ml-auto">
                     <FulfillOrder
                         orderId={order.id}
                         currentStatus={order.status}
                         currentTracking={order.trackingUrl}
                     />
-                    <Button className="gap-2">
-                        <Check className="h-4 w-4" /> Mark Delivered
-                    </Button>
                 </div>
             </div>
 
@@ -64,20 +88,21 @@ export default async function AdminOrderDetailPage({ params }: { params: { id: s
                         <div className="space-y-4">
                             {order.items.map((item: any) => (
                                 <div key={item.id} className="flex gap-4 items-center border-b pb-4 last:border-0 last:pb-0">
-                                    <div className="h-16 w-16 bg-white border rounded flex items-center justify-center relative">
-                                        {item.product.image ? (
+                                    <div className="h-16 w-16 bg-white border rounded flex items-center justify-center relative overflow-hidden">
+                                        {item.product?.image ? (
                                             <Image
-                                                src={item.product.image}
+                                                src={formatImageUrl(item.product.image)}
                                                 alt={item.product.name}
                                                 fill
                                                 className="object-contain p-2 mix-blend-multiply"
+                                                unoptimized
                                             />
                                         ) : (
                                             <Package className="h-6 w-6 text-muted-foreground" />
                                         )}
                                     </div>
                                     <div className="flex-1">
-                                        <div className="font-medium">{item.product.name}</div>
+                                        <div className="font-medium">{item.product?.name ?? `Product #${item.productId}`}</div>
                                         <div className="text-sm text-muted-foreground">Qty: {item.quantity}</div>
                                     </div>
                                     <div className="font-semibold">₹{Number(item.price).toFixed(2)}</div>
@@ -91,26 +116,29 @@ export default async function AdminOrderDetailPage({ params }: { params: { id: s
                     </div>
                 </div>
 
-                {/* Customer Details */}
+                {/* Sidebar */}
                 <div className="space-y-6">
+                    {/* Customer */}
                     <div className="border rounded-xl bg-card p-6 shadow-sm">
                         <h3 className="font-semibold mb-4 text-lg">Customer</h3>
-                        <div className="space-y-4">
+                        <div className="space-y-3">
                             <div>
                                 <label className="text-xs text-muted-foreground uppercase font-bold">Name</label>
                                 <div className="font-medium">{order.user?.name || "Guest User"}</div>
                             </div>
                             <div>
                                 <label className="text-xs text-muted-foreground uppercase font-bold">Email</label>
-                                <div className="font-medium">{order.user?.email}</div>
+                                <div className="font-medium break-all">{order.user?.email}</div>
                             </div>
                             <div>
                                 <label className="text-xs text-muted-foreground uppercase font-bold">Status</label>
                                 <div className="mt-1">
-                                    <span className={`px-2 py-1 rounded-full text-xs font-bold ${order.status === 'DELIVERED' ? 'bg-green-100 text-green-700' :
-                                        order.status === 'SHIPPED' ? 'bg-blue-100 text-blue-700' :
-                                            'bg-yellow-100 text-yellow-700'
-                                        }`}>
+                                    <span className={`px-2 py-1 rounded-full text-xs font-bold ${
+                                        order.status === 'DELIVERED' ? 'bg-green-100 text-green-700' :
+                                        order.status === 'SHIPPED'   ? 'bg-blue-100 text-blue-700' :
+                                        order.status === 'CANCELLED' ? 'bg-red-100 text-red-700' :
+                                                                       'bg-yellow-100 text-yellow-700'
+                                    }`}>
                                         {order.status}
                                     </span>
                                 </div>
@@ -129,26 +157,20 @@ export default async function AdminOrderDetailPage({ params }: { params: { id: s
                     </div>
 
                     {/* Shipping Address */}
-                    {(() => {
-                        try {
-                            const addr = typeof order.shippingAddress === 'string'
-                                ? JSON.parse(order.shippingAddress)
-                                : order.shippingAddress;
-                            if (!addr || (!addr.street && !addr.city)) return null;
-                            return (
-                                <div className="border rounded-xl bg-card p-6 shadow-sm">
-                                    <h3 className="font-semibold mb-4 text-lg">Shipping Address</h3>
-                                    <div className="text-sm space-y-1">
-                                        {addr.street && <div className="font-medium">{addr.street}</div>}
-                                        {(addr.city || addr.state) && (
-                                            <div className="text-muted-foreground">{[addr.city, addr.state].filter(Boolean).join(', ')}</div>
-                                        )}
-                                        {addr.zip && <div className="text-muted-foreground">{addr.zip}</div>}
-                                    </div>
-                                </div>
-                            );
-                        } catch { return null; }
-                    })()}
+                    <div className="border rounded-xl bg-card p-6 shadow-sm">
+                        <h3 className="font-semibold mb-4 text-lg">Shipping Address</h3>
+                        {addr && (addr.street || addr.city) ? (
+                            <div className="text-sm space-y-1">
+                                {addr.street && <div className="font-medium">{addr.street}</div>}
+                                {(addr.city || addr.state) && (
+                                    <div className="text-muted-foreground">{[addr.city, addr.state].filter(Boolean).join(', ')}</div>
+                                )}
+                                {addr.zip && <div className="text-muted-foreground">PIN: {addr.zip}</div>}
+                            </div>
+                        ) : (
+                            <div className="text-sm text-muted-foreground">No address on record</div>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
