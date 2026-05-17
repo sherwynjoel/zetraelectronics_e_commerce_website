@@ -107,8 +107,13 @@ export default function AdminOrdersPage() {
                                                 const addr = typeof order.shippingAddress === 'string'
                                                     ? JSON.parse(order.shippingAddress)
                                                     : order.shippingAddress;
-                                                const line = [addr?.city, addr?.state].filter(Boolean).join(', ');
-                                                return line ? <div className="text-xs text-muted-foreground">{line}</div> : null;
+                                                const cityState = [addr?.city, addr?.state].filter(Boolean).join(', ');
+                                                return (
+                                                    <>
+                                                        {cityState && <div className="text-xs text-muted-foreground">{cityState}</div>}
+                                                        {addr?.phone && <div className="text-xs text-muted-foreground">{addr.phone}</div>}
+                                                    </>
+                                                );
                                             } catch { return null; }
                                         })()}
                                     </td>

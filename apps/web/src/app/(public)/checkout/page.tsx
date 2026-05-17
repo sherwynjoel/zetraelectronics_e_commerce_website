@@ -26,6 +26,7 @@ export default function CheckoutPage() {
         firstName: "",
         lastName: "",
         email: "",
+        phone: "",
         address: "",
         city: "",
         state: "",
@@ -76,7 +77,8 @@ export default function CheckoutPage() {
     }, [formData.zip]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
     };
 
     const calculateTotals = () => {
@@ -122,6 +124,8 @@ export default function CheckoutPage() {
             total: finalTotal,
             userId: user.id,
             address: {
+                name: `${formData.firstName} ${formData.lastName}`,
+                phone: formData.phone,
                 street: formData.address,
                 city: formData.city,
                 state: formData.state,
@@ -266,19 +270,33 @@ export default function CheckoutPage() {
                                     <input required name="lastName" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" onChange={handleChange} />
                                 </div>
                                 <div className="col-span-2">
+                                    <label className="text-sm font-medium mb-1 block">Phone Number</label>
+                                    <input
+                                        required
+                                        name="phone"
+                                        type="tel"
+                                        maxLength={10}
+                                        placeholder="10-digit mobile number"
+                                        pattern="[6-9][0-9]{9}"
+                                        title="Enter a valid 10-digit Indian mobile number"
+                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                        onChange={handleChange}
+                                    />
+                                </div>
+                                <div className="col-span-2">
                                     <label className="text-sm font-medium mb-1 block">Street Address</label>
-                                    <input required name="address" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" onChange={handleChange} />
+                                    <input required name="address" placeholder="House/Flat No., Street, Area" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" onChange={handleChange} />
                                 </div>
                                 <div>
-                                    <label className="text-sm font-medium mb-1 block">ZIP Code</label>
+                                    <label className="text-sm font-medium mb-1 block">PIN Code</label>
                                     <div className="relative">
-                                        <input 
-                                            required 
-                                            name="zip" 
+                                        <input
+                                            required
+                                            name="zip"
                                             maxLength={6}
-                                            placeholder="6-digit ZIP"
-                                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" 
-                                            onChange={handleChange} 
+                                            placeholder="6-digit PIN"
+                                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                            onChange={handleChange}
                                         />
                                         {pincodeLoading && (
                                             <div className="absolute right-3 top-2.5">
@@ -289,22 +307,24 @@ export default function CheckoutPage() {
                                 </div>
                                 <div>
                                     <label className="text-sm font-medium mb-1 block">City</label>
-                                    <input 
-                                        required 
-                                        name="city" 
+                                    <input
+                                        required
+                                        name="city"
                                         value={formData.city}
-                                        className="flex h-10 w-full rounded-md border border-input bg-muted/50 px-3 py-2 text-sm font-medium" 
-                                        readOnly 
+                                        placeholder="Auto-filled or type manually"
+                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                        onChange={handleChange}
                                     />
                                 </div>
                                 <div className="col-span-2">
                                     <label className="text-sm font-medium mb-1 block">State</label>
-                                    <input 
-                                        required 
-                                        name="state" 
+                                    <input
+                                        required
+                                        name="state"
                                         value={formData.state}
-                                        className="flex h-10 w-full rounded-md border border-input bg-muted/50 px-3 py-2 text-sm font-medium" 
-                                        readOnly 
+                                        placeholder="Auto-filled or type manually"
+                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                        onChange={handleChange}
                                     />
                                 </div>
                             </div>
@@ -389,6 +409,7 @@ export default function CheckoutPage() {
                                         <div className="text-primary mt-1"><MapPin className="h-5 w-5" /></div>
                                         <div>
                                             <div className="font-bold text-lg">{formData.firstName} {formData.lastName}</div>
+                                            {formData.phone && <div className="text-sm text-muted-foreground">{formData.phone}</div>}
                                             <div className="text-muted-foreground leading-relaxed mt-1">
                                                 {formData.address}<br />
                                                 {formData.city}, {formData.state}<br />

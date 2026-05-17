@@ -161,7 +161,9 @@ export default function AdminOrderDetailPage() {
                         <h3 className="font-semibold mb-4 text-lg">Shipping Address</h3>
                         {addr && (addr.street || addr.city) ? (
                             <div className="text-sm space-y-1">
-                                {addr.street && <div className="font-medium">{addr.street}</div>}
+                                {addr.name && <div className="font-semibold">{addr.name}</div>}
+                                {addr.phone && <div className="text-muted-foreground">📞 {addr.phone}</div>}
+                                {addr.street && <div className="mt-1">{addr.street}</div>}
                                 {(addr.city || addr.state) && (
                                     <div className="text-muted-foreground">{[addr.city, addr.state].filter(Boolean).join(', ')}</div>
                                 )}
