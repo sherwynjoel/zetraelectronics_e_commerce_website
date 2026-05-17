@@ -34,19 +34,19 @@ export class AuthController {
 
     @Post('login')
     @HttpCode(HttpStatus.OK)
-    @Throttle({ auth: { limit: 5, ttl: 60000 } })
+    @Throttle({ default: { limit: 5, ttl: 60000 } })
     login(@Body() loginDto: LoginDto) {
         return this.authService.login(loginDto);
     }
 
     @Post('google/firebase')
-    @Throttle({ auth: { limit: 5, ttl: 60000 } })
+    @Throttle({ default: { limit: 5, ttl: 60000 } })
     googleLogin(@Body('token') token: string) {
         return this.authService.googleLogin(token);
     }
 
     @Post('register')
-    @Throttle({ auth: { limit: 5, ttl: 60000 } })
+    @Throttle({ default: { limit: 5, ttl: 60000 } })
     register(@Body() registerDto: RegisterDto) {
         return this.authService.register(registerDto);
     }
@@ -66,7 +66,7 @@ export class AuthController {
 
     @Post('forgot-password')
     @HttpCode(HttpStatus.OK)
-    @Throttle({ strict: { limit: 3, ttl: 60000 } })
+    @Throttle({ default: { limit: 3, ttl: 60000 } })
     forgotPassword(@Body('email') email: string) {
         if (!email) throw new BadRequestException('Email is required');
         return this.authService.forgotPassword(email);
