@@ -28,10 +28,8 @@ export async function Footer() {
                     {/* Brand */}
                     <div className="col-span-1 md:col-span-1 flex flex-col items-start">
                         <Link href="/" className="flex items-center gap-2 mb-6 group">
-                            <div className="relative h-12 w-12">
-                                <div className="absolute inset-0 scale-[1.3] origin-left group-hover:scale-[1.4] transition-transform duration-300">
-                                    <Image src="/logo.png" alt="Zetra" fill className="object-contain" />
-                                </div>
+                            <div className="relative h-16 w-16 flex-shrink-0">
+                                <Image src="/logo.png" alt="Zetra" fill className="object-contain group-hover:scale-105 transition-transform duration-300" />
                             </div>
                             <span className="font-bold text-2xl text-white tracking-tight">
                                 Zetra <span className="text-primary">Electronics</span>
