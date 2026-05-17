@@ -27,8 +27,8 @@ export async function Footer() {
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
                     {/* Brand */}
                     <div className="col-span-1 md:col-span-1 flex flex-col items-start">
-                        <Link href="/" className="flex items-center gap-2 mb-6 group">
-                            <div className="relative h-16 w-16 flex-shrink-0">
+                        <Link href="/" className="flex items-center gap-3 mb-6 group">
+                            <div className="relative h-24 w-24 flex-shrink-0">
                                 <Image src="/logo.png" alt="Zetra" fill className="object-contain group-hover:scale-105 transition-transform duration-300" />
                             </div>
                             <span className="font-bold text-2xl text-white tracking-tight">
@@ -36,7 +36,7 @@ export async function Footer() {
                             </span>
                         </Link>
                         <p className="text-sm text-slate-400 leading-relaxed mb-6">
-                            Your premium source for electronic components, sensors, and robotics. Empowering innovation across India.
+                            Premium electronics store in India.
                         </p>
                         <div className="flex gap-4">
                             <a href={settings.SOCIAL_INSTAGRAM || "#"} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
