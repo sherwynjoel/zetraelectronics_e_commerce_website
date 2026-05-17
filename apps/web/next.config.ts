@@ -14,9 +14,9 @@ const securityHeaders = [
       "default-src 'self'",
       "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://checkout.razorpay.com https://www.gstatic.com https://apis.google.com https://accounts.google.com",
       "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: blob: https://images.unsplash.com https://m.media-amazon.com https://plus.unsplash.com https://zetraelectronics.com",
+      "img-src 'self' data: blob: https://images.unsplash.com https://m.media-amazon.com https://plus.unsplash.com https://zetraelectronics.com https://upload.wikimedia.org",
       "font-src 'self' data:",
-      "connect-src 'self' https://zetraelectronics.com https://api.razorpay.com https://lumberjack.razorpay.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com",
+      "connect-src 'self' https://zetraelectronics.com https://api.razorpay.com https://lumberjack.razorpay.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://api.postalpincode.in",
       "frame-src https://api.razorpay.com https://accounts.google.com https://zetraelectronics.com https://zetraelectronics-c55c1.firebaseapp.com",
       "object-src 'none'",
       "base-uri 'self'",
@@ -28,14 +28,22 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
-      { protocol: "https", hostname: "images.unsplash.com" },
-      { protocol: "https", hostname: "m.media-amazon.com" },
-      { protocol: "https", hostname: "plus.unsplash.com" },
+      { protocol: "https", hostname: "**" },
       { protocol: "http", hostname: "localhost", port: "4000", pathname: "/uploads/**" },
     ],
   },
   async headers() {
-    return [{ source: '/(.*)', headers: securityHeaders }];
+    return [
+      {
+        source: '/_next/static/:path*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
+      },
+      {
+        source: '/uploads/:path*',
+        headers: [{ key: 'Cache-Control', value: 'public, max-age=86400, stale-while-revalidate=604800' }],
+      },
+      { source: '/(.*)', headers: securityHeaders },
+    ];
   },
   async rewrites() {
     return [

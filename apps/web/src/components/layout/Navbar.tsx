@@ -290,6 +290,7 @@ export function Navbar() {
                             size="icon"
                             onClick={() => setIsMobileMenuOpen(false)}
                             className="rounded-full hover:bg-slate-100 dark:hover:bg-slate-800"
+                            aria-label="Close menu"
                         >
                             <X className="h-6 w-6 text-slate-900 dark:text-white" />
                         </Button>

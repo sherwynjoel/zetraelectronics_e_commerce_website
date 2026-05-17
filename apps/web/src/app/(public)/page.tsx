@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { HeroSearchBar } from "@/components/layout/HeroSearchBar";
+import Image from "next/image";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -94,12 +95,16 @@ export default async function Home() {
               </Link>
             </div>
           </div>
-          {/* Abstract Tech Graphic Placeholder */}
-          <div className="w-full max-w-md h-48 sm:h-64 bg-slate-100 rounded-2xl border border-slate-200 relative overflow-hidden flex items-center justify-center">
-            <div 
-              className="absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: `url('${heroImage}')` }}
-            ></div>
+          {/* Hero image */}
+          <div className="w-full max-w-md h-48 sm:h-64 bg-slate-100 rounded-2xl border border-slate-200 relative overflow-hidden">
+            <Image
+              src={heroImage}
+              alt="Electronic components and development boards"
+              fill
+              className="object-cover"
+              priority
+              unoptimized
+            />
           </div>
         </div>
       </section>

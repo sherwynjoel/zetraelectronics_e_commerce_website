@@ -39,13 +39,13 @@ export async function Footer() {
                             Premium electronics store in India.
                         </p>
                         <div className="flex gap-4">
-                            <a href={settings.SOCIAL_INSTAGRAM || "#"} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+                            <a href={settings.SOCIAL_INSTAGRAM || "#"} target="_blank" rel="noopener noreferrer" aria-label="Zetra Electronics on Instagram" className="hover:text-primary transition-colors">
                                 <Instagram className="h-5 w-5" />
                             </a>
-                            <a href={settings.SOCIAL_TWITTER || "#"} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+                            <a href={settings.SOCIAL_TWITTER || "#"} target="_blank" rel="noopener noreferrer" aria-label="Zetra Electronics on Twitter" className="hover:text-primary transition-colors">
                                 <Twitter className="h-5 w-5" />
                             </a>
-                            <a href={settings.SOCIAL_LINKEDIN || "#"} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+                            <a href={settings.SOCIAL_LINKEDIN || "#"} target="_blank" rel="noopener noreferrer" aria-label="Zetra Electronics on LinkedIn" className="hover:text-primary transition-colors">
                                 <Linkedin className="h-5 w-5" />
                             </a>
                         </div>
