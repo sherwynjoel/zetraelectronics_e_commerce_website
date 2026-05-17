@@ -3,10 +3,10 @@
 import { API_URL } from '@/lib/api';
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/auth-store";
-import { auth, googleProvider, signInWithRedirect, getRedirectResult } from "@/lib/firebase";
+import { auth, googleProvider, signInWithPopup } from "@/lib/firebase";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -15,29 +15,6 @@ export default function LoginPage() {
     const [password, setPassword] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
-
-    // Handle redirect result on page load (mobile Google sign-in)
-    useEffect(() => {
-        setIsLoading(true);
-        getRedirectResult(auth)
-            .then(async (result) => {
-                if (!result) return;
-                const idToken = await result.user.getIdToken();
-                const res = await fetch(`${API_URL}/auth/google/firebase`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ token: idToken }),
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.message || "Failed to authenticate");
-                login(data.user, data.access_token);
-                router.push(data.user.role === 'ADMIN' ? "/admin" : "/");
-            })
-            .catch((err) => {
-                if (err?.message) setError(err.message);
-            })
-            .finally(() => setIsLoading(false));
-    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -64,11 +41,29 @@ export default function LoginPage() {
         setIsLoading(true);
         setError("");
         try {
-            // Always use redirect — more reliable than popup (avoids popup blockers and third-party cookie issues)
-            await signInWithRedirect(auth, googleProvider);
-            // Page will reload; result is handled in the useEffect above
+            // Popup completes without navigating away — no redirect state loss on mobile
+            const result = await signInWithPopup(auth, googleProvider);
+            const idToken = await result.user.getIdToken();
+            const res = await fetch(`${API_URL}/auth/google/firebase`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ token: idToken }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || "Failed to authenticate");
+            login(data.user, data.access_token);
+            router.push(data.user.role === 'ADMIN' ? "/admin" : "/");
         } catch (err: any) {
-            setError(err.message || "Google sign-in failed");
+            if (err?.code === 'auth/popup-blocked') {
+                setError("Popup was blocked. Please allow popups for this site in your browser settings, then try again.");
+            } else if (err?.code === 'auth/popup-closed-by-user') {
+                setError("Sign-in was cancelled.");
+            } else if (err?.code === 'auth/cancelled-popup-request') {
+                // ignore — user clicked button twice
+            } else {
+                setError(err.message || "Google sign-in failed");
+            }
+        } finally {
             setIsLoading(false);
         }
     };
