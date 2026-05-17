@@ -86,24 +86,24 @@ export default function CartPage() {
     return (
         <div className="min-h-screen bg-slate-50/50 pb-20 dark:bg-slate-950/50">
             <div className="max-w-[1440px] mx-auto px-4 md:px-6 lg:px-12 py-12">
-                <h1 className="text-4xl font-black mb-10 tracking-tight">Shopping Cart <span className="text-primary/40 text-2xl font-medium ml-4">({items.length} items)</span></h1>
+                <h1 className="text-2xl sm:text-4xl font-black mb-6 sm:mb-10 tracking-tight">Shopping Cart <span className="text-primary/40 text-base sm:text-2xl font-medium ml-2 sm:ml-4">({items.length} items)</span></h1>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
                     {/* Cart Items List */}
                     <div className="lg:col-span-2 space-y-4">
                         {items.map((item) => (
-                            <div key={item.id} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 flex gap-6 items-center shadow-sm hover:shadow-md transition-shadow group">
-                                <div className="relative h-28 w-28 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 flex-shrink-0 flex items-center justify-center overflow-hidden">
+                            <div key={item.id} className="bg-white dark:bg-slate-900 p-3 sm:p-6 rounded-2xl border border-slate-100 dark:border-slate-800 flex gap-3 sm:gap-6 items-center shadow-sm hover:shadow-md transition-shadow group">
+                                <div className="relative h-20 w-20 sm:h-28 sm:w-28 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 flex-shrink-0 flex items-center justify-center overflow-hidden">
                                     {item.image ? (
-                                        <Image src={formatImageUrl(item.image)} alt={item.name} fill className="object-contain p-4 mix-blend-multiply dark:mix-blend-normal group-hover:scale-110 transition-transform duration-300" unoptimized />
+                                        <Image src={formatImageUrl(item.image)} alt={item.name} fill className="object-contain p-2 sm:p-4 mix-blend-multiply dark:mix-blend-normal group-hover:scale-110 transition-transform duration-300" unoptimized />
                                     ) : (
                                         <div className="text-xs text-muted-foreground uppercase font-bold tracking-widest">No Img</div>
                                     )}
                                 </div>
 
                                 <div className="flex-1 min-w-0">
-                                    <h3 className="font-bold text-lg truncate mb-1">{item.name}</h3>
-                                    <div className="text-primary font-black text-xl">₹{item.price.toFixed(2)}</div>
+                                    <h3 className="font-bold text-sm sm:text-lg truncate mb-1">{item.name}</h3>
+                                    <div className="text-primary font-black text-base sm:text-xl">₹{item.price.toFixed(2)}</div>
                                 </div>
 
                                 <div className="flex flex-col items-end gap-4">

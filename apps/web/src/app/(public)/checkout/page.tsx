@@ -251,16 +251,16 @@ export default function CheckoutPage() {
                     <ArrowLeft className="h-4 w-4" /> Back to Cart
                 </Link>
 
-                <h1 className="text-3xl font-bold mb-8">Checkout</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">Checkout</h1>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12">
                     {/* Left: Form */}
                     <form onSubmit={handlePreOrder} className="space-y-8">
                         <div className="bg-card p-6 rounded-xl border shadow-sm">
                             <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
                                 <MapPin className="h-5 w-5 text-primary" /> Shipping Details
                             </h2>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label className="text-sm font-medium mb-1 block">First Name</label>
                                     <input required name="firstName" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" onChange={handleChange} />
@@ -348,7 +348,7 @@ export default function CheckoutPage() {
 
                     {/* Right: Order Summary */}
                     <div>
-                        <div className="bg-card p-6 rounded-xl border shadow-sm sticky top-24">
+                        <div className="bg-card p-4 sm:p-6 rounded-xl border shadow-sm lg:sticky lg:top-24">
                             <h2 className="text-xl font-bold mb-4">Your Order</h2>
                             <div className="divide-y max-h-80 overflow-y-auto pr-2 mb-4">
                                 {items.map((item) => (

@@ -23,12 +23,12 @@ export async function Footer() {
 
     return (
         <footer className="bg-slate-900 text-slate-200 mt-auto border-t border-slate-800">
-            <div className="max-w-[1440px] mx-auto px-6 lg:px-12 py-12">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
+            <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 py-8 sm:py-12">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 md:gap-12">
                     {/* Brand */}
                     <div className="col-span-1 md:col-span-1 flex flex-col items-start">
                         <Link href="/" className="flex items-center gap-3 mb-6 group">
-                            <div className="relative h-24 w-24 flex-shrink-0">
+                            <div className="relative h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24 flex-shrink-0">
                                 <Image src="/logo.png" alt="Zetra" fill className="object-contain group-hover:scale-105 transition-transform duration-300" />
                             </div>
                             <span className="font-black text-2xl text-white tracking-tighter italic">

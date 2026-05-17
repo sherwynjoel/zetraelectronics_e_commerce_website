@@ -51,15 +51,15 @@ export default async function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-background">
       {/* Hero Section */}
-      <section className="bg-white text-slate-900 py-20">
+      <section className="bg-white text-slate-900 py-12 md:py-20">
         <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-8">
-          <div className="space-y-6 max-w-2xl">
+          <div className="space-y-4 md:space-y-6 max-w-2xl w-full">
 
-            <h1 className="text-5xl md:text-7xl font-black tracking-tighter leading-tight">
+            <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tighter leading-tight">
               Build the Future with <br />
               <span className="text-primary italic">Zetra Electronics</span>
             </h1>
-            <p className="text-lg text-slate-500">
+            <p className="text-base sm:text-lg text-slate-500">
               {heroSubtext}
             </p>
             <HeroSearchBar />
@@ -72,7 +72,7 @@ export default async function Home() {
             </div>
           </div>
           {/* Abstract Tech Graphic Placeholder */}
-          <div className="w-full max-w-md h-64 bg-slate-100 rounded-2xl border border-slate-200 relative overflow-hidden flex items-center justify-center">
+          <div className="w-full max-w-md h-48 sm:h-64 bg-slate-100 rounded-2xl border border-slate-200 relative overflow-hidden flex items-center justify-center">
             <div 
               className="absolute inset-0 bg-cover bg-center"
               style={{ backgroundImage: `url('${heroImage}')` }}
@@ -82,10 +82,10 @@ export default async function Home() {
       </section>
 
       {/* Categories */}
-      <section className="py-12 bg-muted/30">
+      <section className="py-8 md:py-12 bg-muted/30">
         <div className="container mx-auto px-4">
-          <h2 className="text-2xl font-bold mb-8">Popular Categories</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-8">Popular Categories</h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2 sm:gap-4">
             {categories.length > 0 ? categories.map((cat: any) => (
               <Link key={cat.id} href={`/products?category=${encodeURIComponent(cat.name)}`}>
                 <div className="bg-card p-4 rounded-xl border hover:border-primary transition-all cursor-pointer shadow-sm hover:shadow-md text-center group h-full">
@@ -100,10 +100,10 @@ export default async function Home() {
       </section>
 
       {/* Featured Products */}
-      <section className="py-16">
+      <section className="py-10 md:py-16">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold">Featured Products</h2>
+          <div className="flex items-center justify-between mb-4 sm:mb-8">
+            <h2 className="text-xl sm:text-3xl font-bold">Featured Products</h2>
             <Link href="/products" className="text-primary hover:underline flex items-center gap-1 font-semibold">
               View All <ArrowRight className="h-4 w-4" />
             </Link>

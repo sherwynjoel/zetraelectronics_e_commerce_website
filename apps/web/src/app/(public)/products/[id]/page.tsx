@@ -67,7 +67,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
                     <span className="text-foreground">{product.name}</span>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12">
                     {/* Left Column: Images */}
                     <div className="space-y-4">
                         <div className="aspect-square relative bg-slate-50 dark:bg-slate-900 border rounded-2xl overflow-hidden flex items-center justify-center">
@@ -88,7 +88,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
                     {/* Right Column: Details */}
                     <div className="space-y-6">
                         <div>
-                            <h1 className="text-3xl font-bold tracking-tight text-foreground">{product.name}</h1>
+                            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-foreground">{product.name}</h1>
                             <div className="flex items-center gap-4 mt-2">
                                 <div className="flex items-center gap-0.5">
                                     {[1, 2, 3, 4, 5].map((s) => (
@@ -102,7 +102,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
                         </div>
 
                         <div className="flex flex-col gap-1">
-                            <span className="text-4xl font-bold text-primary">₹{Number(product.price).toFixed(2)}</span>
+                            <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary">₹{Number(product.price).toFixed(2)}</span>
                             {Number(product.shippingCost) > 0 && (
                                 <span className="text-sm text-muted-foreground">
                                     + ₹{Number(product.shippingCost).toFixed(2)} Shipping
@@ -121,9 +121,9 @@ export default async function ProductPage({ params }: { params: { id: string } }
                             </div>
                         </div>
 
-                        <div className="flex gap-4">
+                        <div className="flex gap-3 sm:gap-4">
                             <AddToCartButton product={product} size="lg" />
-                            <Button size="icon" variant="outline" className="h-12 w-12 rounded-md border-input">
+                            <Button size="icon" variant="outline" className="h-12 w-12 flex-shrink-0 rounded-md border-input">
                                 <Share2 className="h-5 w-5" />
                             </Button>
                         </div>
@@ -148,8 +148,8 @@ export default async function ProductPage({ params }: { params: { id: string } }
 
                 {/* Bottom Section: Specs & Reviews */}
                 <div className="mt-16">
-                    <div className="border-b mb-8">
-                        <div className="flex gap-8">
+                    <div className="border-b mb-6 sm:mb-8 overflow-x-auto">
+                        <div className="flex gap-4 sm:gap-8 min-w-max">
                             <button className="pb-4 border-b-2 border-primary font-bold text-primary">Specifications</button>
                             <button className="pb-4 border-b-2 border-transparent text-muted-foreground hover:text-foreground transition-colors">Reviews</button>
                             <button className="pb-4 border-b-2 border-transparent text-muted-foreground hover:text-foreground transition-colors">Q & A</button>
