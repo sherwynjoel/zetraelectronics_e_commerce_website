@@ -22,7 +22,7 @@ export async function Footer() {
     const settings = await getSettings();
 
     return (
-        <footer className="bg-slate-900 text-slate-200 mt-auto border-t border-slate-800">
+        <footer className="bg-slate-900 text-slate-200 mt-auto border-t border-slate-800" style={{ fontFamily: 'var(--font-playfair), Georgia, serif' }}>
             <div className="max-w-[1440px] mx-auto px-6 lg:px-12 py-12">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8 md:gap-12">
                     {/* Brand */}
