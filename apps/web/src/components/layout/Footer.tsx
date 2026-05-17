@@ -31,7 +31,7 @@ export async function Footer() {
                             <div className="relative h-24 w-24 flex-shrink-0">
                                 <Image src="/logo.png" alt="Zetra" fill className="object-contain group-hover:scale-105 transition-transform duration-300" />
                             </div>
-                            <span className="font-bold text-2xl text-white tracking-tight" style={{ fontFamily: 'var(--font-playfair), Georgia, serif' }}>
+                            <span className="font-black text-2xl text-white tracking-tighter italic">
                                 Zetra <span className="text-primary">Electronics</span>
                             </span>
                         </Link>
