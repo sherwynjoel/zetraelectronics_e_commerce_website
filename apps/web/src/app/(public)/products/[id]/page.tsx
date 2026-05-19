@@ -1,7 +1,7 @@
 import { API_URL } from '@/lib/api';
 import { AddToCartButton } from "@/components/add-to-cart";
 import { Button } from "@/components/ui/button";
-import { Star, ShoppingCart, Truck, Check, Share2, Download, FileText } from "lucide-react";
+import { Truck, Check, Share2, FileText } from "lucide-react";
 import { formatImageUrl } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
@@ -132,13 +132,6 @@ export default async function ProductPage({ params }: { params: { id: string } }
                         <div>
                             <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-foreground">{product.name}</h1>
                             <div className="flex items-center gap-4 mt-2">
-                                <div className="flex items-center gap-0.5">
-                                    {[1, 2, 3, 4, 5].map((s) => (
-                                        <Star key={s} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                                    ))}
-                                    <span className="text-sm text-muted-foreground ml-2">(No reviews yet)</span>
-                                </div>
-                                <div className="h-4 w-px bg-border"></div>
                                 <div className="text-sm text-muted-foreground">SKU: {product.id.toString().padStart(6, '0')}</div>
                             </div>
                         </div>
@@ -188,16 +181,8 @@ export default async function ProductPage({ params }: { params: { id: string } }
                     </div>
                 </div>
 
-                {/* Bottom Section: Specs & Reviews */}
+                {/* Bottom Section: Specs */}
                 <div className="mt-16">
-                    <div className="border-b mb-6 sm:mb-8 overflow-x-auto">
-                        <div className="flex gap-4 sm:gap-8 min-w-max">
-                            <button className="pb-4 border-b-2 border-primary font-bold text-primary">Specifications</button>
-                            <button className="pb-4 border-b-2 border-transparent text-muted-foreground hover:text-foreground transition-colors">Reviews</button>
-                            <button className="pb-4 border-b-2 border-transparent text-muted-foreground hover:text-foreground transition-colors">Q & A</button>
-                        </div>
-                    </div>
-
                     <div className="max-w-3xl">
                         <h3 className="text-xl font-bold mb-6">Technical Specifications</h3>
                         <div className="rounded-xl border overflow-hidden">
