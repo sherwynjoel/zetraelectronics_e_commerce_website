@@ -142,8 +142,8 @@ export default async function Home() {
               <ProductCard key={product.id} product={product} />
             )) : (
               <div className="col-span-full flex flex-col items-center justify-center py-12 text-muted-foreground bg-muted/20 rounded-xl border border-dashed text-center">
-                <p className="mb-2">Connecting to inventory system...</p>
-                <p className="text-xs">Ensure Backend API is running on localhost:4000</p>
+                <p className="mb-2 font-medium">Products coming soon</p>
+                <p className="text-xs">Our inventory is being updated. Check back shortly.</p>
               </div>
             )}
           </div>
