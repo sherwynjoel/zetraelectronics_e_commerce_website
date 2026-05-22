@@ -1,10 +1,10 @@
 "use client";
 
+import React, { useEffect, useState } from "react";
 import { API_URL } from '@/lib/api';
 import { Button } from "@/components/ui/button";
 import { Plus, Package, Tags, Trash2, Search, Filter } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { useAuthStore } from "@/lib/auth-store";
 import { formatImageUrl } from "@/lib/utils";
 import { ProductActions } from "@/components/admin/product-actions";
@@ -21,7 +21,7 @@ export default function InventoryPage() {
     // Categories State
     const [categories, setCategories] = useState<any[]>([]);
     const [categoriesLoading, setCategoriesLoading] = useState(true);
-    const [newCategory, setNewCategory] = useState({ name: "", description: "" });
+    const [newCategory, setNewCategory] = useState({ name: "", description: "", parentId: "" });
     const [isCreatingCategory, setIsCreatingCategory] = useState(false);
 
     useEffect(() => {
@@ -63,17 +63,19 @@ export default function InventoryPage() {
         e.preventDefault();
         setIsCreatingCategory(true);
         try {
+            const body: any = { name: newCategory.name, description: newCategory.description };
+            if (newCategory.parentId) body.parentId = Number(newCategory.parentId);
             const res = await fetch(`${API_URL}/categories`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${token}`
                 },
-                body: JSON.stringify(newCategory),
+                body: JSON.stringify(body),
             });
 
             if (res.ok) {
-                setNewCategory({ name: "", description: "" });
+                setNewCategory({ name: "", description: "", parentId: "" });
                 fetchCategories();
             } else {
                 const data = await res.json();
@@ -231,12 +233,28 @@ export default function InventoryPage() {
                                     />
                                 </div>
                                 <div>
+                                    <label className="text-xs font-bold uppercase text-muted-foreground mb-1 block">
+                                        Parent Category <span className="normal-case font-normal">(optional — leave blank for top-level)</span>
+                                    </label>
+                                    <select
+                                        title="Parent Category"
+                                        value={newCategory.parentId}
+                                        onChange={(e) => setNewCategory({ ...newCategory, parentId: e.target.value })}
+                                        className="w-full border rounded-md p-2 bg-muted/20"
+                                    >
+                                        <option value="">— None (top-level category) —</option>
+                                        {categories.filter((c: any) => !c.parentId).map((cat: any) => (
+                                            <option key={cat.id} value={cat.id}>{cat.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
                                     <label className="text-xs font-bold uppercase text-muted-foreground mb-1 block">Description</label>
                                     <textarea
                                         value={newCategory.description}
                                         onChange={(e) => setNewCategory({ ...newCategory, description: e.target.value })}
                                         className="w-full border rounded-md p-2 bg-muted/20"
-                                        rows={3}
+                                        rows={2}
                                         placeholder="Optional description..."
                                     />
                                 </div>
@@ -263,21 +281,56 @@ export default function InventoryPage() {
                                     ) : categories.length === 0 ? (
                                         <tr><td colSpan={3} className="p-12 text-center text-muted-foreground">No categories defined.</td></tr>
                                     ) : (
-                                        categories.map(cat => (
-                                            <tr key={cat.id} className="hover:bg-muted/30 transition-colors">
-                                                <td className="p-4 font-semibold">{cat.name}</td>
-                                                <td className="p-4 text-muted-foreground">{cat.description || "—"}</td>
-                                                <td className="p-4 text-right">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        onClick={() => handleDeleteCategory(cat.id)}
-                                                        className="text-red-500 hover:bg-red-50"
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                </td>
-                                            </tr>
+                                        categories.filter((c: any) => !c.parentId).map((cat: any) => (
+                                            <React.Fragment key={cat.id}>
+                                                {/* Parent row */}
+                                                <tr className="hover:bg-muted/30 transition-colors bg-muted/10">
+                                                    <td className="p-4 font-bold">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-primary">⬡</span>
+                                                            {cat.name}
+                                                            {cat.children?.length > 0 && (
+                                                                <span className="text-[10px] font-medium bg-primary/10 text-primary px-1.5 py-0.5 rounded-full">
+                                                                    {cat.children.length} sub
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                    <td className="p-4 text-muted-foreground">{cat.description || "—"}</td>
+                                                    <td className="p-4 text-right">
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            onClick={() => handleDeleteCategory(cat.id)}
+                                                            className="text-red-500 hover:bg-red-50"
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </td>
+                                                </tr>
+                                                {/* Subcategory rows */}
+                                                {cat.children?.map((sub: any) => (
+                                                    <tr key={sub.id} className="hover:bg-muted/20 transition-colors">
+                                                        <td className="p-4 pl-10">
+                                                            <div className="flex items-center gap-2 text-muted-foreground">
+                                                                <span>└</span>
+                                                                <span className="font-medium text-foreground">{sub.name}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="p-4 text-muted-foreground">{sub.description || "—"}</td>
+                                                        <td className="p-4 text-right">
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="icon"
+                                                                onClick={() => handleDeleteCategory(sub.id)}
+                                                                className="text-red-500 hover:bg-red-50"
+                                                            >
+                                                                <Trash2 className="h-4 w-4" />
+                                                            </Button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </React.Fragment>
                                         ))
                                     )}
                                 </tbody>
