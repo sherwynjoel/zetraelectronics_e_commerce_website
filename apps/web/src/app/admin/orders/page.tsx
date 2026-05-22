@@ -38,7 +38,8 @@ export default function AdminOrdersPage() {
                 return res.json();
             })
             .then(data => {
-                setOrders(Array.isArray(data) ? data : []);
+                const paid = ['PAID', 'SHIPPED', 'DELIVERED'];
+                setOrders(Array.isArray(data) ? data.filter((o: any) => paid.includes(o.status)) : []);
                 setLoading(false);
             })
             .catch(err => {

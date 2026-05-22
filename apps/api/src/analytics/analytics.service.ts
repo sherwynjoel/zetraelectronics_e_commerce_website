@@ -7,16 +7,22 @@ export class AnalyticsService {
     constructor(private prisma: PrismaService) { }
 
     async getDashboardStats() {
+        const paidStatuses = ['PAID', 'SHIPPED', 'DELIVERED'];
+
         const totalRevenue = await this.prisma.order.aggregate({
+            where: { status: { in: paidStatuses } },
             _sum: { total: true },
         });
 
-        const totalOrders = await this.prisma.order.count();
+        const totalOrders = await this.prisma.order.count({
+            where: { status: { in: paidStatuses } },
+        });
         const productsCount = await this.prisma.product.count();
         const usersCount = await this.prisma.user.count();
 
-        // Get recent orders
+        // Get recent successful orders only
         const recentOrders = await this.prisma.order.findMany({
+            where: { status: { in: paidStatuses } },
             take: 5,
             orderBy: { createdAt: 'desc' },
             include: { user: { select: { id: true, email: true, name: true, role: true } } },
@@ -38,9 +44,8 @@ export class AnalyticsService {
 
         const orders = await this.prisma.order.findMany({
             where: {
-                createdAt: {
-                    gte: startDate,
-                },
+                createdAt: { gte: startDate },
+                status: { in: ['PAID', 'SHIPPED', 'DELIVERED'] },
             },
             select: {
                 createdAt: true,
