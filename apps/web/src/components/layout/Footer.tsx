@@ -22,7 +22,7 @@ export async function Footer() {
     const settings = await getSettings();
 
     return (
-        <footer className="bg-slate-900 text-slate-200 mt-auto border-t border-slate-800">
+        <footer className="bg-slate-800 text-slate-200 mt-auto border-t border-slate-700">
             <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 py-8 sm:py-12">
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 md:gap-12">
                     {/* Brand */}
@@ -102,7 +102,7 @@ export async function Footer() {
             </div>
 
             {/* Bottom Bar */}
-            <div className="border-t border-slate-800">
+            <div className="border-t border-slate-700">
                 <div className="max-w-[1440px] mx-auto px-6 lg:px-12 py-6 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500">
                     <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4">
                         <p>© {new Date().getFullYear()} Zetra Electronics. All rights reserved.</p>
