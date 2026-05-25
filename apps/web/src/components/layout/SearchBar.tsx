@@ -84,7 +84,7 @@ export function SearchBar() {
                             if (query.length > 1) setIsOpen(true);
                         }}
                         placeholder="Search components..."
-                        className="w-full bg-transparent border-none focus:outline-none focus:ring-0 py-2.5 px-3 text-sm text-slate-200 placeholder:text-slate-600 font-medium"
+                        className="w-full bg-transparent border-none focus:outline-none focus:ring-0 py-2.5 px-3 text-sm text-slate-200 placeholder:text-slate-400 font-medium"
                     />
 
                     {query && (
