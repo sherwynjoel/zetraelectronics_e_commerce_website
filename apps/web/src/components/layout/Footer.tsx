@@ -28,7 +28,7 @@ export async function Footer() {
                     {/* Brand */}
                     <div className="col-span-1 md:col-span-1 flex flex-col items-start">
                         <Link href="/" className="flex items-center gap-3 mb-6 group">
-                            <div className="relative h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24 flex-shrink-0">
+                            <div className="relative h-16 w-16 sm:h-20 sm:w-20 md:h-24 md:w-24 flex-shrink-0 bg-white rounded-xl p-1">
                                 <Image src="/logo.png" alt="Zetra" fill className="object-contain group-hover:scale-105 transition-transform duration-300" />
                             </div>
                             <span className="font-black text-2xl text-white tracking-tighter italic">
