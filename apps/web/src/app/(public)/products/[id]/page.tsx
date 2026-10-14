@@ -126,10 +126,13 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         </ol>
       </nav>
 
-      <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr] lg:items-start lg:gap-10">
-        <div className="grid gap-6">
-          <ProductStage src={product.image} alt={product.name} />
-          <section aria-labelledby="specs-title" className="glass glass-regular rounded-[var(--radius-pane)] p-6 sm:p-8">
+      <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[1.1fr_1fr] lg:items-start lg:gap-10">
+        {/* Phones read photo, buy, about, specs; desktop keeps two columns. */}
+        <div className="contents lg:grid lg:gap-6">
+          <div className="order-1 lg:order-none">
+            <ProductStage src={product.image} alt={product.name} />
+          </div>
+          <section aria-labelledby="specs-title" className="glass glass-regular order-4 rounded-[var(--radius-pane)] p-6 sm:p-8 lg:order-none">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 id="specs-title" className="text-xl font-bold text-ink">
                 Specifications
@@ -163,8 +166,8 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           </section>
         </div>
 
-        <div className="grid gap-6 lg:sticky lg:top-28">
-          <section aria-labelledby="product-title" className="glass glass-thick grid gap-6 rounded-[var(--radius-pane)] p-6 sm:p-8">
+        <div className="contents lg:sticky lg:top-28 lg:grid lg:gap-6">
+          <section aria-labelledby="product-title" className="glass glass-thick order-2 grid gap-6 rounded-[var(--radius-pane)] p-6 sm:p-8 lg:order-none">
             <div className="grid gap-3">
               <StockPill stock={product.stock} />
               <h1 id="product-title" className="text-3xl font-extrabold leading-tight tracking-[-0.03em] text-ink sm:text-4xl">
@@ -196,7 +199,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             </ul>
           </section>
           {product.description && (
-            <section aria-labelledby="about-title" className="glass glass-regular rounded-[var(--radius-pane)] p-6 sm:p-8">
+            <section aria-labelledby="about-title" className="glass glass-regular order-3 rounded-[var(--radius-pane)] p-6 sm:p-8 lg:order-none">
               <h2 id="about-title" className="text-xl font-bold text-ink">
                 About this part
               </h2>
