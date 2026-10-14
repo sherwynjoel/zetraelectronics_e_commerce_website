@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Cpu, FileText, MessageCircle, ReceiptIndianRupee, ShieldCheck, Truck } from "lucide-react";
 import { API_URL } from "@/lib/api";
@@ -11,6 +12,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { ProductImage } from "@/components/ui/product-image";
 import { StockPill } from "@/components/ui/stock-pill";
 import { formatINR } from "@/lib/format";
+import { formatImageUrl } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Zetra Electronics | Buy Electronic Components Online India",
@@ -89,6 +91,14 @@ export default async function Home() {
             </div>
           </div>
 
+          <div className="grid gap-5">
+          {settings.HOME_HERO_IMAGE && (
+            <div className="glass glass-thick relative aspect-[16/10] overflow-hidden rounded-[1.6rem] p-1.5">
+              <div className="relative size-full overflow-hidden rounded-[1.25rem]">
+                <Image src={formatImageUrl(settings.HOME_HERO_IMAGE)} alt="" fill priority sizes="(min-width: 1024px) 40vw, 90vw" className="object-cover" unoptimized={formatImageUrl(settings.HOME_HERO_IMAGE).startsWith("/uploads")} />
+              </div>
+            </div>
+          )}
           {bench.length > 0 ? (
             <div aria-label="Just added to the store" role="list" className="relative mx-auto grid w-full max-w-sm grid-cols-1 gap-4 lg:max-w-none">
               {bench.map((p, i) => (
@@ -122,6 +132,7 @@ export default async function Home() {
               ))}
             </ul>
           )}
+          </div>
         </div>
 
         {bench.length > 0 && (
