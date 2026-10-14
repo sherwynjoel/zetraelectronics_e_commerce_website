@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Loupe } from "@/components/ui/loupe";
 import { ProductImage } from "@/components/ui/product-image";
 import { formatImageUrl } from "@/lib/utils";
@@ -9,6 +9,13 @@ import { formatImageUrl } from "@/lib/utils";
 export function ProductStage({ src, alt }: { src?: string | null; alt: string }) {
   const url = formatImageUrl(src);
   const [failed, setFailed] = useState(false);
+  const img = useRef<HTMLImageElement>(null);
+
+  // The photo can fail before hydration attaches onError; catch that case once mounted.
+  useEffect(() => {
+    const el = img.current;
+    if (el && el.complete && el.naturalWidth === 0) setFailed(true);
+  }, [url]);
 
   return (
     <div className="glass glass-regular relative grid aspect-square place-items-center overflow-hidden rounded-[var(--radius-pane)] p-6 sm:p-10">
@@ -17,6 +24,7 @@ export function ProductStage({ src, alt }: { src?: string | null; alt: string })
         <Loupe src={url} alt={alt} className="relative max-h-full rounded-xl">
           {/* eslint-disable-next-line @next/next/no-img-element -- the lens needs the exact rendered photo box */}
           <img
+            ref={img}
             src={url}
             alt={alt}
             onError={() => setFailed(true)}
