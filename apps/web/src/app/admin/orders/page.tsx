@@ -60,7 +60,7 @@ function Orders() {
             label="Search orders"
             value={f.q}
             onChange={(v) => set("q", v)}
-            placeholder="Order ID, customer name, email or phone"
+            placeholder="ID, name, email or phone"
           />
         }
       >
