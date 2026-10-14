@@ -57,7 +57,7 @@ export function Loupe({
       {bg && pt && (
         <div
           aria-hidden
-          className="pointer-events-none absolute z-20 rounded-full ring-[3px] ring-ember"
+          className="pointer-events-none absolute z-20 rounded-full border-[3px] border-ember"
           style={{
             width: lens,
             height: lens,
