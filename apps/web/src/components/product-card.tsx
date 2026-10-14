@@ -37,7 +37,7 @@ export function ProductCard({ product, priority }: { product: CardProduct; prior
             {product.name}
           </Link>
         </h3>
-        <div className="mt-auto flex items-center justify-between gap-2 pt-2">
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-x-2 gap-y-2 pt-2">
           <Price value={Number(product.price)} size="lg" />
           <span className="relative z-10">
             <AddToCartButton product={{ ...product, price: Number(product.price) }} size="icon" />
