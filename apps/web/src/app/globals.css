@@ -318,3 +318,13 @@ nav[aria-label="Primary"] {
 .zetra-footer .hwf-up {
   opacity: 1;
 }
+
+/* Home hero spotlight: parts swap with a soft focus pull; the autoplay bar fills under the active thumbnail. */
+@keyframes swap-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.985); filter: blur(6px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+@keyframes progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}

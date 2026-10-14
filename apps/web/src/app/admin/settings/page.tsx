@@ -129,7 +129,7 @@ export default function SettingsPage() {
           <h2 id="home-title" className="text-lg font-bold text-ink">
             Home page
           </h2>
-          <p className="mt-1 text-sm text-ink-3">Leave the text empty to use the default introduction.</p>
+          <p className="mt-1 text-sm text-ink-3">Leave the text empty to use the default introduction. The hero image shows only until parts with photos are listed; after that the hero spotlights your newest parts.</p>
         </div>
         <TextareaField label="Introduction under the headline" rows={3} {...field("HOME_HERO_SUBTEXT")} />
         <ImageUpload label="Hero image" value={s.HOME_HERO_IMAGE} onChange={(url) => setS((p) => ({ ...p, HOME_HERO_IMAGE: url }))} />

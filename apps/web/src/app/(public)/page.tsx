@@ -7,12 +7,12 @@ import type { Product } from "@/lib/types";
 import { categoryHref, categoryTree, getCategories, getSettings } from "@/lib/store-data";
 import { ProductCard } from "@/components/product-card";
 import { ExpandableGrid } from "@/components/expandable-grid";
+import { HeroSpotlight } from "@/components/home/hero-spotlight";
+import { pickSpotlight } from "@/lib/spotlight";
 import { HeroSearchBar } from "@/components/layout/HeroSearchBar";
 import { ButtonLink } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ProductImage } from "@/components/ui/product-image";
-import { StockPill } from "@/components/ui/stock-pill";
-import { formatINR } from "@/lib/format";
 import { formatImageUrl } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -46,15 +46,22 @@ const promises = [
   { icon: ReceiptIndianRupee, label: "GST invoice with every order" },
 ];
 
-const tilt = ["lg:rotate-[-4deg] lg:translate-x-2", "lg:rotate-[3deg] lg:-translate-x-3", "lg:rotate-[-1.5deg] lg:translate-x-4"];
 
 export default async function Home() {
   const [products, settings, all] = await Promise.all([getProducts(), getSettings(0), getCategories(0)]);
   const categories = categoryTree(all);
-  const bench = products.slice(0, 3);
+  const spotlight = pickSpotlight(products, 5).map((p) => ({
+    id: p.id,
+    name: p.name,
+    category: p.category,
+    price: Number(p.price),
+    stock: p.stock,
+    image: p.image ?? null,
+    shippingCost: Number(p.shippingCost ?? 0),
+  }));
   const subtext =
     settings.HOME_HERO_SUBTEXT ||
-    "Sensors, development boards, IoT modules and robotics parts for makers and students across India. Every part ships genuine and tested, with its datasheet and a GST invoice.";
+    "Genuine, tested sensors, boards and modules for makers across India, with a datasheet and a GST invoice on every order.";
 
   const orgJsonLd = {
     "@context": "https://schema.org",
@@ -70,82 +77,47 @@ export default async function Home() {
     <div className="mx-auto flex max-w-[1280px] flex-col gap-16 pb-16 lg:gap-24">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd).replace(/</g, "\u003c") }} />
 
-      {/* First viewport: the search is the primary action; the bench shows real parts in stock */}
-      <section aria-labelledby="hero-title" className="glass glass-regular relative overflow-hidden rounded-[2.25rem] px-5 py-10 sm:px-10 lg:px-14 lg:py-16">
-        <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-[1.25fr_1fr]">
-          <div className="rise-in">
-            <h1 id="hero-title" className="text-[2.6rem] font-extrabold leading-[0.98] tracking-[-0.04em] text-ink sm:text-6xl lg:text-[5.25rem]">
+      {/* First viewport: headline and search on the field; the spotlight shows real parts, large, ready to add to cart */}
+      <section aria-labelledby="hero-title" className="grid gap-8 pt-2 lg:pt-6">
+        <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[1fr_1.05fr] lg:gap-14">
+          <div className="rise-in max-w-xl">
+            <h1 id="hero-title" className="text-[2.6rem] font-extrabold leading-[0.98] tracking-[-0.04em] text-ink sm:text-6xl lg:text-[4.6rem]">
               Parts for what you’re building next.
             </h1>
-            <p className="mt-6 max-w-[34rem] text-lg leading-relaxed text-ink-2">{subtext}</p>
-            <HeroSearchBar className="mt-8 max-w-[36rem]" />
-            <div className="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">
+            <p className="mt-5 max-w-[34rem] text-lg leading-relaxed text-ink-2">{subtext}</p>
+            <HeroSearchBar className="mt-7 max-w-[34rem]" />
+            <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
               <ButtonLink href="/products" variant="glass" size="md" className="rounded-full">
                 Browse all parts
                 <ArrowRight className="size-4" aria-hidden />
               </ButtonLink>
               {categories.slice(0, 3).map((c) => (
-                <Link key={c.id} href={categoryHref(c.name)} className="text-sm font-semibold text-ink-2 underline decoration-line hover:text-brand hover:decoration-brand">
+                <Link key={c.id} href={categoryHref(c.name)} className="text-sm font-semibold text-ink-2 underline decoration-line underline-offset-4 hover:text-brand hover:decoration-brand">
                   {c.name}
                 </Link>
               ))}
             </div>
           </div>
 
-          <div className="grid gap-5">
-          {settings.HOME_HERO_IMAGE && (
-            <div className="glass glass-thick relative aspect-[16/10] overflow-hidden rounded-[1.6rem] p-1.5">
-              <div className="relative size-full overflow-hidden rounded-[1.25rem]">
-                <Image src={formatImageUrl(settings.HOME_HERO_IMAGE)} alt="" fill priority sizes="(min-width: 1024px) 40vw, 90vw" className="object-cover" unoptimized={formatImageUrl(settings.HOME_HERO_IMAGE).startsWith("/uploads")} />
+          {spotlight.length > 0 ? (
+            <HeroSpotlight parts={spotlight} />
+          ) : settings.HOME_HERO_IMAGE ? (
+            <div className="glass glass-thick relative aspect-[4/3] overflow-hidden rounded-[2rem] p-2">
+              <div className="relative size-full overflow-hidden rounded-[1.5rem]">
+                <Image src={formatImageUrl(settings.HOME_HERO_IMAGE)} alt="" fill priority sizes="(min-width: 1024px) 45vw, 92vw" className="object-cover" unoptimized={formatImageUrl(settings.HOME_HERO_IMAGE).startsWith("/uploads")} />
               </div>
             </div>
-          )}
-          {bench.length > 0 ? (
-            <div aria-label="Just added to the store" role="list" className="relative mx-auto grid w-full max-w-sm grid-cols-1 gap-4 lg:max-w-none">
-              {bench.map((p, i) => (
-                <Link
-                  role="listitem"
-                  key={p.id}
-                  href={`/products/${p.id}`}
-                  style={{ animationDelay: `${150 + i * 120}ms` }}
-                  className={`glass glass-thick glass-lift rise-in flex items-center gap-4 rounded-[1.4rem] p-3 pr-5 ${tilt[i]} motion-reduce:rotate-0 motion-reduce:translate-x-0`}
-                >
-                  <span className="relative size-20 shrink-0 overflow-hidden rounded-2xl bg-[var(--plate)]">
-                    <ProductImage src={p.image} alt="" sizes="80px" className="p-2 mix-blend-multiply" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="line-clamp-2 font-semibold leading-snug text-ink">{p.name}</span>
-                    <span className="mt-1 flex items-center gap-2">
-                      <span className="tabular text-sm font-bold text-ink">{formatINR(Number(p.price))}</span>
-                      <StockPill stock={p.stock} />
-                    </span>
-                  </span>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <ul className="grid gap-3">
-              {promises.map(({ icon: Icon, label }) => (
-                <li key={label} className="glass glass-thick flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-semibold text-ink">
-                  <Icon className="size-5 text-brand" aria-hidden />
-                  {label}
-                </li>
-              ))}
-            </ul>
-          )}
-          </div>
+          ) : null}
         </div>
 
-        {bench.length > 0 && (
-          <ul className="mt-12 grid gap-x-6 gap-y-3 border-t border-line pt-6 sm:grid-cols-2 lg:grid-cols-4">
-            {promises.map(({ icon: Icon, label }) => (
-              <li key={label} className="flex items-center gap-2.5 text-sm font-semibold text-ink-2">
-                <Icon className="size-[18px] shrink-0 text-brand" aria-hidden />
-                {label}
-              </li>
-            ))}
-          </ul>
-        )}
+        <ul className="glass glass-thin grid gap-x-6 gap-y-3 rounded-[1.5rem] px-5 py-4 sm:grid-cols-2 lg:grid-cols-4 lg:rounded-full lg:px-8">
+          {promises.map(({ icon: Icon, label }) => (
+            <li key={label} className="flex items-center gap-2.5 text-sm font-semibold text-ink-2">
+              <Icon className="size-[18px] shrink-0 text-brand" aria-hidden />
+              {label}
+            </li>
+          ))}
+        </ul>
       </section>
 
       {categories.length > 0 && (
