@@ -1,68 +1,58 @@
-"use client";
+import type { Metadata } from "next";
+import { API_URL } from "@/lib/api";
+import type { Product } from "@/lib/types";
+import { SearchBox } from "@/components/layout/search-box";
+import { CatalogGrid } from "@/components/catalog-grid";
+import { ButtonLink } from "@/components/ui/button";
 
-import { API_URL } from '@/lib/api';
-import { useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
-import { ProductCard } from "@/components/product-card";
-import { Button } from "@/components/ui/button";
+export const metadata: Metadata = { title: "Search", robots: { index: false } };
+export const dynamic = "force-dynamic";
 
-async function searchProducts(query: string) {
-    try {
-        const res = await fetch(`${API_URL}/products?search=${encodeURIComponent(query)}`, { cache: "no-store" });
-        if (!res.ok) return [];
-        return await res.json();
-    } catch (e) {
-        console.error("Search fetch failed:", e);
-        return [];
-    }
+async function search(q: string): Promise<Product[]> {
+  if (!q) return [];
+  try {
+    const res = await fetch(`${API_URL}/products?search=${encodeURIComponent(q)}`, { cache: "no-store" });
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
 }
 
-function SearchContent() {
-    const searchParams = useSearchParams();
-    const query = searchParams.get("q") || "";
-    const [products, setProducts] = useState([]);
-    const [loading, setLoading] = useState(true);
+export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string | string[] }> }) {
+  const raw = (await searchParams).q;
+  const q = (Array.isArray(raw) ? raw[0] : raw)?.trim() ?? "";
+  const results = await search(q);
 
-    useEffect(() => {
-        if (query) {
-            setLoading(true);
-            searchProducts(query).then(data => {
-                setProducts(data);
-                setLoading(false);
-            });
-        } else {
-            setLoading(false);
-        }
-    }, [query]);
-
-    return (
-        <div className="container mx-auto px-4 py-8 min-h-screen">
-            <h1 className="text-2xl font-bold mb-6">Search Results for "{query}"</h1>
-
-            {loading ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {[1, 2, 3, 4].map(i => <div key={i} className="h-80 bg-muted animate-pulse rounded-xl"></div>)}
-                </div>
-            ) : products.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {products.map((product: any) => (
-                        <ProductCard key={product.id} product={product} />
-                    ))}
-                </div>
-            ) : (
-                <div className="text-center py-20 bg-muted/20 rounded-xl">
-                    <h2 className="text-xl font-bold mb-2">No results found</h2>
-                    <p className="text-muted-foreground">Try searching for generic terms like "Arduino" or "Sensor"</p>
-                </div>
-            )}
-        </div>
-    );
-}
-
-export default function SearchPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-center bg-background min-h-screen">Loading Search...</div>}>
-      <SearchContent />
-    </Suspense>
+    <div className="mx-auto grid max-w-[1280px] gap-8 pb-16">
+      <header className="grid gap-5">
+        <h1 className="text-4xl font-extrabold tracking-[-0.035em] text-ink sm:text-5xl">
+          {q ? <>Results for “{q}”</> : "Search parts"}
+        </h1>
+        <SearchBox key={q} variant="hero" initialQuery={q} className="max-w-2xl" />
+        {q && (
+          <p className="text-sm text-ink-3" aria-live="polite">
+            {results.length} {results.length === 1 ? "part" : "parts"} found
+          </p>
+        )}
+      </header>
+      {q ? (
+        <CatalogGrid
+          products={results}
+          empty={{
+            title: `No parts match “${q}”`,
+            body: "Check the spelling, try the part family (for example “sensor”), or browse the full catalog.",
+            action: (
+              <ButtonLink href="/products" variant="glass">
+                Browse all parts
+              </ButtonLink>
+            ),
+          }}
+        />
+      ) : (
+        <p className="text-ink-2">Type a part name, number or family above.</p>
+      )}
+    </div>
   );
 }
