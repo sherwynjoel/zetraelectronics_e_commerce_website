@@ -1,149 +1,106 @@
 "use client";
 
-import { API_URL } from '@/lib/api';
-import { Button } from "@/components/ui/button";
+import { Suspense, useState } from "react";
 import Link from "next/link";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { API_URL } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
+import { AuthCard, FormError, PasswordField, safeNext } from "@/components/auth/auth-card";
+import { Button } from "@/components/ui/button";
+import { TextField } from "@/components/ui/field";
+
+function RegisterForm() {
+  const router = useRouter();
+  const next = useSearchParams().get("next");
+  const login = useAuthStore((s) => s.login);
+  const [form, setForm] = useState({ name: "", email: "", password: "", confirmPassword: "" });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const mismatch = form.confirmPassword.length > 0 && form.password !== form.confirmPassword;
+
+  const change = (e: React.ChangeEvent<HTMLInputElement>) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    if (form.password !== form.confirmPassword) return setError("Passwords do not match.");
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/auth/register`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: form.name, email: form.email, password: form.password }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(Array.isArray(data.message) ? data.message.join(". ") : data.message || "Registration failed");
+
+      const loginRes = await fetch(`${API_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: form.email, password: form.password }),
+      });
+      const loginData = await loginRes.json();
+      if (loginRes.ok) {
+        login(loginData.user, loginData.access_token);
+        router.push(safeNext(next, "/"));
+      } else {
+        router.push(`/login${next ? `?next=${encodeURIComponent(safeNext(next))}` : ""}`);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <AuthCard
+      title="Create your account"
+      subtitle="Track orders, download GST invoices and check out faster."
+      footer={
+        <>
+          Already have an account?{" "}
+          <Link href={`/login${next ? `?next=${encodeURIComponent(safeNext(next))}` : ""}`} className="font-semibold text-brand hover:underline">
+            Sign in
+          </Link>
+        </>
+      }
+    >
+      <form onSubmit={submit} className="grid gap-4">
+        <FormError>{error}</FormError>
+        <TextField label="Full name" name="name" autoComplete="name" required value={form.name} onChange={change} />
+        <TextField label="Email" type="email" name="email" autoComplete="email" required value={form.email} onChange={change} />
+        <PasswordField
+          label="Password"
+          name="password"
+          autoComplete="new-password"
+          required
+          minLength={6}
+          hint="At least 6 characters"
+          value={form.password}
+          onChange={change}
+        />
+        <PasswordField
+          label="Confirm password"
+          name="confirmPassword"
+          autoComplete="new-password"
+          required
+          value={form.confirmPassword}
+          onChange={change}
+          error={mismatch ? "Passwords do not match" : undefined}
+        />
+        <Button type="submit" size="lg" className="mt-1 h-12" loading={loading}>
+          Create account
+        </Button>
+      </form>
+    </AuthCard>
+  );
+}
 
 export default function RegisterPage() {
-    const router = useRouter();
-    const login = useAuthStore((state) => state.login);
-    const [loading, setLoading] = useState(false);
-    const [formData, setFormData] = useState({
-        name: "",
-        email: "",
-        password: "",
-        confirmPassword: ""
-    });
-    const [error, setError] = useState("");
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
-        setError("");
-
-        if (formData.password !== formData.confirmPassword) {
-            setError("Passwords do not match");
-            setLoading(false);
-            return;
-        }
-
-        try {
-            // 1. Register
-            const res = await fetch(`${API_URL}/auth/register`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    name: formData.name,
-                    email: formData.email,
-                    password: formData.password
-                }),
-            });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                throw new Error(data.message || "Registration failed");
-            }
-
-            // 2. Auto Login after register
-            const loginRes = await fetch(`${API_URL}/auth/login`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: formData.email, password: formData.password }),
-            });
-
-            const loginData = await loginRes.json();
-
-            if (loginRes.ok) {
-                login(loginData.user, loginData.access_token);
-                router.push("/");
-            } else {
-                router.push("/login");
-            }
-
-        } catch (err: any) {
-            setError(err.message);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <div className="flex min-h-[80vh] items-center justify-center p-4 bg-muted/20">
-            <div className="w-full max-w-md space-y-8 bg-card p-8 rounded-xl border shadow-lg">
-                <div className="text-center">
-                    <h2 className="text-3xl font-bold tracking-tight">Create Account</h2>
-                    <p className="text-muted-foreground mt-2">Join ElectroStore to track orders and more</p>
-                </div>
-
-                {error && (
-                    <div className="bg-red-500/10 text-red-500 p-3 rounded-md text-sm text-center">
-                        {error}
-                    </div>
-                )}
-
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium leading-none">Full Name</label>
-                        <input
-                            name="name"
-                            required
-                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                            placeholder="John Doe"
-                            onChange={handleChange}
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium leading-none">Email</label>
-                        <input
-                            name="email"
-                            type="email"
-                            required
-                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                            placeholder="john@example.com"
-                            onChange={handleChange}
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium leading-none">Password</label>
-                        <input
-                            name="password"
-                            type="password"
-                            required
-                            minLength={6}
-                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                            placeholder="••••••••"
-                            onChange={handleChange}
-                        />
-                    </div>
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium leading-none">Confirm Password</label>
-                        <input
-                            name="confirmPassword"
-                            type="password"
-                            required
-                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                            placeholder="••••••••"
-                            onChange={handleChange}
-                        />
-                    </div>
-
-                    <Button type="submit" className="w-full mt-4" size="lg" disabled={loading}>
-                        {loading ? "Creating Account..." : "Sign Up"}
-                    </Button>
-                </form>
-                <div className="flex items-center justify-center text-sm text-muted-foreground">
-                    <span>Already have an account? </span>
-                    <Link href="/login" className="ml-1 hover:text-primary hover:underline">Log in</Link>
-                </div>
-            </div>
-        </div>
-    )
+  return (
+    <Suspense>
+      <RegisterForm />
+    </Suspense>
+  );
 }

@@ -1,80 +1,79 @@
 "use client";
 
-import { API_URL } from '@/lib/api';
-import { useEffect, useState, Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { CheckCircle2, XCircle } from "lucide-react";
+import { API_URL } from "@/lib/api";
+import { AuthCard } from "@/components/auth/auth-card";
+import { ButtonLink } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 
-function VerifyEmailContent() {
-    const searchParams = useSearchParams();
-    const router = useRouter();
-    const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
-    const [message, setMessage] = useState('');
+function Verify() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
+  const [message, setMessage] = useState("");
 
-    useEffect(() => {
-        const token = searchParams.get('token');
-        if (!token) {
-            setStatus('error');
-            setMessage('No verification token found.');
-            return;
+  useEffect(() => {
+    const token = searchParams.get("token");
+    if (!token) {
+      setStatus("error");
+      setMessage("This verification link is missing its code.");
+      return;
+    }
+    fetch(`${API_URL}/auth/verify-email`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.message?.includes("successfully")) {
+          setStatus("success");
+          setMessage(data.message);
+          setTimeout(() => router.push("/login"), 3000);
+        } else {
+          setStatus("error");
+          setMessage(data.message || "Verification failed.");
         }
+      })
+      .catch(() => {
+        setStatus("error");
+        setMessage("We couldn’t reach the server. Check your connection and open the link again.");
+      });
+  }, [searchParams, router]);
 
-        fetch(`${API_URL}/auth/verify-email`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token }),
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (data.message?.includes('successfully')) {
-                    setStatus('success');
-                    setMessage(data.message);
-                    setTimeout(() => router.push('/login'), 3000);
-                } else {
-                    setStatus('error');
-                    setMessage(data.message || 'Verification failed.');
-                }
-            })
-            .catch(() => {
-                setStatus('error');
-                setMessage('Something went wrong. Please try again.');
-            });
-    }, [searchParams, router]);
-
+  if (status === "loading") {
     return (
-        <div className="flex min-h-[80vh] items-center justify-center p-4 bg-muted/20">
-            <div className="w-full max-w-md text-center bg-card p-10 rounded-xl border shadow-lg space-y-4">
-                {status === 'loading' && (
-                    <>
-                        <div className="text-4xl">⏳</div>
-                        <h2 className="text-2xl font-bold">Verifying your email...</h2>
-                    </>
-                )}
-                {status === 'success' && (
-                    <>
-                        <div className="text-4xl">✅</div>
-                        <h2 className="text-2xl font-bold text-green-600">Email Verified!</h2>
-                        <p className="text-muted-foreground">{message}</p>
-                        <p className="text-sm text-muted-foreground">Redirecting to login...</p>
-                    </>
-                )}
-                {status === 'error' && (
-                    <>
-                        <div className="text-4xl">❌</div>
-                        <h2 className="text-2xl font-bold text-red-600">Verification Failed</h2>
-                        <p className="text-muted-foreground">{message}</p>
-                        <Link href="/register" className="text-primary underline text-sm">Register again</Link>
-                    </>
-                )}
-            </div>
+      <AuthCard title="Verifying your email">
+        <div className="flex justify-center text-brand">
+          <Spinner className="size-8" label="Verifying" />
         </div>
+      </AuthCard>
     );
+  }
+
+  return (
+    <AuthCard title={status === "success" ? "Email verified" : "Verification failed"}>
+      <div role="status" className="flex flex-col items-center gap-4 text-center">
+        {status === "success" ? <CheckCircle2 className="size-10 text-ok" aria-hidden /> : <XCircle className="size-10 text-danger" aria-hidden />}
+        <p className="text-ink-2">{message}</p>
+        {status === "success" ? (
+          <p className="text-sm text-ink-3">Taking you to sign in…</p>
+        ) : (
+          <ButtonLink href="/login" variant="glass">
+            Go to sign in
+          </ButtonLink>
+        )}
+      </div>
+    </AuthCard>
+  );
 }
 
 export default function VerifyEmailPage() {
-    return (
-        <Suspense fallback={<div className="flex min-h-[80vh] items-center justify-center"><p>Loading...</p></div>}>
-            <VerifyEmailContent />
-        </Suspense>
-    );
+  return (
+    <Suspense>
+      <Verify />
+    </Suspense>
+  );
 }

@@ -1,132 +1,103 @@
 "use client";
 
-import { API_URL } from '@/lib/api';
-import { Button } from "@/components/ui/button";
+import { Suspense, useState } from "react";
 import Link from "next/link";
-import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { CheckCircle2 } from "lucide-react";
+import { API_URL } from "@/lib/api";
+import { AuthCard, FormError, PasswordField } from "@/components/auth/auth-card";
+import { Button, ButtonLink } from "@/components/ui/button";
 
-function ResetPasswordForm() {
-    const router = useRouter();
-    const searchParams = useSearchParams();
-    const token = searchParams.get("token");
+function ResetForm() {
+  const router = useRouter();
+  const token = useSearchParams().get("token");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState("");
+  const mismatch = confirm.length > 0 && confirm !== newPassword;
 
-    const [newPassword, setNewPassword] = useState("");
-    const [confirm, setConfirm] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
-    const [success, setSuccess] = useState(false);
-    const [error, setError] = useState("");
-
-    useEffect(() => {
-        if (!token) setError("Invalid or missing reset token. Please request a new reset link.");
-    }, [token]);
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (newPassword !== confirm) {
-            setError("Passwords do not match.");
-            return;
-        }
-        if (newPassword.length < 8) {
-            setError("Password must be at least 8 characters.");
-            return;
-        }
-
-        setIsLoading(true);
-        setError("");
-
-        try {
-            const res = await fetch(`${API_URL}/auth/reset-password`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ token, newPassword }),
-            });
-
-            const data = await res.json();
-
-            if (!res.ok) throw new Error(data.message || "Failed to reset password");
-
-            setSuccess(true);
-            setTimeout(() => router.push("/login"), 3000);
-        } catch (err: any) {
-            setError(err.message || "Something went wrong. Please try again.");
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
+  if (!token) {
     return (
-        <div className="flex min-h-[80vh] items-center justify-center p-4 bg-muted/20">
-            <div className="w-full max-w-md space-y-8 bg-card p-8 rounded-xl border shadow-lg">
-                <div className="text-center">
-                    <h2 className="text-3xl font-bold tracking-tight">Set New Password</h2>
-                    <p className="text-muted-foreground mt-2">Choose a strong password for your account</p>
-                </div>
-
-                {success ? (
-                    <div className="text-center space-y-4">
-                        <div className="bg-green-50 text-green-700 text-sm p-4 rounded-md border border-green-200">
-                            Password updated successfully! Redirecting you to login...
-                        </div>
-                        <Link href="/login" className="text-sm text-primary hover:underline">
-                            Go to login
-                        </Link>
-                    </div>
-                ) : (
-                    <>
-                        {error && (
-                            <div className="bg-red-50 text-red-600 text-sm p-3 rounded-md border border-red-200">
-                                {error}
-                            </div>
-                        )}
-
-                        <form className="space-y-6" onSubmit={handleSubmit}>
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium leading-none">New Password</label>
-                                <input
-                                    type="password"
-                                    required
-                                    minLength={8}
-                                    value={newPassword}
-                                    onChange={(e) => setNewPassword(e.target.value)}
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                    placeholder="At least 8 characters"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium leading-none">Confirm Password</label>
-                                <input
-                                    type="password"
-                                    required
-                                    minLength={8}
-                                    value={confirm}
-                                    onChange={(e) => setConfirm(e.target.value)}
-                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                    placeholder="Repeat your new password"
-                                />
-                            </div>
-
-                            <Button type="submit" className="w-full" size="lg" disabled={isLoading || !token}>
-                                {isLoading ? "Updating..." : "Update Password"}
-                            </Button>
-                        </form>
-
-                        <div className="text-center text-sm text-muted-foreground">
-                            <Link href="/forgot-password" className="text-primary hover:underline">
-                                Request a new reset link
-                            </Link>
-                        </div>
-                    </>
-                )}
-            </div>
-        </div>
+      <AuthCard title="This link isn’t valid" subtitle="The reset link is missing or incomplete.">
+        <ButtonLink href="/forgot-password" size="lg" className="h-12 w-full">
+          Request a new link
+        </ButtonLink>
+      </AuthCard>
     );
+  }
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirm) return setError("Passwords do not match.");
+    if (newPassword.length < 8) return setError("Password must be at least 8 characters.");
+    setError("");
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/auth/reset-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, newPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to reset password");
+      setSuccess(true);
+      setTimeout(() => router.push("/login"), 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (success) {
+    return (
+      <AuthCard title="Password updated">
+        <div role="status" className="flex flex-col items-center gap-3 text-center">
+          <CheckCircle2 className="size-10 text-ok" aria-hidden />
+          <p className="text-ink-2">You can sign in with your new password. Taking you to sign in…</p>
+          <Link href="/login" className="font-semibold text-brand hover:underline">
+            Sign in now
+          </Link>
+        </div>
+      </AuthCard>
+    );
+  }
+
+  return (
+    <AuthCard title="Choose a new password">
+      <form onSubmit={submit} className="grid gap-4">
+        <FormError>{error}</FormError>
+        <PasswordField
+          label="New password"
+          autoComplete="new-password"
+          required
+          minLength={8}
+          hint="At least 8 characters"
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
+        />
+        <PasswordField
+          label="Confirm new password"
+          autoComplete="new-password"
+          required
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+          error={mismatch ? "Passwords do not match" : undefined}
+        />
+        <Button type="submit" size="lg" className="h-12" loading={loading}>
+          Update password
+        </Button>
+      </form>
+    </AuthCard>
+  );
 }
 
 export default function ResetPasswordPage() {
-    return (
-        <Suspense fallback={<div className="flex min-h-[80vh] items-center justify-center">Loading...</div>}>
-            <ResetPasswordForm />
-        </Suspense>
-    );
+  return (
+    <Suspense>
+      <ResetForm />
+    </Suspense>
+  );
 }
