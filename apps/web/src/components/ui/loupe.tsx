@@ -19,7 +19,9 @@ export function Loupe({
   lens = 168,
   children,
   className,
+  touchToggle = true,
 }: {
+  touchToggle?: boolean;
   src: string;
   alt: string;
   zoom?: number;
@@ -73,7 +75,7 @@ export function Loupe({
           }}
         />
       )}
-      {src && (
+      {src && touchToggle && (
         <button
           type="button"
           onClick={() => {

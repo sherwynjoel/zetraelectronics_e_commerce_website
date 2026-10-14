@@ -77,7 +77,7 @@ export function HeroSpotlight({ parts }: { parts: SpotlightPart[] }) {
       <div key={part.id} className="grid gap-4 motion-safe:animate-[swap-in_.6s_var(--ease-liquid)]">
         <div className="relative grid aspect-[4/3] place-items-center overflow-hidden rounded-[1.5rem] bg-[var(--plate)] p-6">
           {url ? (
-            <Loupe src={url} alt={part.name} className="relative max-h-full rounded-lg">
+            <Loupe src={url} alt={part.name} touchToggle={false} className="relative max-h-full rounded-lg">
               {/* eslint-disable-next-line @next/next/no-img-element -- the lens needs the exact rendered photo box */}
               <img
                 src={url}
