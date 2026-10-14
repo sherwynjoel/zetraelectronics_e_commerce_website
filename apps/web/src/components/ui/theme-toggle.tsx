@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { Monitor, Moon, Sun } from "lucide-react";
 import { THEME_KEY, type ThemePref, applyTheme, nextPref } from "@/lib/theme";
 import { cn } from "@/lib/utils";
@@ -11,19 +11,32 @@ const labels: Record<ThemePref, string> = {
   dark: "Theme: dark",
 };
 
-export function ThemeToggle({ className }: { className?: string }) {
-  const [pref, setPref] = useState<ThemePref>("system");
+const EVENT = "zetra-theme-change";
 
+function read(): ThemePref {
+  try {
+    return (localStorage.getItem(THEME_KEY) as ThemePref) || "system";
+  } catch {
+    return "system";
+  }
+}
+
+function subscribe(cb: () => void) {
+  window.addEventListener(EVENT, cb);
+  window.addEventListener("storage", cb);
+  return () => {
+    window.removeEventListener(EVENT, cb);
+    window.removeEventListener("storage", cb);
+  };
+}
+
+export function ThemeToggle({ className }: { className?: string }) {
+  const pref = useSyncExternalStore(subscribe, read, () => "system" as ThemePref);
+
+  // Follow the OS setting while the preference is "system".
   useEffect(() => {
-    try {
-      setPref((localStorage.getItem(THEME_KEY) as ThemePref) || "system");
-    } catch {}
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const onChange = () => {
-      try {
-        if ((localStorage.getItem(THEME_KEY) || "system") === "system") applyTheme("system");
-      } catch {}
-    };
+    const onChange = () => read() === "system" && applyTheme("system");
     mq.addEventListener("change", onChange);
     return () => mq.removeEventListener("change", onChange);
   }, []);
@@ -37,11 +50,11 @@ export function ThemeToggle({ className }: { className?: string }) {
       title={labels[pref]}
       onClick={() => {
         const p = nextPref(pref);
-        setPref(p);
         try {
           localStorage.setItem(THEME_KEY, p);
         } catch {}
         applyTheme(p);
+        window.dispatchEvent(new Event(EVENT));
       }}
       className={cn(
         "glass glass-thin grid size-10 shrink-0 place-items-center rounded-full text-ink-2 transition-colors hover:text-ink",

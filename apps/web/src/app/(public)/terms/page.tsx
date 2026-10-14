@@ -14,14 +14,14 @@ export default function TermsPage() {
                 <section>
                     <h2 className="mb-3 text-xl font-bold text-ink">1. Acceptance of Terms</h2>
                     <p className="max-w-[68ch] leading-relaxed text-ink-2">
-                        By accessing and using the Zetra Electronics website and services ("Services"), you acknowledge that you have read, understood, and agree to be bound by these Terms of Service. If you do not accept these terms, please do not use our Services.
+                        By accessing and using the Zetra Electronics website and services (&quot;Services&quot;), you acknowledge that you have read, understood, and agree to be bound by these Terms of Service. If you do not accept these terms, please do not use our Services.
                     </p>
                 </section>
 
                 <section>
                     <h2 className="mb-3 text-xl font-bold text-ink">2. Products and Availability</h2>
                     <p className="max-w-[68ch] leading-relaxed text-ink-2">
-                        All electronic components, boards, sensors, and robotics kits are subject to availability. We reserve the right to discontinue any product at any time or change pricing without prior notice. We make every effort to display the colors and specifications of our products accurately, but we cannot guarantee that your device's display will be completely accurate.
+                        All electronic components, boards, sensors, and robotics kits are subject to availability. We reserve the right to discontinue any product at any time or change pricing without prior notice. We make every effort to display the colors and specifications of our products accurately, but we cannot guarantee that your device&apos;s display will be completely accurate.
                     </p>
                 </section>
 

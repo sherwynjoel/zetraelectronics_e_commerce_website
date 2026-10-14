@@ -13,7 +13,7 @@ export interface CartItem {
 
 interface CartStore {
     items: CartItem[];
-    addItem: (product: any) => void;
+    addItem: (product: { id: number; name: string; price: number | string; shippingCost?: number | string; image?: string | null; stock?: number; quantity?: number }) => void;
     removeItem: (id: number) => void;
     updateQuantity: (id: number, quantity: number) => void;
     clearCart: () => void;
@@ -49,7 +49,7 @@ export const useCartStore = create<CartStore>()(
                                 name: product.name,
                                 price: Number(product.price),
                                 shippingCost: Number(product.shippingCost || 0),
-                                image: product.image,
+                                image: product.image ?? null,
                                 quantity: 1,
                                 stock,
                             },

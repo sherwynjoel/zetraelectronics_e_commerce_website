@@ -42,7 +42,7 @@ export default function CheckoutPage() {
 
   const [step, setStep] = useState<"address" | "review">("address");
   const [loading, setLoading] = useState(false);
-  const [pinState, setPinState] = useState<"idle" | "checking" | "found" | "unknown">("idle");
+  const [pinLookup, setPinLookup] = useState<{ zip: string; result: "found" | "unknown" } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [placed, setPlaced] = useState<PlacedOrder | null>(null);
   const [form, setForm] = useState<Form>({
@@ -58,22 +58,20 @@ export default function CheckoutPage() {
 
   // PIN code lookup fills city and state
   useEffect(() => {
-    if (form.zip.length !== 6) {
-      setPinState("idle");
-      return;
-    }
-    setPinState("checking");
-    fetch(`https://api.postalpincode.in/pincode/${form.zip}`)
+    const zip = form.zip;
+    if (zip.length !== 6) return;
+    fetch(`https://api.postalpincode.in/pincode/${zip}`)
       .then((r) => r.json())
       .then((data) => {
         if (data[0]?.Status === "Success") {
           const po = data[0].PostOffice[0];
           setForm((f) => ({ ...f, city: po.District, state: po.State }));
-          setPinState("found");
-        } else setPinState("unknown");
+          setPinLookup({ zip, result: "found" });
+        } else setPinLookup({ zip, result: "unknown" });
       })
-      .catch(() => setPinState("unknown"));
+      .catch(() => setPinLookup({ zip, result: "unknown" }));
   }, [form.zip]);
+  const pinState = form.zip.length !== 6 ? "idle" : pinLookup?.zip === form.zip ? pinLookup.result : "checking";
 
   const change = (e: React.ChangeEvent<HTMLInputElement>) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 

@@ -23,24 +23,7 @@
   --color-line: var(--line);
   --color-field: var(--field);
 
-  /* legacy aliases, removed in Task 16 */
-  --color-background: var(--bg);
-  --color-foreground: var(--ink);
-  --color-primary: var(--brand);
-  --color-primary-foreground: var(--brand-ink);
-  --color-secondary: var(--brand-soft);
-  --color-secondary-foreground: var(--brand);
-  --color-muted: var(--brand-soft);
-  --color-muted-foreground: var(--ink-3);
-  --color-accent: var(--brand-soft);
-  --color-accent-foreground: var(--ink);
-  --color-destructive: var(--danger);
-  --color-destructive-foreground: #fff;
-  --color-card: var(--glass-thick-bg);
-  --color-card-foreground: var(--ink);
-  --color-border: var(--line);
-  --color-input: var(--line);
-  --color-ring: var(--brand);
+  --color-logo: #ffffff;
 
   --font-sans: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-jetbrains), ui-monospace, SFMono-Regular, monospace;

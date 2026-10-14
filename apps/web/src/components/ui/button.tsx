@@ -19,27 +19,17 @@ export const buttonClasses = cva(
         ghost: "text-ink-2 hover:bg-brand-soft hover:text-ink",
         danger,
         link: "text-brand underline-offset-4 hover:underline",
-        // legacy names, removed in Task 16
-        default: primary,
-        outline: glass,
-        secondary: glass,
-        destructive: danger,
       },
       size: {
         sm: "h-9 rounded-[var(--radius-control)] px-3.5 text-sm",
         md: "h-11 rounded-[var(--radius-control)] px-5 text-sm",
         lg: "h-13 rounded-[1.1rem] px-7 text-base",
         icon: "size-11 rounded-full",
-        // legacy name, removed in Task 16
-        default: "h-11 rounded-[var(--radius-control)] px-5 text-sm",
       },
     },
     defaultVariants: { variant: "primary", size: "md" },
   },
 );
-
-/** @deprecated use buttonClasses */
-export const buttonVariants = buttonClasses;
 
 type Variants = VariantProps<typeof buttonClasses>;
 

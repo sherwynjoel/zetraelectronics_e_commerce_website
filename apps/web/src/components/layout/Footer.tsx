@@ -25,7 +25,7 @@ export async function Footer() {
         <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr] lg:grid-cols-[1.6fr_1fr_1fr_1.2fr]">
           <div className="max-w-xs">
             <Link href="/" className="inline-flex items-center gap-3" aria-label="Zetra Electronics home">
-              <span className="relative size-14 overflow-hidden rounded-full bg-white shadow-[0_2px_10px_rgba(11,26,51,.14)]">
+              <span className="relative size-14 overflow-hidden rounded-full bg-logo shadow-[0_2px_10px_rgba(11,26,51,.14)]">
                 <Image src="/logo.png" alt="" fill sizes="56px" className="scale-[1.35] object-contain" />
               </span>
               <span className="text-xl font-extrabold tracking-tight text-ink">Zetra Electronics</span>

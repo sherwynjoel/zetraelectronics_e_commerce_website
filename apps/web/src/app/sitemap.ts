@@ -23,7 +23,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         ]);
 
         const productPages: MetadataRoute.Sitemap = productsRes.ok
-            ? (await productsRes.json()).map((p: any) => ({
+            ? (await productsRes.json()).map((p: { id: number; updatedAt?: string }) => ({
                 url: `${BASE_URL}/products/${p.id}`,
                 lastModified: p.updatedAt ? new Date(p.updatedAt) : new Date(),
                 changeFrequency: 'weekly' as const,
@@ -32,7 +32,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             : [];
 
         const categoryPages: MetadataRoute.Sitemap = categoriesRes.ok
-            ? (await categoriesRes.json()).map((c: any) => ({
+            ? (await categoriesRes.json()).map((c: { name: string }) => ({
                 url: `${BASE_URL}/products?category=${encodeURIComponent(c.name)}`,
                 lastModified: new Date(),
                 changeFrequency: 'weekly' as const,

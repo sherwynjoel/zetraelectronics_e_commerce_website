@@ -36,9 +36,8 @@ export function useMyOrders() {
   const [orders, setOrders] = useState<MyOrder[]>([]);
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
 
-  const load = useCallback(() => {
+  const fetchOrders = useCallback(() => {
     if (!user || !token) return;
-    setState("loading");
     fetch(`${API_URL}/orders/user/${user.id}`, { headers: { Authorization: `Bearer ${token}` } })
       .then(async (res) => {
         if (res.status === 401 || res.status === 403) {
@@ -53,8 +52,12 @@ export function useMyOrders() {
       .catch(() => setState("error"));
   }, [user, token, logout, router]);
 
-  useEffect(load, [load]);
-  return { orders, setOrders, state, reload: load };
+  useEffect(fetchOrders, [fetchOrders]);
+  const reload = () => {
+    setState("loading");
+    fetchOrders();
+  };
+  return { orders, setOrders, state, reload };
 }
 
 function Timeline({ status }: { status: string }) {

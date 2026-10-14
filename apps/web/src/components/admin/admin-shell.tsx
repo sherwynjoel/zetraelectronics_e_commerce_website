@@ -89,7 +89,7 @@ function SidebarFooter() {
 function Brand() {
   return (
     <Link href="/admin" className="flex items-center gap-2.5 px-1" aria-label="Zetra admin home">
-      <span className="relative size-10 overflow-hidden rounded-full bg-white shadow-[0_2px_8px_rgba(11,26,51,.14)]">
+      <span className="relative size-10 overflow-hidden rounded-full bg-logo shadow-[0_2px_8px_rgba(11,26,51,.14)]">
         <Image src="/logo.png" alt="" fill sizes="40px" className="scale-[1.35] object-contain" />
       </span>
       <span className="leading-tight">

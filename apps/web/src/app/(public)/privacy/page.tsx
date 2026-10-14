@@ -49,7 +49,7 @@ export default function PrivacyPolicyPage() {
                 <section>
                     <h2 className="mb-3 text-xl font-bold text-ink">6. Your Rights</h2>
                     <p className="max-w-[68ch] leading-relaxed text-ink-2">
-                        Depending on your jurisdiction, you may hold the right to access, edit, or request the deletion of your personal information stored in our database. You can manage your account information directly from the 'My Account' page, or contact our support team to initiate a data request.
+                        Depending on your jurisdiction, you may hold the right to access, edit, or request the deletion of your personal information stored in our database. You can manage your account information directly from the &apos;My Account&apos; page, or contact our support team to initiate a data request.
                     </p>
                 </section>
 

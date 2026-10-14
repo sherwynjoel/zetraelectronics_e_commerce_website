@@ -11,16 +11,12 @@ import { Spinner } from "@/components/ui/spinner";
 function Verify() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
-  const [message, setMessage] = useState("");
+  const token = searchParams.get("token");
+  const [status, setStatus] = useState<"loading" | "success" | "error">(token ? "loading" : "error");
+  const [message, setMessage] = useState(token ? "" : "This verification link is missing its code.");
 
   useEffect(() => {
-    const token = searchParams.get("token");
-    if (!token) {
-      setStatus("error");
-      setMessage("This verification link is missing its code.");
-      return;
-    }
+    if (!token) return;
     fetch(`${API_URL}/auth/verify-email`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -41,7 +37,7 @@ function Verify() {
         setStatus("error");
         setMessage("We couldn’t reach the server. Check your connection and open the link again.");
       });
-  }, [searchParams, router]);
+  }, [token, router]);
 
   if (status === "loading") {
     return (

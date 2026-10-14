@@ -15,7 +15,7 @@ import { MobileTabBar } from "./mobile-tab-bar";
 function Brand() {
   return (
     <Link href="/" className="flex shrink-0 items-center gap-2 rounded-full pr-2" aria-label="Zetra Electronics home">
-      <span className="relative size-11 overflow-hidden rounded-full bg-white shadow-[0_2px_8px_rgba(11,26,51,.12)]">
+      <span className="relative size-11 overflow-hidden rounded-full bg-logo shadow-[0_2px_8px_rgba(11,26,51,.12)]">
         <Image src="/logo.png" alt="" fill sizes="44px" className="scale-[1.35] object-contain" priority />
       </span>
       <span className="hidden text-[17px] font-extrabold tracking-tight text-ink sm:block">
