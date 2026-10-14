@@ -1,22 +1,22 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono, Outfit } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Hanken_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import { CookieConsent } from "@/components/cookie-consent";
 import { CartSyncProvider } from "@/components/cart-sync-provider";
+import { ThemeScript } from "@/components/ui/theme-script";
+import { AmbientField } from "@/components/layout/ambient-field";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const hanken = Hanken_Grotesk({
+  variable: "--font-hanken",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
 });
 
-const outfit = Outfit({
-  variable: "--font-outfit",
+const jetbrains = JetBrains_Mono({
+  variable: "--font-jetbrains",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -25,11 +25,19 @@ export const metadata: Metadata = {
     default: "Zetra Electronics | Premium Electronic Components India",
     template: "%s | Zetra Electronics",
   },
-  description: "Buy electronic components, sensors, IoT modules, development boards, and robotics kits online in India. Fast shipping, enterprise-grade quality at Zetra Electronics.",
+  description:
+    "Buy electronic components, sensors, IoT modules, development boards, and robotics kits online in India. Fast shipping, enterprise-grade quality at Zetra Electronics.",
   keywords: [
-    "electronic components India", "buy sensors online", "Arduino modules", "Raspberry Pi India",
-    "IoT modules", "robotics kits", "development boards", "electronic parts online India",
-    "buy electronics online", "Zetra Electronics"
+    "electronic components India",
+    "buy sensors online",
+    "Arduino modules",
+    "Raspberry Pi India",
+    "IoT modules",
+    "robotics kits",
+    "development boards",
+    "electronic parts online India",
+    "buy electronics online",
+    "Zetra Electronics",
   ],
   authors: [{ name: "Zetra Electronics", url: "https://zetraelectronics.com" }],
   creator: "Zetra Electronics",
@@ -45,7 +53,8 @@ export const metadata: Metadata = {
     url: "https://zetraelectronics.com",
     siteName: "Zetra Electronics",
     title: "Zetra Electronics | Premium Electronic Components India",
-    description: "Buy electronic components, sensors, IoT modules, development boards, and robotics kits online in India.",
+    description:
+      "Buy electronic components, sensors, IoT modules, development boards, and robotics kits online in India.",
     images: [{ url: "/logo.png", width: 512, height: 512, alt: "Zetra Electronics" }],
   },
   twitter: {
@@ -59,6 +68,12 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#eaf0fa" },
+    { media: "(prefers-color-scheme: dark)", color: "#050a16" },
+  ],
+};
 
 export default function RootLayout({
   children,
@@ -66,13 +81,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body
-        className={`${geistSans.variable} ${outfit.variable} ${geistMono.variable} antialiased`}
-      >
+    <html lang="en" suppressHydrationWarning className={`${hanken.variable} ${jetbrains.variable}`}>
+      <head>
+        <ThemeScript />
+      </head>
+      <body className="antialiased">
+        <AmbientField />
         {children}
         <CartSyncProvider />
-        <CookieConsent />
       </body>
     </html>
   );
