@@ -419,8 +419,10 @@ export default function HalftoneWordmarkFooter({
     root.addEventListener("pointermove", onMove)
     root.addEventListener("pointerleave", onLeave)
     root.addEventListener("pointerdown", onDown)
+    // Resizing the canvas clears it, so redraw at once even while off screen.
     const ro = new ResizeObserver(() => {
       layout()
+      draw(performance.now())
       wake()
     })
     ro.observe(root)
@@ -435,6 +437,7 @@ export default function HalftoneWordmarkFooter({
       document.fonts.ready.then(() => {
         if (!alive) return
         layout()
+        draw(performance.now())
         wake()
       })
     }
