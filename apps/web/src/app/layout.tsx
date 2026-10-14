@@ -4,6 +4,8 @@ import "./globals.css";
 import { CartSyncProvider } from "@/components/cart-sync-provider";
 import { ThemeScript } from "@/components/ui/theme-script";
 import { AmbientField } from "@/components/layout/ambient-field";
+import { Toaster } from "@/components/ui/toast";
+import { ConfirmHost } from "@/components/ui/confirm-dialog";
 
 const hanken = Hanken_Grotesk({
   variable: "--font-hanken",
@@ -89,6 +91,8 @@ export default function RootLayout({
         <AmbientField />
         {children}
         <CartSyncProvider />
+        <Toaster />
+        <ConfirmHost />
       </body>
     </html>
   );
