@@ -1,152 +1,122 @@
 "use client";
 
-import { API_URL } from '@/lib/api';
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { Tags, Trash2 } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
+import { adminSend, useAdminGet } from "@/lib/admin-api";
+import { categoryTree, type Category } from "@/lib/store-data";
+import { AdminHeader } from "@/components/admin/admin-shell";
+import { FormError } from "@/components/auth/auth-card";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { confirmAction } from "@/components/ui/confirm-dialog";
+import { EmptyState } from "@/components/ui/empty-state";
+import { SelectField, TextField } from "@/components/ui/field";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "@/components/ui/toast";
 
 export default function CategoriesPage() {
-    const { token } = useAuthStore();
-    const [categories, setCategories] = useState<{ id: number; name: string; description: string }[]>([]);
-    const [newCategory, setNewCategory] = useState({ name: "", description: "" });
-    const [loading, setLoading] = useState(false);
+  const { token } = useAuthStore();
+  const { data, loading, reload } = useAdminGet<Category[]>("/categories");
+  const [form, setForm] = useState({ name: "", description: "", parentId: "" });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const tree = categoryTree(data ?? []);
 
-    useEffect(() => {
-        fetchCategories();
-    }, []);
+  const create = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setError("");
+    try {
+      const body: Record<string, unknown> = { name: form.name.trim(), description: form.description.trim() };
+      if (form.parentId) body.parentId = Number(form.parentId);
+      await adminSend(token, "/categories", "POST", body);
+      toast.success("Category added", form.name.trim());
+      setForm({ name: "", description: "", parentId: "" });
+      reload();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not add the category");
+    } finally {
+      setSaving(false);
+    }
+  };
 
-    const fetchCategories = () => {
-        fetch(`${API_URL}/categories`)
-            .then(res => res.json())
-            .then(data => setCategories(data))
-            .catch(console.error);
-    };
+  const remove = async (c: Category) => {
+    const ok = await confirmAction({
+      title: `Delete “${c.name}”?`,
+      body: "Products keep their category name, but it will no longer appear in menus or filters.",
+      confirmLabel: "Delete category",
+      tone: "danger",
+    });
+    if (!ok) return;
+    try {
+      await adminSend(token, `/categories/${c.id}`, "DELETE");
+      toast.success("Category deleted", c.name);
+      reload();
+    } catch (err) {
+      toast.error("Category not deleted", err instanceof Error ? err.message : "Remove its subcategories first.");
+    }
+  };
 
-    const handleCreate = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLoading(true);
+  const Row = ({ c, sub }: { c: Category; sub?: boolean }) => (
+    <li className={sub ? "ml-6 border-l border-line pl-4" : ""}>
+      <div className="flex items-center gap-3 rounded-xl px-3 py-2.5 hover:bg-brand-soft">
+        <span className="min-w-0 flex-1">
+          <span className="block font-semibold text-ink">{c.name}</span>
+          {c.description && <span className="block truncate text-sm text-ink-3">{c.description}</span>}
+        </span>
+        <button
+          type="button"
+          onClick={() => remove(c)}
+          aria-label={`Delete ${c.name}`}
+          className="grid size-9 shrink-0 place-items-center rounded-full text-ink-3 hover:bg-danger-soft hover:text-danger"
+        >
+          <Trash2 className="size-4" aria-hidden />
+        </button>
+      </div>
+    </li>
+  );
 
-        try {
-            const res = await fetch(`${API_URL}/categories`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
-                body: JSON.stringify(newCategory),
-            });
+  return (
+    <>
+      <AdminHeader title="Categories" description="Shown in the store menu, filters and footer." />
+      <div className="grid gap-6 lg:grid-cols-[22rem_1fr] lg:items-start">
+        <form onSubmit={create} className="glass glass-thick grid gap-4 rounded-[var(--radius-pane)] p-5 sm:p-6 lg:sticky lg:top-8">
+          <h2 className="text-lg font-bold text-ink">Add a category</h2>
+          <FormError>{error}</FormError>
+          <TextField label="Name" required value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} />
+          <TextField label="Description" value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} hint="Optional" />
+          <SelectField label="Parent category" value={form.parentId} onChange={(e) => setForm((f) => ({ ...f, parentId: e.target.value }))} hint="Leave empty for a top-level category">
+            <option value="">None (top level)</option>
+            {tree.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </SelectField>
+          <Button type="submit" loading={saving} disabled={!form.name.trim()}>
+            Add category
+          </Button>
+        </form>
 
-            if (res.ok) {
-                setNewCategory({ name: "", description: "" });
-                fetchCategories();
-            } else {
-                const data = await res.json();
-                alert(data.message || "Failed to create category");
-            }
-        } catch (error) {
-            alert("Error creating category");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleDelete = async (id: number) => {
-        if (!confirm("Are you sure you want to delete this category?")) return;
-
-        try {
-            const res = await fetch(`${API_URL}/categories/${id}`, {
-                method: "DELETE",
-                headers: {
-                    "Authorization": `Bearer ${token}`
-                }
-            });
-
-            if (res.ok) {
-                fetchCategories();
-            } else {
-                alert("Failed to delete category");
-            }
-        } catch (error) {
-            alert("Error deleting category");
-        }
-    };
-
-    return (
-        <div className="space-y-6">
-            <h1 className="text-3xl font-bold tracking-tight">Manage Categories</h1>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                {/* Create Form */}
-                <div className="md:col-span-1 bg-card border rounded-lg p-6 shadow-sm h-fit">
-                    <h2 className="text-lg font-semibold mb-4">Add New Category</h2>
-                    <form onSubmit={handleCreate} className="space-y-4">
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Name</label>
-                            <input
-                                required
-                                value={newCategory.name}
-                                onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
-                                className="w-full border rounded-md p-2 bg-background"
-                                placeholder="e.g. 3D Printer Parts"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium mb-1">Description</label>
-                            <textarea
-                                value={newCategory.description}
-                                onChange={(e) => setNewCategory({ ...newCategory, description: e.target.value })}
-                                className="w-full border rounded-md p-2 bg-background"
-                                rows={3}
-                                placeholder="Optional description..."
-                            />
-                        </div>
-                        <Button type="submit" disabled={loading} className="w-full">
-                            {loading ? "Creating..." : "Create Category"}
-                        </Button>
-                    </form>
-                </div>
-
-                {/* List View */}
-                <div className="md:col-span-2 bg-card border rounded-lg shadow-sm">
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead className="bg-muted">
-                                <tr>
-                                    <th className="text-left p-4 font-medium text-sm">Name</th>
-                                    <th className="text-left p-4 font-medium text-sm">Description</th>
-                                    <th className="text-right p-4 font-medium text-sm">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y">
-                                {categories.map(category => (
-                                    <tr key={category.id} className="hover:bg-muted/50 transition-colors">
-                                        <td className="p-4 font-medium">{category.name}</td>
-                                        <td className="p-4 text-sm text-muted-foreground">{category.description || "-"}</td>
-                                        <td className="p-4 text-right">
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => handleDelete(category.id)}
-                                                className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
-                                            >
-                                                <Trash2 className="h-4 w-4" />
-                                            </Button>
-                                        </td>
-                                    </tr>
-                                ))}
-                                {categories.length === 0 && (
-                                    <tr>
-                                        <td colSpan={3} className="p-8 text-center text-muted-foreground">
-                                            No categories found. Create one to get started!
-                                        </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
+        <section aria-label="All categories" className="glass glass-regular rounded-[var(--radius-pane)] p-3 sm:p-4">
+          {loading && !data ? (
+            <Skeleton className="h-64" />
+          ) : tree.length === 0 ? (
+            <EmptyState icon={Tags} title="No categories yet" body="Add one to organise the catalog." className="shadow-none" />
+          ) : (
+            <ul className="grid gap-1">
+              {tree.map((c) => (
+                <li key={c.id}>
+                  <ul className="grid gap-1">
+                    <Row c={c} />
+                    {c.children?.map((s) => <Row key={s.id} c={s} sub />)}
+                  </ul>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
+    </>
+  );
 }

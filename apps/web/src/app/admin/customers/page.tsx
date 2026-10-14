@@ -1,102 +1,83 @@
 "use client";
 
-import { API_URL } from '@/lib/api';
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Mail, Shield } from "lucide-react";
-import { useAuthStore } from "@/lib/auth-store";
+import { useMemo, useState } from "react";
+import { Search, ShieldCheck, Users } from "lucide-react";
+import { useAdminGet } from "@/lib/admin-api";
+import { formatDate } from "@/lib/format";
+import { AdminHeader } from "@/components/admin/admin-shell";
+import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Skeleton } from "@/components/ui/skeleton";
+import { TableShell, Td, Th, Tr } from "@/components/ui/table";
 
-export default function AdminCustomersPage() {
-    const { token } = useAuthStore();
-    const [customers, setCustomers] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [mounted, setMounted] = useState(false);
+type Customer = { id: number; name: string | null; email: string; role: string; createdAt: string; _count?: { orders: number } };
 
-    useEffect(() => { setMounted(true); }, []);
+export default function CustomersPage() {
+  const { data, loading } = useAdminGet<Customer[]>("/auth/users");
+  const [q, setQ] = useState("");
+  const rows = useMemo(
+    () => (data ?? []).filter((c) => `${c.name ?? ""} ${c.email}`.toLowerCase().includes(q.trim().toLowerCase())),
+    [data, q],
+  );
 
-    useEffect(() => {
-        if (!mounted || !token) return;
-        fetch(`${API_URL}/auth/users`, {
-            headers: { "Authorization": `Bearer ${token}` },
-            cache: "no-store",
-        } as any)
-            .then(res => {
-                if (!res.ok) throw new Error("Unauthorized");
-                return res.json();
-            })
-            .then(data => {
-                setCustomers(Array.isArray(data) ? data : []);
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error(err);
-                setLoading(false);
-            });
-    }, [mounted, token]);
+  return (
+    <>
+      <AdminHeader title="Customers" description={data ? `${data.length} registered accounts` : undefined} />
+      <label className="glass glass-thin mb-4 flex h-11 max-w-md items-center gap-2 rounded-full px-4">
+        <Search className="size-4 text-ink-3" aria-hidden />
+        <span className="sr-only">Search customers</span>
+        <input type="search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by name or email" className="min-w-0 flex-1 bg-transparent text-sm text-ink placeholder:text-ink-3 focus:outline-none" />
+      </label>
 
-    if (loading) return <div className="p-8">Loading customers...</div>;
-
-    return (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold tracking-tight">Customers</h2>
-                <Button variant="outline" className="gap-2">
-                    <Mail className="h-4 w-4" /> Email All
-                </Button>
-            </div>
-
-            <div className="border rounded-md bg-card">
-                <table className="w-full text-sm text-left">
-                    <thead className="bg-muted text-muted-foreground border-b">
-                        <tr>
-                            <th className="p-4 font-medium">Name</th>
-                            <th className="p-4 font-medium">Email</th>
-                            <th className="p-4 font-medium">Role</th>
-                            <th className="p-4 font-medium">Orders</th>
-                            <th className="p-4 font-medium">Joined Date</th>
-                            <th className="p-4 font-medium text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y">
-                        {customers.map((customer: any) => (
-                            <tr key={customer.id} className="hover:bg-muted/50">
-                                <td className="p-4 font-semibold text-foreground">
-                                    <div className="flex items-center gap-2">
-                                        <div className="h-8 w-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs flex-shrink-0">
-                                            {customer.name?.charAt(0) || customer.email.charAt(0).toUpperCase()}
-                                        </div>
-                                        {customer.name || "N/A"}
-                                    </div>
-                                </td>
-                                <td className="p-4 text-foreground">{customer.email}</td>
-                                <td className="p-4">
-                                    <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${customer.role === 'ADMIN'
-                                        ? 'bg-purple-100 text-purple-800'
-                                        : 'bg-green-100 text-green-800'
-                                        }`}>
-                                        {customer.role === 'ADMIN' && <Shield className="w-3 h-3 mr-1" />}
-                                        {customer.role}
-                                    </div>
-                                </td>
-                                <td className="p-4 font-semibold text-foreground">{customer._count?.orders || 0}</td>
-                                <td className="p-4 text-muted-foreground">
-                                    {new Date(customer.createdAt).toLocaleDateString()}
-                                </td>
-                                <td className="p-4 text-right">
-                                    <Button variant="ghost" size="sm" onClick={() => alert(`Customer Details Summary:\nName: ${customer.name || 'N/A'}\nEmail: ${customer.email}\nJoined: ${new Date(customer.createdAt).toLocaleDateString()}\nTotal Orders: ${customer._count?.orders || 0}`)}>View Details</Button>
-                                </td>
-                            </tr>
-                        ))}
-                        {customers.length === 0 && (
-                            <tr>
-                                <td colSpan={6} className="p-8 text-center text-muted-foreground">
-                                    No customers found.
-                                </td>
-                            </tr>
-                        )}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    );
+      {loading && !data ? (
+        <Skeleton className="h-80 rounded-[var(--radius-tile)]" />
+      ) : rows.length === 0 ? (
+        <EmptyState icon={Users} title={q ? `No customers match “${q}”` : "No customers yet"} />
+      ) : (
+        <TableShell caption="Customers">
+          <thead>
+            <tr>
+              <Th>Customer</Th>
+              <Th>Role</Th>
+              <Th className="text-right">Orders</Th>
+              <Th>Joined</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((c) => (
+              <Tr key={c.id}>
+                <Td label="Customer" className="max-md:col-span-2">
+                  <span className="flex items-center gap-3">
+                    <span className="grid size-10 shrink-0 place-items-center rounded-full bg-brand-soft text-sm font-bold text-brand">
+                      {(c.name || c.email).charAt(0).toUpperCase()}
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block truncate font-semibold text-ink">{c.name || "No name"}</span>
+                      <a href={`mailto:${c.email}`} className="block truncate text-sm text-ink-3 hover:text-brand">
+                        {c.email}
+                      </a>
+                    </span>
+                  </span>
+                </Td>
+                <Td label="Role">
+                  {c.role === "ADMIN" ? (
+                    <Badge tone="brand">
+                      <ShieldCheck className="size-3.5" aria-hidden />
+                      Admin
+                    </Badge>
+                  ) : (
+                    <Badge>Customer</Badge>
+                  )}
+                </Td>
+                <Td label="Orders" className="tabular text-right font-mono font-semibold text-ink max-md:text-left">
+                  {c._count?.orders ?? 0}
+                </Td>
+                <Td label="Joined">{formatDate(c.createdAt)}</Td>
+              </Tr>
+            ))}
+          </tbody>
+        </TableShell>
+      )}
+    </>
+  );
 }

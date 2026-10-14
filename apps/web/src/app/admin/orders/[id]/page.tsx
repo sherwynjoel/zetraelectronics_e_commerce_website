@@ -1,180 +1,155 @@
 "use client";
 
-import { API_URL } from '@/lib/api';
-import { Button } from "@/components/ui/button";
+import { use } from "react";
 import Link from "next/link";
-import { ArrowLeft, Package } from "lucide-react";
-import Image from "next/image";
-import { FulfillOrder } from "@/components/admin/fulfill-order";
+import { ArrowLeft, ExternalLink, FileDown, MapPin, Printer } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { formatImageUrl } from "@/lib/utils";
+import { useAdminGet } from "@/lib/admin-api";
+import { downloadInvoice } from "@/lib/invoice";
+import { parseAddress, printAddressLabel } from "@/lib/print-label";
+import { formatDate, formatINR } from "@/lib/format";
+import { statusTone } from "@/lib/status";
+import { AdminHeader } from "@/components/admin/admin-shell";
+import { FulfillOrder } from "@/components/admin/fulfill-order";
+import { Badge } from "@/components/ui/badge";
+import { Button, ButtonLink } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { ProductImage } from "@/components/ui/product-image";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "@/components/ui/toast";
 
-export default function AdminOrderDetailPage() {
-    const { id } = useParams<{ id: string }>();
-    const { token } = useAuthStore();
-    const router = useRouter();
-    const [order, setOrder] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
-    const [mounted, setMounted] = useState(false);
+type Order = {
+  id: number;
+  status: string;
+  total: number;
+  shippingCost?: number;
+  createdAt: string;
+  trackingUrl?: string | null;
+  razorpayPaymentId?: string | null;
+  shippingAddress?: string;
+  user?: { name?: string | null; email?: string };
+  items: { id: number; productId: number; quantity: number; price: number; product?: { name: string; image?: string | null } | null }[];
+};
 
-    useEffect(() => { setMounted(true); }, []);
+export default function AdminOrderDetail({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+  const { token } = useAuthStore();
+  const { data: order, loading, error, reload } = useAdminGet<Order>(`/orders/${id}`);
 
-    useEffect(() => {
-        if (!mounted || !token) return;
-        fetch(`${API_URL}/orders/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-            cache: "no-store",
-        } as any)
-            .then(res => {
-                if (res.status === 401 || res.status === 403) { router.push('/login'); return null; }
-                if (!res.ok) return null;
-                return res.json();
-            })
-            .then(data => { setOrder(data); setLoading(false); })
-            .catch(() => setLoading(false));
-    }, [mounted, token, id]);
+  if (loading && !order) return <Skeleton className="h-[32rem] rounded-[var(--radius-pane)]" />;
+  if (error || !order)
+    return <EmptyState title="Order not found" body={error ?? undefined} action={<ButtonLink href="/admin/orders">Back to orders</ButtonLink>} />;
 
-    if (loading) return <div className="p-8">Loading order...</div>;
+  const addr = parseAddress(order.shippingAddress);
+  const itemsTotal = order.items.reduce((a, i) => a + Number(i.price) * i.quantity, 0);
 
-    if (!order) {
-        return (
-            <div className="flex flex-col items-center justify-center p-8">
-                <h1 className="text-2xl font-bold mb-4">Order Not Found</h1>
-                <Link href="/admin/orders">
-                    <Button>Back to Orders</Button>
-                </Link>
+  return (
+    <>
+      <Link href="/admin/orders" className="mb-3 inline-flex items-center gap-1.5 text-sm font-semibold text-ink-2 hover:text-brand">
+        <ArrowLeft className="size-4" aria-hidden />
+        All orders
+      </Link>
+      <AdminHeader
+        title={`Order #ORD-${order.id}`}
+        description={`Placed ${formatDate(order.createdAt)}`}
+        action={
+          <>
+            <Button variant="glass" size="sm" onClick={() => !printAddressLabel(order) && toast.error("Pop-up blocked", "Allow pop-ups to print labels.")}>
+              <Printer className="size-4" aria-hidden />
+              Label
+            </Button>
+            <Button variant="glass" size="sm" onClick={() => token && downloadInvoice(order.id, token).catch(() => toast.error("Invoice download failed"))}>
+              <FileDown className="size-4" aria-hidden />
+              Invoice
+            </Button>
+          </>
+        }
+      />
+
+      <div className="grid gap-6 lg:grid-cols-[1fr_22rem] lg:items-start">
+        <div className="grid gap-6">
+          <section aria-labelledby="items-title" className="glass glass-regular rounded-[var(--radius-pane)] p-5 sm:p-6">
+            <div className="flex items-center justify-between gap-3">
+              <h2 id="items-title" className="text-lg font-bold text-ink">
+                Items
+              </h2>
+              <Badge tone={statusTone(order.status)}>{order.status.charAt(0) + order.status.slice(1).toLowerCase()}</Badge>
             </div>
-        );
-    }
-
-    const addr = (() => {
-        try {
-            return typeof order.shippingAddress === 'string'
-                ? JSON.parse(order.shippingAddress)
-                : order.shippingAddress;
-        } catch { return null; }
-    })();
-
-    return (
-        <div className="space-y-6">
-            <div className="flex items-center gap-4">
-                <Link href="/admin/orders">
-                    <Button variant="ghost" size="icon">
-                        <ArrowLeft className="h-5 w-5" />
-                    </Button>
-                </Link>
-                <div>
-                    <h1 className="text-2xl font-bold tracking-tight">Order #{order.id.toString().padStart(5, '0')}</h1>
-                    <p className="text-muted-foreground text-sm">
-                        Placed on {new Date(order.createdAt).toLocaleString()}
-                    </p>
+            <ul className="mt-4 grid divide-y divide-line">
+              {order.items.map((i) => (
+                <li key={i.id} className="flex items-center gap-3 py-3">
+                  <span className="relative size-14 shrink-0 overflow-hidden rounded-xl bg-[var(--glass-solid)]">
+                    <ProductImage src={i.product?.image} alt="" sizes="56px" className="p-1.5" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-semibold text-ink">{i.product?.name ?? `Product #${i.productId}`}</span>
+                    <span className="tabular text-sm text-ink-3">
+                      {i.quantity} × {formatINR(Number(i.price))}
+                    </span>
+                  </span>
+                  <span className="tabular font-semibold text-ink">{formatINR(Number(i.price) * i.quantity)}</span>
+                </li>
+              ))}
+            </ul>
+            <dl className="mt-2 grid gap-2 border-t border-line pt-4 text-sm">
+              <div className="flex justify-between">
+                <dt className="text-ink-2">Items</dt>
+                <dd className="tabular text-ink">{formatINR(itemsTotal)}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-ink-2">Shipping, tax and adjustments</dt>
+                <dd className="tabular text-ink">{formatINR(Number(order.total) - itemsTotal)}</dd>
+              </div>
+              <div className="flex justify-between text-base font-bold">
+                <dt className="text-ink">Total charged</dt>
+                <dd className="tabular text-ink">{formatINR(Number(order.total))}</dd>
+              </div>
+              {order.razorpayPaymentId && (
+                <div className="flex justify-between">
+                  <dt className="text-ink-3">Razorpay payment</dt>
+                  <dd className="font-mono text-xs text-ink-2">{order.razorpayPaymentId}</dd>
                 </div>
-                <div className="ml-auto">
-                    <FulfillOrder
-                        orderId={order.id}
-                        currentStatus={order.status}
-                        currentTracking={order.trackingUrl}
-                    />
-                </div>
-            </div>
+              )}
+            </dl>
+          </section>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Order Items */}
-                <div className="lg:col-span-2 space-y-6">
-                    <div className="border rounded-xl bg-card p-6 shadow-sm">
-                        <h3 className="font-semibold mb-4 text-lg">Order Items</h3>
-                        <div className="space-y-4">
-                            {order.items.map((item: any) => (
-                                <div key={item.id} className="flex gap-4 items-center border-b pb-4 last:border-0 last:pb-0">
-                                    <div className="h-16 w-16 bg-white border rounded flex items-center justify-center relative overflow-hidden">
-                                        {item.product?.image ? (
-                                            <Image
-                                                src={formatImageUrl(item.product.image)}
-                                                alt={item.product.name}
-                                                fill
-                                                className="object-contain p-2 mix-blend-multiply"
-                                                unoptimized
-                                            />
-                                        ) : (
-                                            <Package className="h-6 w-6 text-muted-foreground" />
-                                        )}
-                                    </div>
-                                    <div className="flex-1">
-                                        <div className="font-medium">{item.product?.name ?? `Product #${item.productId}`}</div>
-                                        <div className="text-sm text-muted-foreground">Qty: {item.quantity}</div>
-                                    </div>
-                                    <div className="font-semibold">₹{Number(item.price).toFixed(2)}</div>
-                                </div>
-                            ))}
-                        </div>
-                        <div className="mt-6 pt-4 border-t flex justify-between items-center bg-muted/20 -mx-6 -mb-6 p-6 rounded-b-xl">
-                            <span className="font-medium">Total Amount</span>
-                            <span className="text-2xl font-bold text-primary">₹{Number(order.total).toFixed(2)}</span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Sidebar */}
-                <div className="space-y-6">
-                    {/* Customer */}
-                    <div className="border rounded-xl bg-card p-6 shadow-sm">
-                        <h3 className="font-semibold mb-4 text-lg">Customer</h3>
-                        <div className="space-y-3">
-                            <div>
-                                <label className="text-xs text-muted-foreground uppercase font-bold">Name</label>
-                                <div className="font-medium">{order.user?.name || "Guest User"}</div>
-                            </div>
-                            <div>
-                                <label className="text-xs text-muted-foreground uppercase font-bold">Email</label>
-                                <div className="font-medium break-all">{order.user?.email}</div>
-                            </div>
-                            <div>
-                                <label className="text-xs text-muted-foreground uppercase font-bold">Status</label>
-                                <div className="mt-1">
-                                    <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-                                        order.status === 'DELIVERED' ? 'bg-green-100 text-green-700' :
-                                        order.status === 'SHIPPED'   ? 'bg-blue-100 text-blue-700' :
-                                        order.status === 'CANCELLED' ? 'bg-red-100 text-red-700' :
-                                                                       'bg-yellow-100 text-yellow-700'
-                                    }`}>
-                                        {order.status}
-                                    </span>
-                                </div>
-                            </div>
-                            {order.trackingUrl && (
-                                <div>
-                                    <label className="text-xs text-muted-foreground uppercase font-bold">Tracking</label>
-                                    <div className="mt-1">
-                                        <a href={order.trackingUrl} target="_blank" className="text-blue-600 hover:underline break-all text-sm">
-                                            {order.trackingUrl}
-                                        </a>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Shipping Address */}
-                    <div className="border rounded-xl bg-card p-6 shadow-sm">
-                        <h3 className="font-semibold mb-4 text-lg">Shipping Address</h3>
-                        {addr && (addr.street || addr.city) ? (
-                            <div className="text-sm space-y-1">
-                                {addr.name && <div className="font-semibold">{addr.name}</div>}
-                                {addr.phone && <div className="text-muted-foreground">📞 {addr.phone}</div>}
-                                {addr.street && <div className="mt-1">{addr.street}</div>}
-                                {(addr.city || addr.state) && (
-                                    <div className="text-muted-foreground">{[addr.city, addr.state].filter(Boolean).join(', ')}</div>
-                                )}
-                                {addr.zip && <div className="text-muted-foreground">PIN: {addr.zip}</div>}
-                            </div>
-                        ) : (
-                            <div className="text-sm text-muted-foreground">No address on record</div>
-                        )}
-                    </div>
-                </div>
-            </div>
+          <section aria-labelledby="ship-title" className="glass glass-regular rounded-[var(--radius-pane)] p-5 sm:p-6">
+            <h2 id="ship-title" className="flex items-center gap-2 text-lg font-bold text-ink">
+              <MapPin className="size-5 text-brand" aria-hidden />
+              Ship to
+            </h2>
+            {addr.street || addr.city ? (
+              <address className="mt-3 not-italic leading-relaxed text-ink-2">
+                <span className="block font-semibold text-ink">{addr.name || order.user?.name}</span>
+                {addr.phone && <span className="tabular block">{addr.phone}</span>}
+                {addr.street}
+                <br />
+                {[addr.city, addr.state].filter(Boolean).join(", ")} <span className="tabular font-semibold text-ink">{addr.zip}</span>
+              </address>
+            ) : (
+              <p className="mt-3 text-sm text-ink-3">No address on this order.</p>
+            )}
+            <p className="mt-4 border-t border-line pt-4 text-sm text-ink-2">
+              Customer: <span className="font-semibold text-ink">{order.user?.name || "—"}</span>
+              {order.user?.email && (
+                <a href={`mailto:${order.user.email}`} className="ml-2 text-brand hover:underline">
+                  {order.user.email}
+                </a>
+              )}
+            </p>
+            {order.trackingUrl && (
+              <a href={order.trackingUrl} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-brand hover:underline">
+                <ExternalLink className="size-4" aria-hidden />
+                Open tracking page
+              </a>
+            )}
+          </section>
         </div>
-    );
+
+        <div className="lg:sticky lg:top-8">
+          <FulfillOrder key={`${order.status}-${order.trackingUrl}`} orderId={order.id} currentStatus={order.status} currentTracking={order.trackingUrl} onSaved={reload} />
+        </div>
+      </div>
+    </>
+  );
 }

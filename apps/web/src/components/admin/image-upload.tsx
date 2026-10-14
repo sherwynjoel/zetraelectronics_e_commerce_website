@@ -1,81 +1,97 @@
 "use client";
 
-import { API_URL } from '@/lib/api';
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Upload, X, Loader2 } from "lucide-react";
-import Image from "next/image";
+import { useId, useState } from "react";
+import { ImagePlus, Trash2 } from "lucide-react";
+import { API_URL } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
+import { ProductImage } from "@/components/ui/product-image";
+import { Spinner } from "@/components/ui/spinner";
+import { cn } from "@/lib/utils";
 
-interface ImageUploadProps {
-    value: string;
-    onChange: (url: string) => void;
-}
+export function ImageUpload({ value, onChange, label = "Product photo" }: { value: string; onChange(url: string): void; label?: string }) {
+  const { token } = useAuthStore();
+  const id = useId();
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+  const [over, setOver] = useState(false);
 
-export function ImageUpload({ value, onChange }: ImageUploadProps) {
-    const [isUploading, setIsUploading] = useState(false);
-    const { token } = useAuthStore();
-
-    const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (!e.target.files || e.target.files.length === 0) return;
-
-        setIsUploading(true);
-        const file = e.target.files[0];
-        const formData = new FormData();
-        formData.append("file", file);
-
-        try {
-            const res = await fetch(`${API_URL}/products/upload`, {
-                method: "POST",
-                headers: { "Authorization": `Bearer ${token}` },
-                body: formData,
-            });
-
-            if (!res.ok) {
-                throw new Error("Upload failed");
-            }
-
-            const data = await res.json();
-            onChange(data.url);
-        } catch (error) {
-            console.error(error);
-            alert("Upload failed. Check console for details.");
-        } finally {
-            setIsUploading(false);
-        }
-    };
-
-    if (value) {
-        return (
-            <div className="relative w-40 h-40 border rounded-lg overflow-hidden group">
-                <Image src={value} alt="Product Image" fill className="object-cover" unoptimized />
-                <button
-                    type="button"
-                    onClick={() => onChange("")}
-                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                    <X className="h-4 w-4" />
-                </button>
-            </div>
-        );
+  const upload = async (file?: File | null) => {
+    if (!file) return;
+    setUploading(true);
+    setError("");
+    const body = new FormData();
+    body.append("file", file);
+    try {
+      const res = await fetch(`${API_URL}/products/upload`, { method: "POST", headers: { Authorization: `Bearer ${token}` }, body });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || "Upload failed");
+      onChange(data.url);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Upload failed");
+    } finally {
+      setUploading(false);
     }
+  };
 
-    return (
-        <div className="w-full">
-            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    {isUploading ? (
-                        <Loader2 className="h-8 w-8 text-muted-foreground animate-spin" />
-                    ) : (
-                        <>
-                            <Upload className="h-8 w-8 text-muted-foreground mb-2" />
-                            <p className="text-sm text-muted-foreground">Click to upload image</p>
-                            <p className="text-xs text-muted-foreground">(JPG, PNG)</p>
-                        </>
-                    )}
-                </div>
-                <input type="file" className="hidden" accept="image/*" onChange={handleUpload} disabled={isUploading} />
-            </label>
-        </div>
-    );
+  return (
+    <div className="grid gap-2">
+      <span className="text-sm font-semibold text-ink-2" id={`${id}-label`}>
+        {label}
+      </span>
+      <div className="flex flex-wrap items-start gap-4">
+        {value ? (
+          <div className="relative size-36 overflow-hidden rounded-[var(--radius-tile)] bg-[var(--glass-solid)]">
+            <ProductImage src={value} alt="Current product photo" sizes="144px" className="p-2" />
+            <button
+              type="button"
+              onClick={() => onChange("")}
+              aria-label="Remove photo"
+              className="glass glass-thin absolute right-2 top-2 grid size-8 place-items-center rounded-full text-danger"
+            >
+              <Trash2 className="size-4" aria-hidden />
+            </button>
+          </div>
+        ) : null}
+        <label
+          htmlFor={id}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setOver(true);
+          }}
+          onDragLeave={() => setOver(false)}
+          onDrop={(e) => {
+            e.preventDefault();
+            setOver(false);
+            upload(e.dataTransfer.files?.[0]);
+          }}
+          className={cn(
+            "grid h-36 min-w-48 flex-1 cursor-pointer place-items-center rounded-[var(--radius-tile)] border-2 border-dashed border-line px-4 text-center transition-colors hover:border-brand hover:bg-brand-soft",
+            over && "border-brand bg-brand-soft",
+          )}
+        >
+          {uploading ? (
+            <span className="flex items-center gap-2 text-sm font-semibold text-brand">
+              <Spinner className="size-4" label="Uploading" /> Uploading…
+            </span>
+          ) : (
+            <span className="grid justify-items-center gap-1.5">
+              <ImagePlus className="size-6 text-brand" aria-hidden />
+              <span className="text-sm font-semibold text-ink">{value ? "Replace photo" : "Drop a photo or click to upload"}</span>
+              <span className="text-xs text-ink-3">PNG, JPG or WebP, up to 5 MB</span>
+            </span>
+          )}
+          <input
+            id={id}
+            type="file"
+            accept=".png,.jpg,.jpeg,.webp"
+            className="sr-only"
+            aria-labelledby={`${id}-label`}
+            onChange={(e) => upload(e.target.files?.[0])}
+            disabled={uploading}
+          />
+        </label>
+      </div>
+      {error && <p className="text-xs font-semibold text-danger">{error}</p>}
+    </div>
+  );
 }
