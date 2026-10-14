@@ -1,90 +1,65 @@
 "use client";
 
-import { API_URL } from '@/lib/api';
-import { Button } from "@/components/ui/button";
-import { CheckCircle, Package, FileText } from "lucide-react";
-import Link from "next/link";
-import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Check, FileDown, Package } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
+import { downloadInvoice } from "@/lib/invoice";
+import { Button, ButtonLink } from "@/components/ui/button";
+import { toast } from "@/components/ui/toast";
 
 function SuccessContent() {
-    const searchParams = useSearchParams();
-    const orderId = searchParams.get("orderId");
-    const { token } = useAuthStore();
-    const [downloading, setDownloading] = useState(false);
+  const orderId = useSearchParams().get("orderId");
+  const { token } = useAuthStore();
+  const [busy, setBusy] = useState(false);
 
-    const handleDownloadInvoice = async () => {
-        if (!orderId || !token) return;
-        setDownloading(true);
-        try {
-            const res = await fetch(`${API_URL}/orders/${orderId}/invoice`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            if (!res.ok) throw new Error("Failed to download invoice");
-            const blob = await res.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `invoice-${orderId}.pdf`;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            window.URL.revokeObjectURL(url);
-        } catch (e) {
-            alert("Could not download invoice. Please try from Order History.");
-        } finally {
-            setDownloading(false);
-        }
-    };
+  const invoice = async () => {
+    if (!orderId || !token) return;
+    setBusy(true);
+    try {
+      await downloadInvoice(orderId, token);
+    } catch {
+      toast.error("Invoice download failed", "Try again from your orders page.");
+    } finally {
+      setBusy(false);
+    }
+  };
 
-    return (
-        <div className="text-center space-y-6 max-w-md w-full">
-            <div className="flex justify-center">
-                <CheckCircle className="h-24 w-24 text-green-500" />
-            </div>
-
-            <h1 className="text-4xl font-bold text-foreground">Order Confirmed!</h1>
-
-            <p className="text-lg text-muted-foreground">
-                Thank you for your purchase. We have received your order and are getting it ready for shipment.
-            </p>
-
-            <div className="bg-card p-6 rounded-xl border space-y-2">
-                <div className="text-sm text-muted-foreground uppercase tracking-wider font-bold">Order ID</div>
-                <div className="text-3xl font-mono font-bold">#{orderId?.toString().padStart(6, '0')}</div>
-            </div>
-
-            <div className="flex flex-col gap-3">
-                <Link href="/">
-                    <Button size="lg" className="w-full">Continue Shopping</Button>
-                </Link>
-                <Link href="/profile">
-                    <Button variant="outline" className="w-full gap-2">
-                        <Package className="h-4 w-4" /> View Order History
-                    </Button>
-                </Link>
-                {orderId && (
-                    <Button
-                        className="w-full gap-2 bg-indigo-600 hover:bg-indigo-700 text-white border-0 shadow-lg shadow-indigo-200"
-                        onClick={handleDownloadInvoice}
-                        disabled={downloading}
-                    >
-                        <FileText className="h-4 w-4" />
-                        {downloading ? "Downloading..." : "Download Invoice"}
-                    </Button>
-                )}
-            </div>
+  return (
+    <div className="mx-auto max-w-xl py-6">
+      <section className="glass glass-thick flex flex-col items-center gap-5 rounded-[2.25rem] px-6 py-12 text-center sm:px-12">
+        <span className="grid size-20 place-items-center rounded-full bg-ok text-white shadow-[0_14px_30px_-10px_var(--ok)] motion-safe:animate-[toast-in_.7s_var(--ease-spring)] dark:text-bg">
+          <Check className="size-10" strokeWidth={3} aria-hidden />
+        </span>
+        <h1 className="text-3xl font-extrabold tracking-[-0.03em] text-ink sm:text-4xl">Order confirmed</h1>
+        {orderId && (
+          <p className="text-ink-2">
+            Order <span className="tabular font-mono font-semibold text-ink">#ORD-{orderId}</span> is paid. We’ve emailed your GST invoice and
+            will send tracking once it ships.
+          </p>
+        )}
+        <div className="mt-2 grid w-full gap-3 sm:grid-cols-2">
+          <ButtonLink href="/track-order" size="lg" className="h-13">
+            <Package className="size-5" aria-hidden />
+            Track order
+          </ButtonLink>
+          <Button variant="glass" size="lg" className="h-13" onClick={invoice} loading={busy} disabled={!orderId || !token}>
+            <FileDown className="size-5" aria-hidden />
+            Invoice (PDF)
+          </Button>
         </div>
-    );
+        <ButtonLink href="/products" variant="link">
+          Continue shopping
+        </ButtonLink>
+      </section>
+    </div>
+  );
 }
 
-export default function OrderSuccessPage() {
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-muted/10 p-4">
-            <Suspense fallback={<div>Loading...</div>}>
-                <SuccessContent />
-            </Suspense>
-        </div>
-    );
+export default function CheckoutSuccessPage() {
+  return (
+    <Suspense fallback={<div className="py-20 text-center text-ink-3">Loading your order…</div>}>
+      <SuccessContent />
+    </Suspense>
+  );
 }
