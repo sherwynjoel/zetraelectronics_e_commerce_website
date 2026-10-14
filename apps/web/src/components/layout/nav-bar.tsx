@@ -50,7 +50,7 @@ export function NavBar({ categories }: { categories: Category[] }) {
               <nav aria-label="Catalog" className="hidden lg:block">
                 <CategoryMenu categories={categories} />
               </nav>
-              <SearchBox className="hidden flex-1 lg:block lg:max-w-xl xl:max-w-2xl" />
+              <SearchBox className="hidden min-w-0 flex-1 lg:block" />
               <div className="flex flex-1 items-center justify-end gap-2 lg:flex-none">
                 <button
                   type="button"

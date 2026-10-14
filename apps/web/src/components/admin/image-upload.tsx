@@ -40,7 +40,7 @@ export function ImageUpload({ value, onChange, label = "Product photo" }: { valu
       </span>
       <div className="flex flex-wrap items-start gap-4">
         {value ? (
-          <div className="relative size-36 overflow-hidden rounded-[var(--radius-tile)] bg-[var(--glass-solid)]">
+          <div className="relative size-36 overflow-hidden rounded-[var(--radius-tile)] bg-[var(--plate)]">
             <ProductImage src={value} alt="Current product photo" sizes="144px" className="p-2" />
             <button
               type="button"

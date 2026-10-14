@@ -63,7 +63,7 @@ export function Loupe({
             height: lens,
             left: pt.x - lens / 2,
             top: pt.y - lens / 2,
-            backgroundColor: "var(--glass-solid)",
+            backgroundColor: "var(--plate)",
             backgroundImage: `url("${src}")`,
             backgroundRepeat: "no-repeat",
             backgroundSize: bg.size,
@@ -81,7 +81,7 @@ export function Loupe({
             clear();
           }}
           aria-pressed={armed}
-          className="glass glass-thin absolute bottom-3 right-3 z-30 flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-semibold text-ink lg:hidden"
+          className="glass glass-thin absolute bottom-3 right-3 z-10 flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-semibold text-ink lg:hidden"
         >
           <Search className="size-3.5" aria-hidden />
           {armed ? "Done magnifying" : "Magnify"}

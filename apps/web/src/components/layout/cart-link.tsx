@@ -33,7 +33,7 @@ export function CountBadge({ count, className }: { count: number; className?: st
     <span
       aria-hidden
       className={cn(
-        "tabular absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-ember px-1 text-[11px] font-bold text-white shadow-[0_2px_6px_rgba(240,60,54,.45)]",
+        "tabular absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-brand px-1 text-[11px] font-bold text-brand-ink shadow-[0_2px_6px_color-mix(in_srgb,var(--brand)_45%,transparent)]",
         className,
       )}
     >

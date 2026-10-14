@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://zetraelectronics.com" },
   openGraph: {
     title: "Zetra Electronics | Buy Electronic Components Online India",
-    description: "India's premium destination for electronic components, sensors, IoT modules, and robotics kits.",
+    description: "Electrify Your Needs With Us. Genuine, tested electronic components with datasheets and a GST invoice, shipped across India.",
     url: "https://zetraelectronics.com",
   },
 };
@@ -67,7 +67,7 @@ export default async function Home() {
 
   return (
     <div className="mx-auto flex max-w-[1280px] flex-col gap-16 pb-16 lg:gap-24">
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd).replace(/</g, "\u003c") }} />
 
       {/* First viewport: the search is the primary action; the bench shows real parts in stock */}
       <section aria-labelledby="hero-title" className="glass glass-regular relative overflow-hidden rounded-[2.25rem] px-5 py-10 sm:px-10 lg:px-14 lg:py-16">
@@ -109,11 +109,11 @@ export default async function Home() {
                   style={{ animationDelay: `${150 + i * 120}ms` }}
                   className={`glass glass-thick glass-lift rise-in flex items-center gap-4 rounded-[1.4rem] p-3 pr-5 ${tilt[i]} motion-reduce:rotate-0 motion-reduce:translate-x-0`}
                 >
-                  <span className="relative size-20 shrink-0 overflow-hidden rounded-2xl bg-[var(--glass-solid)]">
-                    <ProductImage src={p.image} alt="" sizes="80px" className="p-2 mix-blend-multiply dark:mix-blend-normal" />
+                  <span className="relative size-20 shrink-0 overflow-hidden rounded-2xl bg-[var(--plate)]">
+                    <ProductImage src={p.image} alt="" sizes="80px" className="p-2 mix-blend-multiply" />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate font-semibold text-ink">{p.name}</span>
+                    <span className="line-clamp-2 font-semibold leading-snug text-ink">{p.name}</span>
                     <span className="mt-1 flex items-center gap-2">
                       <span className="tabular text-sm font-bold text-ink">{formatINR(Number(p.price))}</span>
                       <StockPill stock={p.stock} />
@@ -152,21 +152,25 @@ export default async function Home() {
           <h2 id="categories-title" className="text-2xl font-bold text-ink sm:text-3xl">
             Shop by category
           </h2>
-          <ul className="-mx-3 mt-5 flex snap-x gap-3 overflow-x-auto px-3 pb-3 [scrollbar-width:none]">
-            {categories.map((c) => (
-              <li key={c.id} className="snap-start">
-                <Link
-                  href={categoryHref(c.name)}
-                  className="glass glass-thin glass-lift flex h-28 w-52 flex-col justify-between rounded-[var(--radius-tile)] p-4"
-                >
-                  <Cpu className="size-5 text-brand" aria-hidden />
-                  <span>
-                    <span className="block font-semibold text-ink">{c.name}</span>
-                    {!!c.children?.length && <span className="text-xs text-ink-3">{c.children.length} subcategories</span>}
-                  </span>
-                </Link>
-              </li>
-            ))}
+          <ul className="-mx-3 -my-4 mt-1 flex snap-x gap-3 overflow-x-auto px-3 py-4 [scrollbar-width:none] lg:mx-0 lg:grid lg:grid-cols-6 lg:overflow-visible lg:px-0">
+            {categories.map((c) => {
+              const names = [c.name, ...(c.children ?? []).map((s) => s.name)];
+              const parts = products.filter((p) => names.includes(p.category));
+              const cover = parts.find((p) => p.image && p.stock > 0) ?? parts.find((p) => p.image);
+              return (
+                <li key={c.id} className="shrink-0 snap-start">
+                  <Link href={categoryHref(c.name)} className="glass glass-thin glass-lift flex w-44 items-center gap-3 rounded-[var(--radius-tile)] p-2.5 pr-3 lg:w-auto">
+                    <span className="relative size-12 shrink-0 overflow-hidden rounded-xl bg-[var(--plate)]">
+                      <ProductImage src={cover?.image} alt="" sizes="48px" className="p-1 [&_span]:hidden [&_svg]:size-5" />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-semibold text-ink">{c.name}</span>
+                      <span className="block text-xs text-ink-3">{parts.length ? `${parts.length} ${parts.length === 1 ? "part" : "parts"}` : "Coming soon"}</span>
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </section>
       )}

@@ -328,8 +328,8 @@ export default function CheckoutPage() {
               <ul className="grid divide-y divide-line" aria-label="Parts in this order">
                 {items.map((i) => (
                   <li key={i.id} className="flex items-center gap-3 py-3">
-                    <span className="relative size-14 shrink-0 overflow-hidden rounded-xl bg-[var(--glass-solid)]">
-                      <ProductImage src={i.image} alt="" sizes="56px" className="p-1.5 mix-blend-multiply dark:mix-blend-normal" />
+                    <span className="relative size-14 shrink-0 overflow-hidden rounded-xl bg-[var(--plate)]">
+                      <ProductImage src={i.image} alt="" sizes="56px" className="p-1.5 mix-blend-multiply" />
                     </span>
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-sm font-semibold text-ink">{i.name}</span>

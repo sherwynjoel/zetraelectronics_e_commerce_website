@@ -85,8 +85,8 @@ export default function CartPage() {
             const atCap = item.quantity >= item.stock;
             return (
               <li key={item.id} className="glass glass-regular flex gap-4 rounded-[var(--radius-tile)] p-3 sm:items-center sm:p-4">
-                <Link href={`/products/${item.id}`} className="relative size-20 shrink-0 overflow-hidden rounded-2xl bg-[var(--glass-solid)] sm:size-24">
-                  <ProductImage src={item.image} alt={item.name} sizes="96px" className="p-2 mix-blend-multiply dark:mix-blend-normal" />
+                <Link href={`/products/${item.id}`} className="relative size-20 shrink-0 overflow-hidden rounded-2xl bg-[var(--plate)] sm:size-24">
+                  <ProductImage src={item.image} alt={item.name} sizes="96px" className="p-2 mix-blend-multiply" />
                 </Link>
                 <div className="grid min-w-0 flex-1 gap-3 sm:grid-cols-[1fr_auto_auto] sm:items-center sm:gap-6">
                   <div className="min-w-0">

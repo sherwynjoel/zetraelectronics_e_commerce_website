@@ -18,7 +18,7 @@ export function ProductCard({ product, priority }: { product: CardProduct; prior
   const href = `/products/${product.id}`;
   return (
     <article className="glass glass-regular glass-lift group relative flex flex-col rounded-[var(--radius-tile)] p-2.5">
-      <div className="relative aspect-square overflow-hidden rounded-[calc(var(--radius-tile)-0.4rem)] bg-[var(--glass-solid)]">
+      <div className="relative aspect-square overflow-hidden rounded-[calc(var(--radius-tile)-0.4rem)] bg-[var(--plate)]">
         <ProductImage
           src={product.image}
           alt={product.name}

@@ -68,6 +68,8 @@
   --glass-shadow-lift: 0 2px 4px rgba(11, 26, 51, 0.06), 0 18px 40px -12px rgba(11, 26, 51, 0.22), 0 40px 80px -28px rgba(22, 83, 166, 0.26);
 
   --chart: #1653a6;
+  --plate: #f3f6fb;
+  --plate-ink: #56657f;
   --field-a: #7aaeff;
   --field-b: #6fe0ee;
   --field-c: #ffa395;
@@ -107,6 +109,8 @@
   --glass-shadow-lift: 0 2px 6px rgba(0, 0, 0, 0.45), 0 20px 44px -12px rgba(0, 0, 0, 0.6), 0 40px 90px -26px rgba(40, 100, 220, 0.45);
 
   --chart: #4d8ff5;
+  --plate: #dde3ec;
+  --plate-ink: #4a5873;
   --field-a: #1d55cf;
   --field-b: #087f9a;
   --field-c: #9c2a24;
@@ -282,4 +286,14 @@
 @keyframes rise-in {
   from { opacity: 0; transform: translateY(14px); filter: blur(6px); }
   to { opacity: 1; transform: none; filter: none; }
+}
+
+/* Phone product page: the tab bar steps aside while the sticky buy bar is up. */
+nav[aria-label="Primary"] {
+  transition: transform 500ms var(--ease-liquid), opacity 300ms linear;
+}
+:root[data-buybar="on"] nav[aria-label="Primary"] {
+  transform: translateY(140%);
+  opacity: 0;
+  pointer-events: none;
 }

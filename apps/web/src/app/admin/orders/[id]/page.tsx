@@ -78,7 +78,7 @@ export default function AdminOrderDetail({ params }: { params: Promise<{ id: str
             <ul className="mt-4 grid divide-y divide-line">
               {order.items.map((i) => (
                 <li key={i.id} className="flex items-center gap-3 py-3">
-                  <span className="relative size-14 shrink-0 overflow-hidden rounded-xl bg-[var(--glass-solid)]">
+                  <span className="relative size-14 shrink-0 overflow-hidden rounded-xl bg-[var(--plate)]">
                     <ProductImage src={i.product?.image} alt="" sizes="56px" className="p-1.5" />
                   </span>
                   <span className="min-w-0 flex-1">

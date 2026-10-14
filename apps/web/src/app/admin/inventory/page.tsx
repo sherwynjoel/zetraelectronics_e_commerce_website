@@ -70,7 +70,7 @@ export default function InventoryPage() {
               <Tr key={p.id}>
                 <Td label="Product" className="max-md:col-span-2">
                   <span className="flex items-center gap-3">
-                    <span className="relative size-10 shrink-0 overflow-hidden rounded-xl bg-[var(--glass-solid)]">
+                    <span className="relative size-10 shrink-0 overflow-hidden rounded-xl bg-[var(--plate)]">
                       <ProductImage src={p.image} alt="" sizes="40px" className="p-1" />
                     </span>
                     <span className="font-semibold text-ink">{p.name}</span>

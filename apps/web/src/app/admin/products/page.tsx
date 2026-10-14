@@ -99,7 +99,7 @@ export default function AdminProductsPage() {
               <Tr key={p.id}>
                 <Td label="Product" className="max-md:col-span-2">
                   <span className="flex items-center gap-3">
-                    <span className="relative size-11 shrink-0 overflow-hidden rounded-xl bg-[var(--glass-solid)]">
+                    <span className="relative size-11 shrink-0 overflow-hidden rounded-xl bg-[var(--plate)]">
                       <ProductImage src={p.image} alt="" sizes="44px" className="p-1" />
                     </span>
                     <Link href={`/admin/products/${p.id}/edit`} className="font-semibold text-ink hover:text-brand">

@@ -176,7 +176,7 @@ export function OrderList() {
           <ul className="flex flex-wrap gap-2" aria-label="Parts in this order">
             {o.items.map((it) => (
               <li key={it.id} className="glass glass-thin flex max-w-full items-center gap-2 rounded-full py-1 pl-1 pr-3">
-                <span className="relative size-8 shrink-0 overflow-hidden rounded-full bg-[var(--glass-solid)]">
+                <span className="relative size-8 shrink-0 overflow-hidden rounded-full bg-[var(--plate)]">
                   <ProductImage src={it.product?.image} alt="" sizes="32px" className="p-0.5" />
                 </span>
                 <span className="truncate text-xs font-semibold text-ink">{it.product?.name ?? "Part"}</span>

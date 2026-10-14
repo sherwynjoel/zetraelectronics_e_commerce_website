@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight, Search, X } from "lucide-react";
@@ -10,6 +10,18 @@ import type { Product } from "@/lib/types";
 import { ProductImage } from "@/components/ui/product-image";
 import { Spinner } from "@/components/ui/spinner";
 import { cn } from "@/lib/utils";
+
+function useWide() {
+  return useSyncExternalStore(
+    (cb) => {
+      const mq = window.matchMedia("(min-width: 640px)");
+      mq.addEventListener("change", cb);
+      return () => mq.removeEventListener("change", cb);
+    },
+    () => window.matchMedia("(min-width: 640px)").matches,
+    () => true,
+  );
+}
 
 /**
  * Search combobox with live suggestions (top six matches, 300ms debounce).
@@ -88,6 +100,7 @@ export function SearchBox({
   };
 
   const hero = variant === "hero";
+  const wide = useWide();
 
   return (
     <div ref={root} className={cn("relative", className)}>
@@ -127,7 +140,7 @@ export function SearchBox({
                 setOpen(false);
               }
             }}
-            placeholder={hero ? "Search sensors, boards, modules…" : "Search parts"}
+            placeholder={hero && wide ? "Search sensors, boards, modules…" : "Search parts"}
             className={cn(
               "min-w-0 flex-1 bg-transparent text-ink placeholder:text-ink-3 focus:outline-none [&::-webkit-search-cancel-button]:hidden",
               hero ? "text-lg" : "text-sm",
@@ -174,7 +187,7 @@ export function SearchBox({
                       i === active && "bg-brand-soft",
                     )}
                   >
-                    <span className="relative size-11 shrink-0 overflow-hidden rounded-lg bg-[var(--glass-solid)]">
+                    <span className="relative size-11 shrink-0 overflow-hidden rounded-lg bg-[var(--plate)]">
                       <ProductImage src={p.image} alt="" sizes="44px" className="p-1" />
                     </span>
                     <span className="min-w-0 flex-1">

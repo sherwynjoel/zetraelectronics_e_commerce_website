@@ -127,78 +127,83 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
       </nav>
 
       <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr] lg:items-start lg:gap-10">
-        <ProductStage src={product.image} alt={product.name} />
-
-        <section aria-labelledby="product-title" className="glass glass-thick grid gap-6 rounded-[var(--radius-pane)] p-6 sm:p-8 lg:sticky lg:top-28">
-          <div className="grid gap-3">
-            <StockPill stock={product.stock} />
-            <h1 id="product-title" className="text-3xl font-extrabold leading-tight tracking-[-0.03em] text-ink sm:text-4xl">
-              {product.name}
-            </h1>
-            <div className="flex flex-wrap items-end gap-x-3 gap-y-1">
-              <Price value={price} size="xl" />
-              <span className="pb-1.5 text-sm text-ink-3">incl. GST</span>
+        <div className="grid gap-6">
+          <ProductStage src={product.image} alt={product.name} />
+          <section aria-labelledby="specs-title" className="glass glass-regular rounded-[var(--radius-pane)] p-6 sm:p-8">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 id="specs-title" className="text-xl font-bold text-ink">
+                Specifications
+              </h2>
+              {product.datasheet ? (
+                <ButtonLink href={formatImageUrl(product.datasheet) || product.datasheet} target="_blank" rel="noopener noreferrer" variant="glass" size="sm" className="rounded-full">
+                  <FileDown className="size-4" aria-hidden />
+                  Datasheet (PDF)
+                </ButtonLink>
+              ) : (
+                <Link href="/contact" className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink-3 hover:text-brand">
+                  <FileText className="size-4" aria-hidden />
+                  Datasheet not uploaded yet. Ask us
+                </Link>
+              )}
             </div>
-            <p className="text-sm text-ink-2">
-              {shipping > 0 ? `+ ${formatINR(shipping)} shipping per unit` : "Free shipping on this part"}
-            </p>
-          </div>
-
-          <BuyBox
-            product={{ id: product.id, name: product.name, price, stock: product.stock, image: product.image, shippingCost: shipping }}
-          />
-
-          <ul className="grid gap-2.5 border-t border-line pt-5 text-sm text-ink-2">
-            <li className="flex items-center gap-2.5">
-              <ShieldCheck className="size-[18px] text-brand" aria-hidden /> Genuine, tested before dispatch
-            </li>
-            <li className="flex items-center gap-2.5">
-              <Truck className="size-[18px] text-brand" aria-hidden /> Ships across India
-            </li>
-            <li className="flex items-center gap-2.5">
-              <ReceiptIndianRupee className="size-[18px] text-brand" aria-hidden /> GST invoice with your order
-            </li>
-          </ul>
-        </section>
-      </div>
-
-      <div className="mt-6 grid gap-6 lg:mt-10 lg:grid-cols-[1.1fr_1fr] lg:gap-10">
-        <section aria-labelledby="specs-title" className="glass glass-regular rounded-[var(--radius-pane)] p-6 sm:p-8">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 id="specs-title" className="text-xl font-bold text-ink">
-              Specifications
-            </h2>
-            {product.datasheet && (
-              <ButtonLink href={formatImageUrl(product.datasheet) || product.datasheet} target="_blank" rel="noopener noreferrer" variant="glass" size="sm" className="rounded-full">
-                <FileDown className="size-4" aria-hidden />
-                Datasheet (PDF)
-              </ButtonLink>
+            {specs.length ? (
+              <dl className="mt-5 grid divide-y divide-line">
+                {specs.map(([k, v]) => (
+                  <div key={k} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] gap-4 py-3">
+                    <dt className="text-sm text-ink-3">{k}</dt>
+                    <dd className="tabular font-mono text-sm text-ink">{v}</dd>
+                  </div>
+                ))}
+              </dl>
+            ) : (
+              <p className="mt-4 flex items-center gap-2 text-sm text-ink-3">
+                <FileText className="size-4" aria-hidden /> Detailed specifications for this part are on the way.
+              </p>
             )}
-          </div>
-          {specs.length ? (
-            <dl className="mt-5 grid divide-y divide-line">
-              {specs.map(([k, v]) => (
-                <div key={k} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] gap-4 py-3">
-                  <dt className="text-sm text-ink-3">{k}</dt>
-                  <dd className="tabular font-mono text-sm text-ink">{v}</dd>
-                </div>
-              ))}
-            </dl>
-          ) : (
-            <p className="mt-4 flex items-center gap-2 text-sm text-ink-3">
-              <FileText className="size-4" aria-hidden /> Detailed specifications for this part are on the way.
-            </p>
-          )}
-        </section>
-
-        {product.description && (
-          <section aria-labelledby="about-title" className="glass glass-regular rounded-[var(--radius-pane)] p-6 sm:p-8">
-            <h2 id="about-title" className="text-xl font-bold text-ink">
-              About this part
-            </h2>
-            <p className="mt-4 max-w-[68ch] whitespace-pre-line leading-relaxed text-ink-2">{product.description}</p>
           </section>
-        )}
+        </div>
+
+        <div className="grid gap-6 lg:sticky lg:top-28">
+          <section aria-labelledby="product-title" className="glass glass-thick grid gap-6 rounded-[var(--radius-pane)] p-6 sm:p-8">
+            <div className="grid gap-3">
+              <StockPill stock={product.stock} />
+              <h1 id="product-title" className="text-3xl font-extrabold leading-tight tracking-[-0.03em] text-ink sm:text-4xl">
+                {product.name}
+              </h1>
+              <div className="flex flex-wrap items-end gap-x-3 gap-y-1">
+                <Price value={price} size="xl" />
+                <span className="pb-1.5 text-sm text-ink-3">incl. GST</span>
+              </div>
+              <p className="text-sm text-ink-2">
+                {shipping > 0 ? `+ ${formatINR(shipping)} shipping per unit` : "Free shipping on this part"}
+              </p>
+            </div>
+
+            <BuyBox
+              product={{ id: product.id, name: product.name, price, stock: product.stock, image: product.image, shippingCost: shipping }}
+            />
+
+            <ul className="grid gap-2.5 border-t border-line pt-5 text-sm text-ink-2">
+              <li className="flex items-center gap-2.5">
+                <ShieldCheck className="size-[18px] text-brand" aria-hidden /> Genuine, tested before dispatch
+              </li>
+              <li className="flex items-center gap-2.5">
+                <Truck className="size-[18px] text-brand" aria-hidden /> Ships across India
+              </li>
+              <li className="flex items-center gap-2.5">
+                <ReceiptIndianRupee className="size-[18px] text-brand" aria-hidden /> GST invoice with your order
+              </li>
+            </ul>
+          </section>
+          {product.description && (
+            <section aria-labelledby="about-title" className="glass glass-regular rounded-[var(--radius-pane)] p-6 sm:p-8">
+              <h2 id="about-title" className="text-xl font-bold text-ink">
+                About this part
+              </h2>
+              <p className="mt-4 max-w-[68ch] whitespace-pre-line leading-relaxed text-ink-2">{product.description}</p>
+            </section>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -34,7 +34,7 @@ function Frame({
   children,
 }: Base & { id: string; hintId?: string; errorId?: string; children: ReactNode }) {
   return (
-    <div className={cn("grid gap-1.5", className)}>
+    <div className={cn("grid content-start gap-1.5", className)}>
       <label htmlFor={id} className={cn("text-sm font-semibold text-ink-2", labelHidden && "sr-only")}>
         {label}
       </label>

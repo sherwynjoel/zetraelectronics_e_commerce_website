@@ -23,7 +23,7 @@ export function ProductImage({
 
   if (!url || failed) {
     return (
-      <div className={cn("grid size-full place-items-center text-ink-3", className)}>
+      <div className={cn("grid size-full place-items-center text-[var(--plate-ink)]", className)}>
         <div className="flex flex-col items-center gap-2">
           <Cpu className="size-8 opacity-70" aria-hidden />
           <span className="text-xs font-medium">No photo yet</span>
@@ -41,7 +41,7 @@ export function ProductImage({
       priority={priority}
       unoptimized={url.startsWith("/uploads")}
       onError={() => setFailed(true)}
-      className={cn("object-contain", className)}
+      className={cn("object-contain mix-blend-multiply", className)}
     />
   );
 }
