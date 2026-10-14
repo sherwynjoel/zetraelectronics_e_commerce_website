@@ -1,0 +1,734 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-14T15:18:36.482Z",
+  "title": "Design System: Zetra Electronics",
+  "extensions": {
+    "colorMeta": {
+      "field-bg": {
+        "role": "neutral",
+        "displayName": "Morning Field",
+        "canonical": "#eaf0fa",
+        "dark": "#050a16",
+        "purpose": "Page ground under the ambient field; browser theme colour.",
+        "tonalRamp": [
+          "#0f203e",
+          "#19386b",
+          "#245098",
+          "#2f68c6",
+          "#5686d7",
+          "#83a7e2",
+          "#b5caed",
+          "#eaf0fa"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Navy Ink",
+        "canonical": "#0b1a33",
+        "dark": "#eaf1ff",
+        "purpose": "Headings, values, primary text.",
+        "tonalRamp": [
+          "#0e203f",
+          "#18386d",
+          "#214f9b",
+          "#2b67c9",
+          "#5386da",
+          "#81a6e4",
+          "#b3caef",
+          "#eaf0fa"
+        ]
+      },
+      "ink-2": {
+        "role": "neutral",
+        "displayName": "Slate Ink",
+        "canonical": "#33435f",
+        "dark": "#bccae3",
+        "purpose": "Body text, field labels, footer headings.",
+        "tonalRamp": [
+          "#1b2332",
+          "#2e3d56",
+          "#42577b",
+          "#56709f",
+          "#778eb6",
+          "#9bacca",
+          "#c3cddf",
+          "#eef1f6"
+        ]
+      },
+      "ink-3": {
+        "role": "neutral",
+        "displayName": "Mist Ink",
+        "canonical": "#56657f",
+        "dark": "#93a3c2",
+        "purpose": "Meta, hints, placeholders, inactive tabs, table headers.",
+        "tonalRamp": [
+          "#1f242e",
+          "#363f4f",
+          "#4c5971",
+          "#637492",
+          "#8291ab",
+          "#a4afc1",
+          "#c8cfda",
+          "#f0f2f5"
+        ]
+      },
+      "brand": {
+        "role": "primary",
+        "displayName": "Logo Blue",
+        "canonical": "#1653a6",
+        "dark": "#6aa5ff",
+        "purpose": "Primary actions, links, focus, active states, cart count.",
+        "tonalRamp": [
+          "#092244",
+          "#103b75",
+          "#1653a7",
+          "#1d6cd8",
+          "#468ae7",
+          "#78aaed",
+          "#aeccf4",
+          "#e8f1fc"
+        ]
+      },
+      "brand-hover": {
+        "role": "primary",
+        "displayName": "Pressed Blue",
+        "canonical": "#0f4590",
+        "dark": "#8cbaff",
+        "purpose": "Primary button hover.",
+        "tonalRamp": [
+          "#072145",
+          "#0d3a78",
+          "#1252ab",
+          "#176ade",
+          "#4289eb",
+          "#74a8f1",
+          "#accbf6",
+          "#e8f1fd"
+        ]
+      },
+      "brand-ink": {
+        "role": "primary",
+        "displayName": "Text on Blue",
+        "canonical": "#ffffff",
+        "dark": "#03112a",
+        "purpose": "Text on brand fills.",
+        "tonalRamp": [
+          "#262626",
+          "#424242",
+          "#5e5e5e",
+          "#7a7a7a",
+          "#969696",
+          "#b3b3b3",
+          "#d1d1d1",
+          "#f2f2f2"
+        ]
+      },
+      "brand-soft": {
+        "role": "primary",
+        "displayName": "Blue Wash",
+        "canonical": "rgba(22, 83, 166, 0.1)",
+        "dark": "rgba(106, 165, 255, 0.14)",
+        "purpose": "Hover grounds, neutral/brand badges, field focus ring."
+      },
+      "ember": {
+        "role": "secondary",
+        "displayName": "Logo Red / Ember",
+        "canonical": "#f03c36",
+        "dark": "#ff5a4f",
+        "purpose": "The Loupe lens ring only.",
+        "tonalRamp": [
+          "#470705",
+          "#7b0d09",
+          "#b0120d",
+          "#e41811",
+          "#f0423c",
+          "#f47571",
+          "#f9acaa",
+          "#fde8e7"
+        ]
+      },
+      "danger": {
+        "role": "tertiary",
+        "displayName": "Fault Red",
+        "canonical": "#b8241e",
+        "dark": "#ff7a70",
+        "purpose": "Destructive buttons, sign-out, field errors, out-of-stock pill.",
+        "tonalRamp": [
+          "#420d0b",
+          "#721613",
+          "#a2201a",
+          "#d22922",
+          "#e2514b",
+          "#ea807b",
+          "#f2b3b0",
+          "#fbeae9"
+        ]
+      },
+      "danger-soft": {
+        "role": "tertiary",
+        "displayName": "Fault Wash",
+        "canonical": "rgba(184, 36, 30, 0.1)",
+        "dark": "rgba(255, 122, 112, 0.14)",
+        "purpose": "Danger badge ground, error field ring, sign-out hover."
+      },
+      "ok": {
+        "role": "tertiary",
+        "displayName": "Bench Green",
+        "canonical": "#0d7148",
+        "dark": "#4fd69a",
+        "purpose": "In-stock pill, success toasts.",
+        "tonalRamp": [
+          "#08452c",
+          "#0e774c",
+          "#13a96c",
+          "#19dc8c",
+          "#43e9a5",
+          "#76efbd",
+          "#adf6d8",
+          "#e8fcf4"
+        ]
+      },
+      "ok-soft": {
+        "role": "tertiary",
+        "displayName": "Green Wash",
+        "canonical": "rgba(13, 113, 72, 0.12)",
+        "dark": "rgba(79, 214, 154, 0.14)",
+        "purpose": "In-stock pill ground."
+      },
+      "warn": {
+        "role": "tertiary",
+        "displayName": "Solder Amber",
+        "canonical": "#935300",
+        "dark": "#f5b84a",
+        "purpose": "Low-stock pill (5 or fewer).",
+        "tonalRamp": [
+          "#4d2b00",
+          "#854b00",
+          "#bd6b00",
+          "#f58a00",
+          "#ffa42e",
+          "#ffbc66",
+          "#ffd7a3",
+          "#fff4e5"
+        ]
+      },
+      "warn-soft": {
+        "role": "tertiary",
+        "displayName": "Amber Wash",
+        "canonical": "rgba(201, 125, 0, 0.14)",
+        "dark": "rgba(245, 184, 74, 0.14)",
+        "purpose": "Low-stock pill ground."
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "rgba(11, 26, 51, 0.1)",
+        "dark": "rgba(234, 241, 255, 0.1)",
+        "purpose": "Dividers, field borders, table rules, footer frame ring."
+      },
+      "field": {
+        "role": "neutral",
+        "displayName": "Field Fill",
+        "canonical": "rgba(255, 255, 255, 0.72)",
+        "dark": "rgba(10, 18, 36, 0.6)",
+        "purpose": "Input, select and textarea fill."
+      },
+      "glass-thin": {
+        "role": "neutral",
+        "displayName": "Thin Glass",
+        "canonical": "rgba(255, 255, 255, 0.46)",
+        "dark": "rgba(18, 28, 52, 0.42)",
+        "purpose": "Chrome tier fill (18px blur)."
+      },
+      "glass-regular": {
+        "role": "neutral",
+        "displayName": "Regular Glass",
+        "canonical": "rgba(255, 255, 255, 0.6)",
+        "dark": "rgba(16, 26, 48, 0.56)",
+        "purpose": "Card tier fill (24px blur)."
+      },
+      "glass-thick": {
+        "role": "neutral",
+        "displayName": "Thick Glass",
+        "canonical": "rgba(255, 255, 255, 0.82)",
+        "dark": "rgba(13, 21, 40, 0.8)",
+        "purpose": "Form/table/summary tier fill (28px blur); droplet fill."
+      },
+      "glass-solid": {
+        "role": "neutral",
+        "displayName": "Solid Glass",
+        "canonical": "#f6f8fc",
+        "dark": "#0e1729",
+        "purpose": "Opaque fallback for all glass; sticky table header; footer ground.",
+        "tonalRamp": [
+          "#132039",
+          "#213763",
+          "#2f4f8e",
+          "#3d66b8",
+          "#6285cb",
+          "#8ca6d9",
+          "#bac9e8",
+          "#ecf0f9"
+        ]
+      },
+      "plate": {
+        "role": "neutral",
+        "displayName": "Photo Plate",
+        "canonical": "#f3f6fb",
+        "dark": "#dde3ec",
+        "purpose": "Ground under every product photo and the Loupe lens, light in both themes.",
+        "tonalRamp": [
+          "#132139",
+          "#213a63",
+          "#2f538e",
+          "#3d6bb8",
+          "#6289cb",
+          "#8ca9d9",
+          "#bacbe8",
+          "#ecf1f9"
+        ]
+      },
+      "plate-ink": {
+        "role": "neutral",
+        "displayName": "Plate Ink",
+        "canonical": "#56657f",
+        "dark": "#4a5873",
+        "purpose": "No-photo placeholder icon and text.",
+        "tonalRamp": [
+          "#1f242e",
+          "#363f4f",
+          "#4c5971",
+          "#637492",
+          "#8291ab",
+          "#a4afc1",
+          "#c8cfda",
+          "#f0f2f5"
+        ]
+      },
+      "chart": {
+        "role": "primary",
+        "displayName": "Chart Blue",
+        "canonical": "#1653a6",
+        "dark": "#4d8ff5",
+        "purpose": "Admin revenue series stroke and area fill; set per theme.",
+        "tonalRamp": [
+          "#092244",
+          "#103b75",
+          "#1653a7",
+          "#1d6cd8",
+          "#468ae7",
+          "#78aaed",
+          "#aeccf4",
+          "#e8f1fc"
+        ]
+      },
+      "ambient-blue": {
+        "role": "neutral",
+        "displayName": "Ambient Blue",
+        "canonical": "#7aaeff",
+        "dark": "#1d55cf",
+        "purpose": "Drifting field light A (70% opacity, 38s).",
+        "tonalRamp": [
+          "#001e4d",
+          "#003485",
+          "#004abd",
+          "#0060f5",
+          "#2e80ff",
+          "#66a2ff",
+          "#a3c7ff",
+          "#e5efff"
+        ]
+      },
+      "ambient-cyan": {
+        "role": "neutral",
+        "displayName": "Ambient Cyan",
+        "canonical": "#6fe0ee",
+        "dark": "#087f9a",
+        "purpose": "Drifting field light B (55% opacity, 46s).",
+        "tonalRamp": [
+          "#083e44",
+          "#0e6b77",
+          "#1498a9",
+          "#1ac6db",
+          "#44d7e9",
+          "#76e2ef",
+          "#adedf5",
+          "#e8fafc"
+        ]
+      },
+      "ambient-ember": {
+        "role": "neutral",
+        "displayName": "Ambient Ember",
+        "canonical": "#ffa395",
+        "dark": "#9c2a24",
+        "purpose": "Drifting field light C (35% opacity, 54s); the field's faint warm light.",
+        "tonalRamp": [
+          "#4d0a00",
+          "#851200",
+          "#bd1900",
+          "#f52000",
+          "#ff4a2e",
+          "#ff7a66",
+          "#ffafa3",
+          "#ffe9e5"
+        ]
+      },
+      "footer-warm-dot": {
+        "role": "primary",
+        "displayName": "Footer Warm Dot",
+        "canonical": "#2f74e0",
+        "dark": "#6aa5ff",
+        "purpose": "Halftone footer dots warm toward this under the pointer.",
+        "tonalRamp": [
+          "#0a2043",
+          "#113773",
+          "#184fa4",
+          "#2066d5",
+          "#4985e4",
+          "#7aa6eb",
+          "#afcaf3",
+          "#e9f0fc"
+        ]
+      }
+    },
+    "themes": {
+      "mechanism": ".dark class on <html> (custom-variant dark); every colour, glass, shadow, plate, chart, field and grain token is redefined.",
+      "grainOpacity": {
+        "light": 0.05,
+        "dark": 0.07
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Home hero headline only; 41.6px phone, 60px sm, 84px lg."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Page titles; product/admin/auth titles step down to 30px/36px at -0.03em."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Section, dialog and sheet headings (18-20px, 700)."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Controls and card names at 15px; running text 14-16px; hero promise 18px relaxed, max 34rem."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Field labels, badges, table headers, tab labels; sentence case, never tracked."
+      },
+      "price": {
+        "displayName": "Price",
+        "purpose": "Prices in Hanken bold with tabular figures; never mono."
+      },
+      "data": {
+        "displayName": "Data",
+        "purpose": "JetBrains Mono for spec values, order IDs, payment IDs and quantities only."
+      }
+    },
+    "shadows": [
+      {
+        "name": "glass-shadow",
+        "value": "0 1px 2px rgba(11, 26, 51, 0.05), 0 10px 30px -10px rgba(11, 26, 51, 0.18), 0 30px 60px -24px rgba(22, 83, 166, 0.18)",
+        "dark": "0 1px 2px rgba(0, 0, 0, 0.4), 0 12px 32px -10px rgba(0, 0, 0, 0.55), 0 30px 70px -24px rgba(20, 70, 170, 0.35)",
+        "purpose": "Every glass pane at rest; footer frame; sliding droplets."
+      },
+      {
+        "name": "glass-shadow-lift",
+        "value": "0 2px 4px rgba(11, 26, 51, 0.06), 0 18px 40px -12px rgba(11, 26, 51, 0.22), 0 40px 80px -28px rgba(22, 83, 166, 0.26)",
+        "dark": "0 2px 6px rgba(0, 0, 0, 0.45), 0 20px 44px -12px rgba(0, 0, 0, 0.6), 0 40px 90px -26px rgba(40, 100, 220, 0.45)",
+        "purpose": "Hover state of lifting panes."
+      },
+      {
+        "name": "glass-inner",
+        "value": "inset 0 1px 0 rgba(255, 255, 255, 0.75), inset 0 -1px 0 rgba(11, 26, 51, 0.03)",
+        "dark": "inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 -1px 0 rgba(0, 0, 0, 0.25)",
+        "purpose": "Inner top light, always paired with the outer glass shadow."
+      },
+      {
+        "name": "glass-rim",
+        "value": "1px masked linear-gradient(140deg, edge-hi, edge-lo 38%, transparent 55%, edge-lo 82%, edge-hi); edge-hi rgba(255,255,255,.95) light / .26 dark; edge-lo rgba(255,255,255,.2) light / .04 dark",
+        "purpose": "Specular edge on every glass pane; fully lit on lift hover; hidden under forced-colors."
+      },
+      {
+        "name": "primary-glow",
+        "value": "inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 10px 24px -10px var(--brand)",
+        "purpose": "Primary buttons only."
+      },
+      {
+        "name": "cart-badge-glow",
+        "value": "0 2px 6px color-mix(in srgb, var(--brand) 45%, transparent)",
+        "purpose": "Cart count badge."
+      },
+      {
+        "name": "loupe-lens",
+        "value": "0 22px 44px -12px rgba(0, 0, 0, 0.45), inset 0 3px 8px rgba(255, 255, 255, 0.55), inset 0 -6px 14px rgba(0, 0, 0, 0.18)",
+        "purpose": "The Loupe lens only."
+      },
+      {
+        "name": "field-inset",
+        "value": "inset 0 1px 2px rgba(11, 26, 51, 0.06)",
+        "purpose": "Input, select, textarea."
+      }
+    ],
+    "glassTiers": [
+      {
+        "name": "thin",
+        "fill": "--glass-thin-bg",
+        "blur": "18px",
+        "saturate": "175%",
+        "use": "Chrome: navbar, icon buttons, glass buttons, segmented track, Magnify chip, admin phone header."
+      },
+      {
+        "name": "regular",
+        "fill": "--glass-regular-bg",
+        "blur": "24px",
+        "saturate": "175%",
+        "use": "Cards, hero stage, product stage, mobile tab bar."
+      },
+      {
+        "name": "thick",
+        "fill": "--glass-thick-bg",
+        "blur": "28px",
+        "saturate": "175%",
+        "use": "Forms, tables, summaries, dialogs, sheets, toasts, admin sidebar, hero part tags."
+      }
+    ],
+    "fallbacks": [
+      {
+        "condition": "@supports not (backdrop-filter)",
+        "behavior": "Glass fill becomes --glass-solid."
+      },
+      {
+        "condition": "prefers-reduced-transparency: reduce",
+        "behavior": "Glass fill becomes --glass-solid; backdrop-filter removed."
+      },
+      {
+        "condition": "forced-colors: active",
+        "behavior": "1px CanvasText border; gradient rim hidden."
+      },
+      {
+        "condition": "prefers-reduced-motion: reduce",
+        "behavior": "No lift transform (shadow-only 200ms linear), no rise-in, no field drift, droplets jump, no card photo zoom, hero tags untilted, no press scale."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-liquid",
+        "value": "cubic-bezier(0.22, 1, 0.36, 1)",
+        "purpose": "Lifts (420ms), button transitions (300ms), rise-in (700ms), card photo zoom (700ms), tab bar step-aside (500ms)."
+      },
+      {
+        "name": "ease-spring",
+        "value": "cubic-bezier(0.2, 0.9, 0.1, 1)",
+        "purpose": "Sliding droplets (500ms), toast and dialog entrance (400-500ms)."
+      },
+      {
+        "name": "rise-in",
+        "value": "700ms ease-liquid; from opacity 0, translateY(14px), blur(6px)",
+        "purpose": "Once on the home hero and its part tags (staggered 150ms + 120ms each)."
+      },
+      {
+        "name": "toast-in",
+        "value": "from opacity 0, translateY(12px) scale(0.96), blur(4px)",
+        "purpose": "Toasts and confirm dialog."
+      },
+      {
+        "name": "ambient-drift",
+        "value": "drift-a 38s / drift-b 46s / drift-c 54s ease-in-out infinite",
+        "purpose": "Ambient field lights; motion-safe only."
+      },
+      {
+        "name": "press",
+        "value": "scale(0.97) on :active",
+        "purpose": "All buttons; disabled under reduced motion."
+      },
+      {
+        "name": "lift",
+        "value": "translateY(-3px) on hover",
+        "purpose": "Interactive glass panes."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px",
+        "note": "tables reflow to cards below"
+      },
+      {
+        "name": "lg",
+        "value": "1024px",
+        "note": "navbar collapses and tab bar appears below; admin sidebar appears at and above"
+      }
+    ],
+    "loupe": {
+      "lens": "168px",
+      "zoom": 2.5,
+      "ring": "3px solid var(--ember)",
+      "fill": "var(--plate)",
+      "touch": "Magnify toggle arms drag; label switches to 'Done magnifying'; hidden at lg and up"
+    },
+    "halftoneFooter": {
+      "light": {
+        "background": "#f6f8fc",
+        "ink": "#0b1a33",
+        "warm": "#2f74e0"
+      },
+      "dark": {
+        "background": "#0e1729",
+        "ink": "#eaf1ff",
+        "warm": "#6aa5ff"
+      },
+      "wordmark": "zetra, Hanken Grotesk 800",
+      "type": "Hanken 13.5px, sentence case, letter-spacing 0; headings 700 in ink-2",
+      "height": "clamp(460px, 46vw, 600px)",
+      "grain": 0.4,
+      "frame": "radius-pane, glass-shadow, 1px line ring"
+    }
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Brand-blue action for the main task.",
+      "html": "<button class=\"ds-btn-primary\">Add to cart</button>",
+      "css": ".ds-btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 20px;border:0;border-radius:var(--radius-control,14px);background:var(--brand,#1653a6);color:var(--brand-ink,#fff);font:600 14px/1 var(--font-sans,'Hanken Grotesk',system-ui,sans-serif);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 10px 24px -10px var(--brand,#1653a6);cursor:pointer;transition:transform 300ms cubic-bezier(.22,1,.36,1),background-color 300ms cubic-bezier(.22,1,.36,1)}.ds-btn-primary:hover{background:var(--brand-hover,#0f4590)}.ds-btn-primary:active{transform:scale(.97)}.ds-btn-primary:focus-visible{outline:2px solid var(--brand,#1653a6);outline-offset:3px}"
+    },
+    {
+      "name": "Glass Button",
+      "kind": "button",
+      "refersTo": "button-glass",
+      "description": "Thin-glass secondary action.",
+      "html": "<button class=\"ds-btn-glass\">Browse all parts</button>",
+      "css": ".ds-btn-glass{position:relative;display:inline-flex;align-items:center;height:44px;padding:0 20px;border:0;border-radius:9999px;background:var(--glass-thin-bg,rgba(255,255,255,.46));-webkit-backdrop-filter:blur(18px) saturate(175%);backdrop-filter:blur(18px) saturate(175%);box-shadow:var(--glass-shadow,0 10px 30px -10px rgba(11,26,51,.18)),var(--glass-inner,inset 0 1px 0 rgba(255,255,255,.75));color:var(--ink,#0b1a33);font:600 14px/1 var(--font-sans,'Hanken Grotesk',system-ui,sans-serif);cursor:pointer;transition:color 300ms cubic-bezier(.22,1,.36,1),transform 300ms cubic-bezier(.22,1,.36,1)}.ds-btn-glass:hover{color:var(--brand,#1653a6)}.ds-btn-glass:active{transform:scale(.97)}.ds-btn-glass:focus-visible{outline:2px solid var(--brand,#1653a6);outline-offset:3px}"
+    },
+    {
+      "name": "Danger Button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Destructive confirmations only; Fault Red, not ember.",
+      "html": "<button class=\"ds-btn-danger\">Delete product</button>",
+      "css": ".ds-btn-danger{display:inline-flex;align-items:center;height:44px;padding:0 20px;border:0;border-radius:var(--radius-control,14px);background:var(--danger,#b8241e);color:#fff;font:600 14px/1 var(--font-sans,'Hanken Grotesk',system-ui,sans-serif);cursor:pointer;transition:filter 300ms cubic-bezier(.22,1,.36,1),transform 300ms cubic-bezier(.22,1,.36,1)}.ds-btn-danger:hover{filter:brightness(1.1)}.ds-btn-danger:active{transform:scale(.97)}.ds-btn-danger:focus-visible{outline:2px solid var(--brand,#1653a6);outline-offset:3px}"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Label above, 44px translucent control, blue focus halo.",
+      "html": "<label class=\"ds-field\"><span class=\"ds-field-label\">Pincode</span><input class=\"ds-input\" placeholder=\"560001\"></label>",
+      "css": ".ds-field{display:grid;gap:6px;width:260px}.ds-field-label{font:600 14px/1.4 var(--font-sans,'Hanken Grotesk',system-ui,sans-serif);color:var(--ink-2,#33435f)}.ds-input{height:44px;padding:0 14px;border:1px solid var(--line,rgba(11,26,51,.1));border-radius:var(--radius-control,14px);background:var(--field,rgba(255,255,255,.72));color:var(--ink,#0b1a33);font:400 15px var(--font-sans,'Hanken Grotesk',system-ui,sans-serif);box-shadow:inset 0 1px 2px rgba(11,26,51,.06);transition:border-color 200ms,box-shadow 200ms}.ds-input::placeholder{color:var(--ink-3,#56657f)}.ds-input:focus{outline:none;border-color:var(--brand,#1653a6);box-shadow:0 0 0 4px var(--brand-soft,rgba(22,83,166,.1))}"
+    },
+    {
+      "name": "Stock Pill",
+      "kind": "chip",
+      "refersTo": "badge-ok",
+      "description": "Stock status: ok / warn (5 or fewer) / danger.",
+      "html": "<span class=\"ds-pill ds-pill-ok\"><i></i>In stock</span> <span class=\"ds-pill ds-pill-warn\"><i></i>Only 3 left</span> <span class=\"ds-pill ds-pill-danger\"><i></i>Out of stock</span>",
+      "css": ".ds-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:9999px;font:600 12px/1.33 var(--font-sans,'Hanken Grotesk',system-ui,sans-serif);white-space:nowrap}.ds-pill i{width:6px;height:6px;border-radius:50%;background:currentColor}.ds-pill-ok{background:var(--ok-soft,rgba(13,113,72,.12));color:var(--ok,#0d7148)}.ds-pill-warn{background:var(--warn-soft,rgba(201,125,0,.14));color:var(--warn,#935300)}.ds-pill-danger{background:var(--danger-soft,rgba(184,36,30,.1));color:var(--danger,#b8241e)}"
+    },
+    {
+      "name": "Product Card",
+      "kind": "card",
+      "refersTo": "product-card",
+      "description": "Regular glass tile; square photo plate; lifts on hover.",
+      "html": "<article class=\"ds-card\"><div class=\"ds-plate\"></div><p class=\"ds-card-cat\">Sensors</p><h3 class=\"ds-card-name\">DHT22 temperature and humidity sensor</h3><p class=\"ds-card-price\">₹249</p></article>",
+      "css": ".ds-card{position:relative;width:220px;padding:10px;border-radius:var(--radius-tile,20px);background:var(--glass-regular-bg,rgba(255,255,255,.6));-webkit-backdrop-filter:blur(24px) saturate(175%);backdrop-filter:blur(24px) saturate(175%);box-shadow:var(--glass-shadow,0 10px 30px -10px rgba(11,26,51,.18)),var(--glass-inner,inset 0 1px 0 rgba(255,255,255,.75));transition:transform 420ms cubic-bezier(.22,1,.36,1),box-shadow 420ms cubic-bezier(.22,1,.36,1);font-family:var(--font-sans,'Hanken Grotesk',system-ui,sans-serif)}.ds-card:hover{transform:translateY(-3px);box-shadow:var(--glass-shadow-lift,0 18px 40px -12px rgba(11,26,51,.22)),var(--glass-inner,inset 0 1px 0 rgba(255,255,255,.75))}.ds-plate{aspect-ratio:1;border-radius:13.6px;background:var(--plate,#f3f6fb)}.ds-card-cat{margin:12px 6px 0;font-size:12px;font-weight:500;color:var(--ink-3,#56657f)}.ds-card-name{margin:4px 6px 0;font-size:15px;font-weight:600;line-height:1.375;color:var(--ink,#0b1a33)}.ds-card-price{margin:8px 6px 4px;font-size:20px;font-weight:700;letter-spacing:-.025em;font-variant-numeric:tabular-nums;color:var(--ink,#0b1a33)}"
+    },
+    {
+      "name": "Mobile Tab Bar",
+      "kind": "nav",
+      "refersTo": "nav-pill",
+      "description": "Regular-glass bottom bar with a sliding thick-glass droplet and brand cart count.",
+      "html": "<nav class=\"ds-tabs\"><span class=\"ds-drop\"></span><a class=\"ds-tab ds-on\">Shop</a><a class=\"ds-tab\">Search</a><a class=\"ds-tab\">Cart<b class=\"ds-count\">2</b></a><a class=\"ds-tab\">Account</a></nav>",
+      "css": ".ds-tabs{position:relative;display:grid;grid-template-columns:repeat(4,1fr);width:360px;padding:6px;border-radius:9999px;background:var(--glass-regular-bg,rgba(255,255,255,.6));-webkit-backdrop-filter:blur(24px) saturate(175%);backdrop-filter:blur(24px) saturate(175%);box-shadow:var(--glass-shadow,0 10px 30px -10px rgba(11,26,51,.18)),var(--glass-inner,inset 0 1px 0 rgba(255,255,255,.75));font-family:var(--font-sans,'Hanken Grotesk',system-ui,sans-serif)}.ds-drop{position:absolute;top:6px;bottom:6px;left:6px;width:calc((100% - 12px)/4);border-radius:9999px;background:var(--glass-thick-bg,rgba(255,255,255,.82));box-shadow:var(--glass-shadow,0 10px 30px -10px rgba(11,26,51,.18)),var(--glass-inner,inset 0 1px 0 rgba(255,255,255,.75));transition:transform 500ms cubic-bezier(.2,.9,.1,1)}.ds-tabs:hover .ds-drop{transform:translateX(100%)}.ds-tab{position:relative;z-index:1;display:flex;align-items:center;justify-content:center;height:56px;font-size:11px;font-weight:600;color:var(--ink-3,#56657f);cursor:pointer}.ds-on{color:var(--brand,#1653a6)}.ds-count{position:absolute;top:8px;right:14px;min-width:20px;height:20px;padding:0 4px;border-radius:9999px;background:var(--brand,#1653a6);color:var(--brand-ink,#fff);font-size:11px;font-weight:700;line-height:20px;text-align:center;box-shadow:0 2px 6px color-mix(in srgb,var(--brand,#1653a6) 45%,transparent)}"
+    },
+    {
+      "name": "Loupe",
+      "kind": "custom",
+      "refersTo": "photo-plate",
+      "description": "Signature: red-ringed glass lens over a product photo on the plate.",
+      "html": "<div class=\"ds-stage\"><div class=\"ds-lens\"></div><button class=\"ds-magnify\">Magnify</button></div>",
+      "css": ".ds-stage{position:relative;width:280px;height:280px;border-radius:20px;background:var(--plate,#f3f6fb);overflow:hidden;font-family:var(--font-sans,'Hanken Grotesk',system-ui,sans-serif)}.ds-lens{position:absolute;left:56px;top:56px;width:168px;height:168px;box-sizing:border-box;border-radius:50%;border:3px solid var(--ember,#f03c36);background:var(--plate,#f3f6fb);box-shadow:0 22px 44px -12px rgba(0,0,0,.45),inset 0 3px 8px rgba(255,255,255,.55),inset 0 -6px 14px rgba(0,0,0,.18);transition:transform 300ms cubic-bezier(.22,1,.36,1)}.ds-stage:hover .ds-lens{transform:translate(20px,-12px)}.ds-magnify{position:absolute;top:12px;right:12px;padding:8px 12px;border:0;border-radius:9999px;background:var(--glass-thin-bg,rgba(255,255,255,.46));-webkit-backdrop-filter:blur(18px) saturate(175%);backdrop-filter:blur(18px) saturate(175%);box-shadow:var(--glass-inner,inset 0 1px 0 rgba(255,255,255,.75));color:var(--ink,#0b1a33);font:600 12px/1 var(--font-sans,'Hanken Grotesk',system-ui,sans-serif);cursor:pointer}.ds-magnify:focus-visible{outline:2px solid var(--brand,#1653a6);outline-offset:3px}"
+    },
+    {
+      "name": "Spec List",
+      "kind": "custom",
+      "refersTo": "table-shell",
+      "description": "Data in JetBrains Mono on thick glass; labels stay in Hanken.",
+      "html": "<dl class=\"ds-spec\"><dt>Operating voltage</dt><dd>3.3–5.5 V</dd><dt>Order</dt><dd>#ORD-10482</dd></dl>",
+      "css": ".ds-spec{display:grid;grid-template-columns:auto 1fr;gap:10px 24px;width:300px;margin:0;padding:16px 20px;border-radius:var(--radius-tile,20px);background:var(--glass-thick-bg,rgba(255,255,255,.82));-webkit-backdrop-filter:blur(28px) saturate(175%);backdrop-filter:blur(28px) saturate(175%);box-shadow:var(--glass-shadow,0 10px 30px -10px rgba(11,26,51,.18)),var(--glass-inner,inset 0 1px 0 rgba(255,255,255,.75))}.ds-spec dt{font:600 14px var(--font-sans,'Hanken Grotesk',system-ui,sans-serif);color:var(--ink-3,#56657f)}.ds-spec dd{margin:0;font:400 14px var(--font-mono,'JetBrains Mono',ui-monospace,monospace);font-variant-numeric:tabular-nums;color:var(--ink,#0b1a33)}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Bench Glass",
+    "overview": "Zetra is a maker's bench seen through glass. Every surface is a liquid-glass pane floating over a slow, luminous field of drifting blue, cyan and faint ember light with a fine grain. Panes come in three tiers of thickness, each with a 1px specular edge, an inner highlight and a soft blue-tinted offset shadow. The parts themselves never sit on glass directly: every product photo rests on a light, opaque photo plate, so components read the same in both themes, the way they would on a white bench mat.\n\nThe system is dense where people work and generous where they decide. The storefront uses large panes, a big headline and a tilted stack of thick-glass part tags; account, checkout and the admin shell use the same materials more calmly, leaning on thick glass for forms, tables and summaries. One signature interaction carries the world: the Loupe, a red-ringed glass magnifier that reads chip markings off a product photo.\n\nColour is disciplined. Brand blue does the work (primary actions, active states, focus, the cart count). Logo red appears as a single ring on the Loupe. Status colours (green, amber, deep red) speak only for stock and errors. Type is one family, Hanken Grotesk, from 84px headlines to 11px tab labels; JetBrains Mono appears only where a value is data.",
+    "keyCharacteristics": [
+      "Three glass tiers (thin chrome, regular cards, thick forms/tables/summaries) with honest fallbacks for no backdrop-filter, reduced transparency, forced colours and reduced motion.",
+      "A slow ambient field (three drifting radial lights plus grain) behind everything, fixed and non-interactive.",
+      "A light photo plate under every product photo, in both themes.",
+      "Pill and generously rounded silhouettes; glass droplets slide between active options.",
+      "Light and dark themes defined token-for-token; dark is a deep navy field, not grey."
+    ],
+    "rules": [
+      {
+        "name": "The One Ring Rule",
+        "body": "Ember (#f03c36) is the Loupe ring. Destructive actions and out-of-stock use Fault Red (danger), low stock uses Solder Amber; no other surface takes the logo red.",
+        "section": "colors"
+      },
+      {
+        "name": "The Blue Does The Work Rule",
+        "body": "Every primary action, active state, focus indicator and the cart count are brand blue. There is no second accent.",
+        "section": "colors"
+      },
+      {
+        "name": "The Plate Rule",
+        "body": "Every product photo, thumbnail and the Loupe lens sit on the Photo Plate, in both themes. The dark-theme plate (#dde3ec) stays light so cut-out photos multiply cleanly.",
+        "section": "colors"
+      },
+      {
+        "name": "The Data Only Rule",
+        "body": "JetBrains Mono appears only on values a person might copy, compare or count: spec values, order and payment IDs, quantities. Headings, labels, prices and UI never use it.",
+        "section": "typography"
+      },
+      {
+        "name": "The Sentence Case Rule",
+        "body": "No uppercase tracked labels anywhere, including the footer.",
+        "section": "typography"
+      },
+      {
+        "name": "The Three Tiers Rule",
+        "body": "Thin (46% fill, 18px blur) for chrome: navbar, icon buttons, segmented controls, glass buttons, the Magnify chip. Regular (60%, 24px) for cards, the hero stage and the mobile tab bar. Thick (82%, 28px) for forms, tables, summaries, dialogs, sheets, toasts and the admin sidebar.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Honest Fallback Rule",
+        "body": "Without backdrop-filter, or under prefers-reduced-transparency, glass becomes opaque glass-solid with no blur. Under forced-colors the rim is replaced by a 1px CanvasText border. Under reduced motion panes do not move, the hero does not rise in, the field does not drift and droplets jump instead of slide.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do pick a glass tier by role: thin for chrome, regular for cards and stages, thick for anything a person reads or fills in at length.",
+      "Do put every product photo on the Photo Plate (plate token) in both themes, with the photo multiplied onto it.",
+      "Do use brand blue for primary actions, focus, active states and the cart count.",
+      "Do keep the ember ring on the Loupe, and use danger for destructive actions and out-of-stock, warn for low stock.",
+      "Do set spec values, order IDs, payment IDs and quantities in JetBrains Mono with tabular figures.",
+      "Do honour the four fallbacks (no backdrop-filter, reduced transparency, forced colours, reduced motion) on any new glass surface by using the shared glass material.",
+      "Do move selection with a sliding glass droplet on the spring curve, and lift interactive panes 3px on the liquid curve."
+    ],
+    "donts": [
+      "Don't use logo red (ember) for buttons, badges, prices, links, the footer or decoration.",
+      "Don't put product photos directly on glass or on the dark field.",
+      "Don't set headings, labels, prices or navigation in mono.",
+      "Don't use uppercase, letter-spaced labels or eyebrows above headings.",
+      "Don't introduce a second accent colour; status hues are for status only.",
+      "Don't hand-roll a translucent surface with its own blur; it will skip the fallbacks."
+    ]
+  }
+}
