@@ -1,145 +1,115 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { API_URL } from '@/lib/api';
-import { useAuthStore } from "@/lib/auth-store";
-import {
-    AreaChart,
-    Area,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    ResponsiveContainer
-} from 'recharts';
-import { ZoomIn, ZoomOut } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { useAdminGet } from "@/lib/admin-api";
+import { formatINR } from "@/lib/format";
+import { Segmented } from "@/components/ui/segmented";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export function SalesChart() {
-    const { token } = useAuthStore();
-    const [chartData, setChartData] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [zoom, setZoom] = useState(30);
+type Point = { date: string; total: number; orders: number };
+type Range = "7" | "30" | "90";
 
-    useEffect(() => {
-        if (!token) return;
+const short = new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short" });
+const compact = new Intl.NumberFormat("en-IN", { notation: "compact", maximumFractionDigits: 1 });
 
-        fetch(`${API_URL}/analytics/sales-chart`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        })
-            .then(res => res.json())
-            .then(data => {
-                // The backend sends { date, total, orders }
-                // Let's format the date for better UI
-                const formatted = data.map((d: any) => {
-                    const dateObj = new Date(d.date);
-                    return {
-                        name: dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-                        Revenue: d.total,
-                        Orders: d.orders
-                    };
-                });
-                setChartData(formatted);
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error("Failed to load chart data:", err);
-                setLoading(false);
-            });
-    }, [token]);
+function ChartTooltip({ active, payload }: { active?: boolean; payload?: { payload: { label: string; revenue: number; orders: number } }[] }) {
+  if (!active || !payload?.length) return null;
+  const p = payload[0].payload;
+  return (
+    <div className="glass glass-thick rounded-xl px-3 py-2 text-sm">
+      <p className="text-xs font-semibold text-ink-3">{p.label}</p>
+      <p className="tabular font-bold text-ink">{formatINR(p.revenue)}</p>
+      <p className="tabular text-xs text-ink-2">
+        {p.orders} {p.orders === 1 ? "order" : "orders"}
+      </p>
+    </div>
+  );
+}
 
-    const handleZoomIn = () => setZoom(prev => Math.max(7, prev - 7));
-    const handleZoomOut = () => setZoom(prev => Math.min(90, prev + 7));
+export default function SalesChart() {
+  const { data, loading, error } = useAdminGet<Point[]>("/analytics/sales-chart");
+  const [range, setRange] = useState<Range>("30");
 
-    if (loading) {
-        return (
-            <div className="w-full h-[350px] flex items-center justify-center border rounded-xl bg-card">
-                <div className="text-muted-foreground animate-pulse">Loading Chart Data...</div>
-            </div>
-        );
-    }
+  const rows = useMemo(
+    () =>
+      (data ?? [])
+        .map((d) => ({ label: short.format(new Date(d.date)), revenue: Number(d.total) || 0, orders: Number(d.orders) || 0 }))
+        .slice(-Number(range)),
+    [data, range],
+  );
 
-    if (chartData.length === 0) {
-        return (
-            <div className="w-full h-[350px] flex items-center justify-center border rounded-xl bg-card">
-                <div className="text-muted-foreground">No recent sales data.</div>
-            </div>
-        );
-    }
+  return (
+    <section aria-labelledby="revenue-title" className="glass glass-thick grid gap-4 rounded-[var(--radius-pane)] p-5 sm:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 id="revenue-title" className="text-lg font-bold text-ink">
+          Revenue, last {range} days
+        </h2>
+        <Segmented<Range>
+          ariaLabel="Chart range"
+          value={range}
+          onChange={setRange}
+          options={[
+            { value: "7", label: "7d" },
+            { value: "30", label: "30d" },
+            { value: "90", label: "90d" },
+          ]}
+          className="w-44"
+        />
+      </div>
 
-    return (
-        <div className="w-full h-[400px] p-6 border rounded-xl bg-card shadow-sm flex flex-col">
-            <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-bold tracking-tight">
-                    Revenue Overview <span className="text-muted-foreground font-normal text-sm ml-2">(Last {zoom} Days)</span>
-                </h3>
-                <div className="flex items-center gap-2">
-                    <button 
-                        onClick={handleZoomIn} 
-                        disabled={zoom <= 7}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 disabled:opacity-50 transition-all font-bold text-sm border border-blue-500/20"
-                        title="Zoom In (Show less history)"
-                    >
-                        <ZoomIn className="h-4 w-4" /> <span>+</span>
-                    </button>
-                    <button 
-                        onClick={handleZoomOut} 
-                        disabled={zoom >= 90}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 disabled:opacity-50 transition-all font-bold text-sm border border-blue-500/20"
-                        title="Zoom Out (Show more history)"
-                    >
-                        <ZoomOut className="h-4 w-4" /> <span>-</span>
-                    </button>
-                </div>
-            </div>
-            <ResponsiveContainer width="100%" height="85%">
-                <AreaChart
-                    data={chartData.slice(-zoom)}
-                    margin={{
-                        top: 5,
-                        right: 10,
-                        left: 40,
-                        bottom: 0,
-                    }}
-                >
-                    <defs>
-                        <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4} />
-                            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                        </linearGradient>
-                    </defs>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" opacity={0.5} />
-                    <XAxis 
-                        dataKey="name" 
-                        axisLine={false}
-                        tickLine={false}
-                        tick={{ fontSize: 12, fill: "#6b7280" }}
-                        dy={10}
-                    />
-                    <YAxis 
-                        axisLine={false}
-                        tickLine={false}
-                        tick={{ fontSize: 12, fill: "#6b7280" }}
-                        tickFormatter={(value) => `₹${value}`}
-                        width={80}
-                    />
-                    <Tooltip 
-                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                        formatter={(value: any, name: any) => [
-                            name === 'Revenue' ? `₹${Number(value).toFixed(2)}` : value, 
-                            name
-                        ]}
-                    />
-                    <Area 
-                        type="monotone" 
-                        dataKey="Revenue" 
-                        stroke="#3b82f6" 
-                        strokeWidth={3}
-                        fillOpacity={1} 
-                        fill="url(#colorRevenue)" 
-                        activeDot={{ r: 6, strokeWidth: 0 }}
-                    />
-                </AreaChart>
+      {loading ? (
+        <Skeleton className="h-72" />
+      ) : error ? (
+        <p className="grid h-72 place-items-center text-sm text-ink-3">Sales data couldn’t load. Refresh to try again.</p>
+      ) : rows.length === 0 ? (
+        <p className="grid h-72 place-items-center text-sm text-ink-3">No sales in this period yet.</p>
+      ) : (
+        <>
+          <div className="h-72" aria-hidden>
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={rows} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="rev-fill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--chart)" stopOpacity={0.28} />
+                    <stop offset="100%" stopColor="var(--chart)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid vertical={false} stroke="var(--line)" />
+                <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fill: "var(--ink-3)", fontSize: 12 }} minTickGap={24} />
+                <YAxis
+                  tickLine={false}
+                  axisLine={false}
+                  width={56}
+                  tick={{ fill: "var(--ink-3)", fontSize: 12 }}
+                  tickFormatter={(v: number) => `₹${compact.format(v)}`}
+                />
+                <Tooltip content={<ChartTooltip />} cursor={{ stroke: "var(--ink-3)", strokeDasharray: "3 3" }} />
+                <Area type="monotone" dataKey="revenue" stroke="var(--chart)" strokeWidth={2} fill="url(#rev-fill)" activeDot={{ r: 5, stroke: "var(--glass-solid)", strokeWidth: 2 }} />
+              </AreaChart>
             </ResponsiveContainer>
-        </div>
-    );
+          </div>
+          <table className="sr-only">
+            <caption>Daily revenue, last {range} days</caption>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Revenue</th>
+                <th>Orders</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.label}>
+                  <td>{r.label}</td>
+                  <td>{formatINR(r.revenue)}</td>
+                  <td>{r.orders}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
+      )}
+    </section>
+  );
 }

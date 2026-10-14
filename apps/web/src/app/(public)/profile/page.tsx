@@ -1,330 +1,153 @@
 "use client";
 
-import { API_URL } from '@/lib/api';
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { LogOut } from "lucide-react";
+import { API_URL } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
+import { OrderList } from "@/components/account/order-list";
+import { RequireUser } from "@/components/account/require-user";
+import { FormError, PasswordField } from "@/components/auth/auth-card";
 import { Button } from "@/components/ui/button";
-import { Package, User, LogOut, Download, MapPin, Pencil } from "lucide-react";
+import { TextField } from "@/components/ui/field";
+import { Segmented } from "@/components/ui/segmented";
+import { toast } from "@/components/ui/toast";
 
-interface Order {
-    id: number;
-    createdAt: string;
-    total: string;
-    status: string;
-    trackingUrl?: string;
-    items: {
-        product: { name: string; image: string };
-        quantity: number;
-        price: string;
-    }[];
+type Tab = "orders" | "profile" | "security";
+
+function useProfileSave() {
+  const { user, token, login } = useAuthStore();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const save = async (body: Record<string, string>) => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch(`${API_URL}/auth/profile`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to update profile");
+      if (user && data.name) login({ ...user, name: data.name }, token!);
+      return true;
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to update profile");
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  };
+  return { save, loading, error };
+}
+
+function ProfileTab() {
+  const user = useAuthStore((s) => s.user)!;
+  const [name, setName] = useState(user.name ?? "");
+  const { save, loading, error } = useProfileSave();
+  return (
+    <form
+      className="glass glass-thick grid gap-5 rounded-[var(--radius-pane)] p-6 sm:p-8"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        if (name.trim() && (await save({ name: name.trim() }))) toast.success("Profile updated");
+      }}
+    >
+      <h2 className="text-xl font-bold text-ink">Your details</h2>
+      <FormError>{error}</FormError>
+      <TextField label="Full name" autoComplete="name" required value={name} onChange={(e) => setName(e.target.value)} />
+      <TextField label="Email" value={user.email} disabled hint="Your email is your sign-in and can’t be changed here." />
+      <Button type="submit" loading={loading} disabled={!name.trim() || name.trim() === user.name} className="sm:justify-self-end">
+        Save changes
+      </Button>
+    </form>
+  );
+}
+
+function SecurityTab() {
+  const [current, setCurrent] = useState("");
+  const [next, setNext] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const { save, loading, error } = useProfileSave();
+  const mismatch = confirm.length > 0 && confirm !== next;
+  return (
+    <form
+      className="glass glass-thick grid gap-5 rounded-[var(--radius-pane)] p-6 sm:p-8"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        if (next !== confirm) return;
+        if (await save({ currentPassword: current, newPassword: next })) {
+          toast.success("Password changed");
+          setCurrent("");
+          setNext("");
+          setConfirm("");
+        }
+      }}
+    >
+      <h2 className="text-xl font-bold text-ink">Change password</h2>
+      <FormError>{error}</FormError>
+      <PasswordField label="Current password" autoComplete="current-password" required value={current} onChange={(e) => setCurrent(e.target.value)} />
+      <PasswordField label="New password" autoComplete="new-password" required minLength={8} hint="At least 8 characters" value={next} onChange={(e) => setNext(e.target.value)} />
+      <PasswordField
+        label="Confirm new password"
+        autoComplete="new-password"
+        required
+        value={confirm}
+        onChange={(e) => setConfirm(e.target.value)}
+        error={mismatch ? "Passwords do not match" : undefined}
+      />
+      <Button type="submit" loading={loading} disabled={mismatch} className="sm:justify-self-end">
+        Update password
+      </Button>
+    </form>
+  );
+}
+
+function Account() {
+  const { user, logout } = useAuthStore();
+  const router = useRouter();
+  const [tab, setTab] = useState<Tab>("orders");
+  return (
+    <div className="mx-auto grid max-w-3xl gap-6 pb-16">
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-4xl font-extrabold tracking-[-0.035em] text-ink sm:text-5xl">{user?.name ? `Hi, ${user.name.split(" ")[0]}` : "Your account"}</h1>
+          <p className="mt-1 text-ink-3">{user?.email}</p>
+        </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            logout();
+            router.push("/");
+          }}
+          className="text-danger hover:bg-danger-soft hover:text-danger"
+        >
+          <LogOut className="size-4" aria-hidden />
+          Sign out
+        </Button>
+      </header>
+      <Segmented<Tab>
+        ariaLabel="Account sections"
+        value={tab}
+        onChange={setTab}
+        options={[
+          { value: "orders", label: "Orders" },
+          { value: "profile", label: "Profile" },
+          { value: "security", label: "Password" },
+        ]}
+        className="max-w-md"
+      />
+      {tab === "orders" ? <OrderList /> : tab === "profile" ? <ProfileTab /> : <SecurityTab />}
+    </div>
+  );
 }
 
 export default function ProfilePage() {
-    const { user, token, login, logout } = useAuthStore();
-    const router = useRouter();
-    const [orders, setOrders] = useState<Order[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [ordersError, setOrdersError] = useState<string | null>(null);
-
-    // Edit profile state
-    const [editOpen, setEditOpen] = useState(false);
-    const [editName, setEditName] = useState("");
-    const [currentPassword, setCurrentPassword] = useState("");
-    const [newPassword, setNewPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [editLoading, setEditLoading] = useState(false);
-    const [editError, setEditError] = useState("");
-    const [editSuccess, setEditSuccess] = useState("");
-
-    const fetchOrders = (uid: number, tok: string) => {
-        setLoading(true);
-        setOrdersError(null);
-        fetch(`${API_URL}/orders/user/${uid}`, {
-            headers: { Authorization: `Bearer ${tok}` },
-        })
-            .then(res => {
-                if (res.status === 401 || res.status === 403) {
-                    logout();
-                    router.push("/login");
-                    throw new Error("Unauthorized");
-                }
-                if (!res.ok) throw new Error(`Server error (${res.status})`);
-                return res.json();
-            })
-            .then(data => { setOrders(Array.isArray(data) ? data : []); setLoading(false); })
-            .catch(err => { console.error(err); setOrdersError(err.message || "Failed to load orders"); setLoading(false); });
-    };
-
-    useEffect(() => {
-        if (!user || !token) { router.push("/login"); return; }
-        fetchOrders(user.id, token);
-    }, [user, token]);
-
-    const openEdit = () => {
-        setEditName(user?.name || "");
-        setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
-        setEditError(""); setEditSuccess("");
-        setEditOpen(true);
-    };
-
-    const handleEditSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (newPassword && newPassword !== confirmPassword) {
-            setEditError("New passwords do not match."); return;
-        }
-        setEditLoading(true); setEditError(""); setEditSuccess("");
-        try {
-            const body: Record<string, string> = {};
-            if (editName.trim()) body.name = editName.trim();
-            if (newPassword) { body.currentPassword = currentPassword; body.newPassword = newPassword; }
-
-            const res = await fetch(`${API_URL}/auth/profile`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-                body: JSON.stringify(body),
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.message || "Failed to update profile");
-
-            // Update auth store with new name
-            if (user && data.name) login({ ...user, name: data.name }, token!);
-            setEditSuccess("Profile updated successfully.");
-            setCurrentPassword(""); setNewPassword(""); setConfirmPassword("");
-        } catch (err: any) {
-            setEditError(err.message || "Something went wrong.");
-        } finally {
-            setEditLoading(false);
-        }
-    };
-
-    const cancelOrder = async (orderId: number) => {
-        if (!confirm('Are you sure you want to cancel this order?')) return;
-        try {
-            const res = await fetch(`${API_URL}/orders/${orderId}/cancel`, {
-                method: 'POST',
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.message || 'Failed to cancel order');
-            setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'CANCELLED' } : o));
-        } catch (err: any) {
-            alert(err.message || 'Could not cancel order. Please try again.');
-        }
-    };
-
-    const downloadInvoice = async (orderId: number) => {
-        try {
-            const res = await fetch(`${API_URL}/orders/${orderId}/invoice`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            if (!res.ok) throw new Error("Failed");
-            const blob = await res.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `invoice-${orderId}.pdf`;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            window.URL.revokeObjectURL(url);
-        } catch {
-            alert("Could not download invoice. Please try again.");
-        }
-    };
-
-    if (!user) return null;
-
-    const statusColor = (s: string) =>
-        s === "DELIVERED" ? "bg-green-100 text-green-700" :
-        s === "SHIPPED"   ? "bg-blue-100 text-blue-700" :
-        s === "CANCELLED" ? "bg-red-100 text-red-700" :
-                            "bg-yellow-100 text-yellow-700";
-
-    return (
-        <div className="container mx-auto px-4 py-8">
-            <h1 className="text-3xl font-bold mb-8">My Account</h1>
-
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Profile Card */}
-                <div className="bg-card p-6 rounded-xl border shadow-sm h-fit">
-                    <div className="flex items-center gap-4 mb-6">
-                        <div className="h-16 w-16 bg-primary/10 rounded-full flex items-center justify-center text-primary">
-                            <User className="h-8 w-8" />
-                        </div>
-                        <div>
-                            <h2 className="text-xl font-bold">{user.name || "User"}</h2>
-                            <p className="text-muted-foreground">{user.email}</p>
-                            <span className="inline-block mt-2 px-2 py-1 bg-muted rounded text-xs font-medium uppercase">{user.role}</span>
-                        </div>
-                    </div>
-                    <div className="flex gap-2">
-                        <Button variant="outline" className="flex-1 gap-2" onClick={openEdit}>
-                            <Pencil className="h-4 w-4" /> Edit Profile
-                        </Button>
-                        <Button variant="destructive" className="flex-1 gap-2" onClick={() => { logout(); router.push("/"); }}>
-                            <LogOut className="h-4 w-4" /> Sign Out
-                        </Button>
-                    </div>
-
-                    {editOpen && (
-                        <form onSubmit={handleEditSubmit} className="mt-4 space-y-3 border-t pt-4">
-                            {editError && <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{editError}</p>}
-                            {editSuccess && <p className="text-sm text-green-700 bg-green-50 p-2 rounded">{editSuccess}</p>}
-
-                            <div className="space-y-1">
-                                <label className="text-xs font-medium text-muted-foreground">Name</label>
-                                <input
-                                    type="text"
-                                    value={editName}
-                                    onChange={(e) => setEditName(e.target.value)}
-                                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                                    placeholder="Your name"
-                                />
-                            </div>
-
-                            <p className="text-xs font-medium text-muted-foreground pt-1">Change Password <span className="font-normal">(leave blank to keep current)</span></p>
-                            <div className="space-y-1">
-                                <input
-                                    type="password"
-                                    value={currentPassword}
-                                    onChange={(e) => setCurrentPassword(e.target.value)}
-                                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                                    placeholder="Current password"
-                                />
-                            </div>
-                            <div className="space-y-1">
-                                <input
-                                    type="password"
-                                    value={newPassword}
-                                    onChange={(e) => setNewPassword(e.target.value)}
-                                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                                    placeholder="New password (min 8 chars)"
-                                />
-                            </div>
-                            <div className="space-y-1">
-                                <input
-                                    type="password"
-                                    value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
-                                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                                    placeholder="Confirm new password"
-                                />
-                            </div>
-
-                            <div className="flex gap-2 pt-1">
-                                <Button type="submit" size="sm" className="flex-1" disabled={editLoading}>
-                                    {editLoading ? "Saving..." : "Save Changes"}
-                                </Button>
-                                <Button type="button" size="sm" variant="ghost" className="flex-1" onClick={() => setEditOpen(false)}>
-                                    Cancel
-                                </Button>
-                            </div>
-                        </form>
-                    )}
-                </div>
-
-                {/* Orders List */}
-                <div className="lg:col-span-2 space-y-6">
-                    <h2 className="text-xl font-bold flex items-center gap-2">
-                        <Package className="h-5 w-5" /> Order History
-                    </h2>
-
-                    {loading ? (
-                        <div className="text-center py-12 text-muted-foreground">Loading orders...</div>
-                    ) : ordersError ? (
-                        <div className="bg-card p-8 rounded-xl border text-center">
-                            <p className="text-destructive font-medium mb-2">Could not load orders</p>
-                            <p className="text-sm text-muted-foreground mb-4">{ordersError}</p>
-                            <button onClick={() => user && token && fetchOrders(user.id, token)}
-                                className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors">
-                                Retry
-                            </button>
-                        </div>
-                    ) : orders.length === 0 ? (
-                        <div className="bg-card p-8 rounded-xl border text-center text-muted-foreground">
-                            No orders found.
-                        </div>
-                    ) : (
-                        <div className="space-y-4">
-                            {orders.map((order) => (
-                                <div key={order.id} className="bg-card border rounded-xl overflow-hidden hover:shadow-md transition-shadow">
-                                    {/* Order Header */}
-                                    <div className="bg-muted/30 p-4 flex items-center justify-between border-b flex-wrap gap-3">
-                                        <div className="flex gap-6">
-                                            <div>
-                                                <span className="text-xs text-muted-foreground block">Order Placed</span>
-                                                <span className="text-sm font-medium">{new Date(order.createdAt).toLocaleDateString()}</span>
-                                            </div>
-                                            <div>
-                                                <span className="text-xs text-muted-foreground block">Total</span>
-                                                <span className="text-sm font-medium">₹{Number(order.total).toFixed(2)}</span>
-                                            </div>
-                                            <div>
-                                                <span className="text-xs text-muted-foreground block">Order ID</span>
-                                                <span className="text-sm font-mono font-medium">#{order.id.toString().padStart(5, "0")}</span>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <button
-                                                onClick={() => downloadInvoice(order.id)}
-                                                className="flex items-center gap-1 text-xs font-medium text-primary hover:underline px-3 py-1.5 bg-primary/10 rounded-full cursor-pointer border-0"
-                                            >
-                                                <Download className="h-3 w-3" /> Invoice
-                                            </button>
-                                            {order.status === 'PENDING' && (
-                                                <button
-                                                    onClick={() => cancelOrder(order.id)}
-                                                    className="flex items-center gap-1 text-xs font-medium text-red-600 hover:underline px-3 py-1.5 bg-red-50 rounded-full cursor-pointer border-0"
-                                                >
-                                                    Cancel Order
-                                                </button>
-                                            )}
-                                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${statusColor(order.status)}`}>
-                                                {order.status}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    {/* Order Items */}
-                                    <div className="p-4 space-y-3">
-                                        <div className="sm:hidden mb-3 font-bold text-sm">Total: ₹{Number(order.total).toFixed(2)}</div>
-                                        {order.items.map((item, i) => (
-                                            <div key={i} className="flex gap-4 items-center">
-                                                <div className="h-12 w-12 bg-muted rounded flex-shrink-0 overflow-hidden">
-                                                    {item.product.image ? (
-                                                        <img src={item.product.image} alt="" className="object-contain w-full h-full" />
-                                                    ) : (
-                                                        <div className="w-full h-full flex items-center justify-center bg-gray-200 text-xs">No Img</div>
-                                                    )}
-                                                </div>
-                                                <div className="flex-1">
-                                                    <div className="font-medium text-sm line-clamp-1">{item.product.name}</div>
-                                                    <div className="text-xs text-muted-foreground">Qty: {item.quantity}</div>
-                                                </div>
-                                                <div className="font-medium text-sm">₹{item.price}</div>
-                                            </div>
-                                        ))}
-
-                                        {/* Tracking link — shown when admin adds a tracking URL */}
-                                        {order.trackingUrl && (
-                                            <a
-                                                href={order.trackingUrl}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="mt-2 flex items-center gap-2 px-4 py-2.5 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 rounded-lg text-blue-600 dark:text-blue-400 text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-950/60 transition-colors"
-                                            >
-                                                <MapPin className="h-4 w-4" />
-                                                Track your shipment →
-                                            </a>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </div>
-        </div>
-    );
+  return (
+    <RequireUser next="/profile">
+      <Account />
+    </RequireUser>
+  );
 }

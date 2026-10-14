@@ -1,99 +1,66 @@
-import { API_URL } from '@/lib/api';
-import { ProductCard } from "@/components/product-card";
-import { ProductFilters } from "@/components/product-filters";
 import type { Metadata } from "next";
+import { API_URL } from "@/lib/api";
+import type { Product } from "@/lib/types";
+import { categoryTree, getCategories } from "@/lib/store-data";
+import { ActiveFilters, ProductFilters } from "@/components/product-filters";
+import { CatalogGrid } from "@/components/catalog-grid";
 
 export const metadata: Metadata = {
-    title: "All Products",
-    description: "Browse our full catalog of electronic components, sensors, IoT modules, development boards, and robotics kits. Fast delivery across India.",
-    alternates: { canonical: "https://zetraelectronics.com/products" },
-    openGraph: {
-        title: "All Products | Zetra Electronics",
-        description: "Browse electronic components, sensors, IoT modules, and robotics kits at Zetra Electronics.",
-        url: "https://zetraelectronics.com/products",
-    },
+  title: "All Products",
+  description:
+    "Browse our full catalog of electronic components, sensors, IoT modules, development boards, and robotics kits. Fast delivery across India.",
+  alternates: { canonical: "https://zetraelectronics.com/products" },
+  openGraph: {
+    title: "All Products | Zetra Electronics",
+    description: "Browse electronic components, sensors, IoT modules, and robotics kits at Zetra Electronics.",
+    url: "https://zetraelectronics.com/products",
+  },
 };
-
-async function getProducts(params: Record<string, string>) {
-    try {
-        const query = new URLSearchParams(params).toString();
-        const url = `${API_URL}/products${query ? `?${query}` : ""}`;
-        const res = await fetch(url, { cache: "no-store" });
-        if (!res.ok) return [];
-        return res.json();
-    } catch (e) {
-        return [];
-    }
-}
-
-async function getCategories(): Promise<string[]> {
-    try {
-        const res = await fetch(`${API_URL}/categories`, { next: { revalidate: 60 } });
-        if (!res.ok) return [];
-        const data: { id: number; name: string }[] = await res.json();
-        return data.map(c => c.name);
-    } catch (e) {
-        return [];
-    }
-}
 
 export const dynamic = "force-dynamic";
 
+async function getProducts(params: Record<string, string>): Promise<Product[]> {
+  try {
+    const q = new URLSearchParams(params).toString();
+    const res = await fetch(`${API_URL}/products${q ? `?${q}` : ""}`, { cache: "no-store" });
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
+}
+
 export default async function ProductsPage({
-    searchParams,
+  searchParams,
 }: {
-    searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-    // Next.js 15: searchParams is a Promise — must be awaited
-    const resolvedParams = await searchParams;
+  const raw = await searchParams;
+  const params: Record<string, string> = {};
+  for (const [k, v] of Object.entries(raw)) if (v !== undefined) params[k] = Array.isArray(v) ? v[0] : v;
 
-    // Flatten to string-only record for URLSearchParams
-    const flatParams: Record<string, string> = {};
-    for (const [key, value] of Object.entries(resolvedParams)) {
-        if (value !== undefined) {
-            flatParams[key] = Array.isArray(value) ? value[0] : value;
-        }
-    }
+  const [products, all] = await Promise.all([getProducts(params), getCategories()]);
+  const categories = categoryTree(all);
+  const title = params.category ?? "All parts";
 
-    const [products, categories] = await Promise.all([
-        getProducts(flatParams),
-        getCategories(),
-    ]);
-
-    return (
-        <div className="container mx-auto px-4 py-8">
-            <h1 className="text-3xl font-bold mb-6">All Products</h1>
-
-            <div className="lg:flex lg:gap-8">
-                {/* Desktop Sidebar — hidden on mobile via ProductFilters */}
-                <aside className="hidden lg:block w-64 flex-shrink-0">
-                    <ProductFilters categories={categories} />
-                </aside>
-
-                {/* Main column */}
-                <div className="flex-1 min-w-0">
-                    {/* Mobile: sticky filter bar + slide-in drawer */}
-                    <div className="lg:hidden">
-                        <ProductFilters categories={categories} />
-                    </div>
-
-                    {/* Product Grid */}
-                    <div className="mt-4 lg:mt-0">
-                        {products.length === 0 ? (
-                            <div className="text-center py-16 text-muted-foreground border rounded-xl bg-card">
-                                <p className="text-lg font-medium mb-1">No products found</p>
-                                <p className="text-sm">Try adjusting your filters</p>
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
-                                {products.map((product: any) => (
-                                    <ProductCard key={product.id} product={product} />
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
+  return (
+    <div className="mx-auto max-w-[1280px] pb-16">
+      <header className="flex flex-wrap items-end justify-between gap-4 pb-6">
+        <div>
+          <h1 className="text-4xl font-extrabold tracking-[-0.035em] text-ink sm:text-5xl">{title}</h1>
+          <p className="mt-2 text-sm text-ink-3" aria-live="polite">
+            {products.length} {products.length === 1 ? "part" : "parts"}
+          </p>
         </div>
-    );
+      </header>
+
+      <div className="grid gap-6 lg:grid-cols-[17rem_1fr] lg:items-start">
+        <ProductFilters categories={categories} />
+        <div className="grid min-w-0 gap-5">
+          <ActiveFilters />
+          <CatalogGrid products={products} />
+        </div>
+      </div>
+    </div>
+  );
 }

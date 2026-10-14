@@ -1,443 +1,357 @@
 "use client";
 
-import { API_URL } from '@/lib/api';
-import { useCartStore } from "@/lib/store";
-import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { ArrowLeft, CheckCircle, MapPin, AlertCircle, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
 import Script from "next/script";
-
-
+import { useRouter } from "next/navigation";
+import { AlertCircle, ArrowLeft, CreditCard, Lock, MapPin, ShoppingBag, UserRound } from "lucide-react";
+import { API_URL } from "@/lib/api";
+import { useCartStore } from "@/lib/store";
 import { useAuthStore } from "@/lib/auth-store";
+import { calcTotals, useCheckoutSettings } from "@/lib/checkout";
+import { useMounted } from "@/lib/use-mounted";
+import { formatINR } from "@/lib/format";
+import { OrderSummary } from "@/components/checkout/order-summary";
+import { Button, ButtonLink } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { TextField } from "@/components/ui/field";
+import { ProductImage } from "@/components/ui/product-image";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "@/components/ui/toast";
+import { cn } from "@/lib/utils";
+
+type Form = {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+  paymentMethod: string;
+};
+
+type PlacedOrder = { id: number; total: number; razorpayOrderId?: string };
 
 export default function CheckoutPage() {
-    const { items, clearCart } = useCartStore();
-    const { user, token } = useAuthStore();
-    const router = useRouter();
-    const [loading, setLoading] = useState(false);
-    const [pincodeLoading, setPincodeLoading] = useState(false);
-    const [showConfirmModal, setShowConfirmModal] = useState(false);
-    
-    const [formData, setFormData] = useState({
-        firstName: "",
-        lastName: "",
-        email: "",
-        phone: "",
-        address: "",
-        city: "",
-        state: "",
-        zip: "",
-        paymentMethod: "razorpay"
-    });
-    
-    const [taxRate, setTaxRate] = useState(0.18);
-    const [freeShippingThreshold, setFreeShippingThreshold] = useState(0);
-    const [flatShippingFee, setFlatShippingFee] = useState(0);
+  const { items, clearCart } = useCartStore();
+  const { user, token } = useAuthStore();
+  const router = useRouter();
+  const mounted = useMounted();
+  const settings = useCheckoutSettings();
 
-    useEffect(() => {
-        // Fetch dynamic settings
-        fetch(`${API_URL}/settings`)
-            .then(res => res.ok ? res.json() : [])
-            .then((data: any[]) => {
-                const gst = data.find(s => s.key === 'GST_PERCENTAGE');
-                if (gst) setTaxRate(parseFloat(gst.value) / 100);
+  const [step, setStep] = useState<"address" | "review">("address");
+  const [loading, setLoading] = useState(false);
+  const [pinLookup, setPinLookup] = useState<{ zip: string; result: "found" | "unknown" } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [placed, setPlaced] = useState<PlacedOrder | null>(null);
+  const [form, setForm] = useState<Form>({
+    firstName: "",
+    lastName: "",
+    phone: "",
+    address: "",
+    city: "",
+    state: "",
+    zip: "",
+    paymentMethod: "razorpay",
+  });
 
-                const shipping = data.find(s => s.key === 'FREE_SHIPPING_THRESHOLD');
-                if (shipping) setFreeShippingThreshold(parseFloat(shipping.value));
+  // PIN code lookup fills city and state
+  useEffect(() => {
+    const zip = form.zip;
+    if (zip.length !== 6) return;
+    fetch(`https://api.postalpincode.in/pincode/${zip}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data[0]?.Status === "Success") {
+          const po = data[0].PostOffice[0];
+          setForm((f) => ({ ...f, city: po.District, state: po.State }));
+          setPinLookup({ zip, result: "found" });
+        } else setPinLookup({ zip, result: "unknown" });
+      })
+      .catch(() => setPinLookup({ zip, result: "unknown" }));
+  }, [form.zip]);
+  const pinState = form.zip.length !== 6 ? "idle" : pinLookup?.zip === form.zip ? pinLookup.result : "checking";
 
-                const flat = data.find(s => s.key === 'FLAT_SHIPPING_FEE');
-                if (flat) setFlatShippingFee(parseFloat(flat.value));
-            })
-            .catch(err => console.error("Using default settings", err));
-    }, []);
+  const change = (e: React.ChangeEvent<HTMLInputElement>) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
-    // 📍 Auto-verify Pincode and Fill City/State
-    useEffect(() => {
-        if (formData.zip.length === 6) {
-            setPincodeLoading(true);
-            fetch(`https://api.postalpincode.in/pincode/${formData.zip}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data[0].Status === "Success") {
-                        const postOffice = data[0].PostOffice[0];
-                        setFormData(prev => ({
-                            ...prev,
-                            city: postOffice.District,
-                            state: postOffice.State
-                        }));
-                    }
-                })
-                .catch(err => console.error("Pincode error:", err))
-                .finally(() => setPincodeLoading(false));
-        }
-    }, [formData.zip]);
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-    };
-
-    const calculateTotals = () => {
-        const subtotal = items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-        let shipping = items.reduce((acc, item) => acc + (item.shippingCost * item.quantity), 0);
-
-        if (freeShippingThreshold > 0 && subtotal >= freeShippingThreshold) {
-            shipping = 0;
-        } else if (flatShippingFee > 0) {
-            shipping = flatShippingFee;
-        }
-
-        const tax = (subtotal + shipping) * taxRate;
-        const total = subtotal + shipping + tax;
-
-        return { subtotal, shipping, tax, total };
-    }
-
-    const { subtotal, shipping, tax, total: finalTotal } = calculateTotals();
-
-    const handlePreOrder = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!user) {
-            alert("Please login to place an order");
-            router.push("/login");
-            return;
-        }
-        setShowConfirmModal(true);
-    };
-
-    const handlePlaceOrder = async () => {
-        if (!user) return; // TypeScript safety
-        
-        setShowConfirmModal(false);
-        setLoading(true);
-
-        const orderData = {
-            items: items.map(item => ({
-                productId: item.id,
-                quantity: item.quantity,
-                price: item.price
-            })),
-            total: finalTotal,
-            userId: user.id,
-            address: {
-                name: `${formData.firstName} ${formData.lastName}`,
-                phone: formData.phone,
-                street: formData.address,
-                city: formData.city,
-                state: formData.state,
-                zip: formData.zip
-            },
-            paymentMethod: formData.paymentMethod
-        };
-
-        try {
-            const res = await fetch(`${API_URL}/orders`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
-                body: JSON.stringify(orderData)
-            });
-
-            if (res.ok) {
-                const order = await res.json();
-                
-                // If Razorpay order was created, trigger modal
-                if (order.razorpayOrderId) {
-                    const options = {
-                        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
-                        amount: Math.round(order.total * 100),
-                        currency: "INR",
-                        name: "Zetra Electronics",
-                        description: `Payment for Order #${order.id}`,
-                        order_id: order.razorpayOrderId,
-                        handler: async function (response: any) {
-                            try {
-                                const verifyRes = await fetch(`${API_URL}/orders/verify-payment`, {
-                                    method: "POST",
-                                    headers: {
-                                        "Content-Type": "application/json",
-                                        "Authorization": `Bearer ${token}`
-                                    },
-                                    body: JSON.stringify({
-                                        orderId: order.razorpayOrderId,
-                                        razorpay_payment_id: response.razorpay_payment_id,
-                                        razorpay_signature: response.razorpay_signature
-                                    })
-                                });
-
-                                if (verifyRes.ok) {
-                                    clearCart();
-                                    router.push(`/checkout/success?orderId=${order.id}`);
-                                } else {
-                                    alert("Payment verification failed. Please contact support.");
-                                }
-                            } catch (err) {
-                                console.error("Verification error:", err);
-                                alert("Error verifying payment.");
-                            }
-                        },
-                        prefill: {
-                            name: `${formData.firstName} ${formData.lastName}`,
-                            email: user.email,
-                        },
-                        theme: {
-                            color: "#0f172a",
-                        },
-                        modal: {
-                            ondismiss: function() {
-                                setLoading(false);
-                            }
-                        }
-                    };
-
-                    const rzp = new (window as any).Razorpay(options);
-                    rzp.on('payment.failed', function (response: any) {
-                        alert(`Payment Failed: ${response.error.description}`);
-                        setLoading(false);
-                    });
-                    rzp.open();
-                } else {
-                    // Fallback or non-razorpay payment
-                    clearCart();
-                    router.push(`/checkout/success?orderId=${order.id}`);
-                }
-            } else {
-                const err = await res.json();
-                alert(`Order Failed: ${err.message || 'Unknown error'}`);
-                setLoading(false);
-            }
-        } catch (error) {
-            console.error(error);
-            alert("Failed to place order. Check network connection.");
-            setLoading(false);
-        }
-    };
-
-
-    if (items.length === 0) {
-        return (
-            <div className="min-h-[70vh] flex items-center justify-center px-4">
-                <div className="text-center max-w-md">
-                    <div className="mx-auto mb-6 h-20 w-20 rounded-full bg-muted flex items-center justify-center">
-                        <ArrowLeft className="h-8 w-8 text-muted-foreground" />
-                    </div>
-                    <h1 className="text-2xl font-bold mb-2">Your cart is empty</h1>
-                    <p className="text-muted-foreground mb-6">Add some products to your cart before checking out.</p>
-                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                        <Link href="/products">
-                            <Button size="lg" className="w-full sm:w-auto">Browse Products</Button>
-                        </Link>
-                        <Link href="/cart">
-                            <Button size="lg" variant="outline" className="w-full sm:w-auto">View Cart</Button>
-                        </Link>
-                    </div>
-                </div>
-            </div>
-        )
-    }
-
+  if (!mounted) {
     return (
-        <div className="min-h-screen bg-muted/10 pb-20">
-            <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
-            <div className="container mx-auto px-4 py-8">
-
-                <Link href="/cart" className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6">
-                    <ArrowLeft className="h-4 w-4" /> Back to Cart
-                </Link>
-
-                <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-8">Checkout</h1>
-
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12">
-                    {/* Left: Form */}
-                    <form onSubmit={handlePreOrder} className="space-y-8">
-                        <div className="bg-card p-6 rounded-xl border shadow-sm">
-                            <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                                <MapPin className="h-5 w-5 text-primary" /> Shipping Details
-                            </h2>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="text-sm font-medium mb-1 block">First Name</label>
-                                    <input required name="firstName" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" onChange={handleChange} />
-                                </div>
-                                <div>
-                                    <label className="text-sm font-medium mb-1 block">Last Name</label>
-                                    <input required name="lastName" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" onChange={handleChange} />
-                                </div>
-                                <div className="col-span-2">
-                                    <label className="text-sm font-medium mb-1 block">Phone Number</label>
-                                    <input
-                                        required
-                                        name="phone"
-                                        type="tel"
-                                        maxLength={10}
-                                        placeholder="10-digit mobile number"
-                                        pattern="[6-9][0-9]{9}"
-                                        title="Enter a valid 10-digit Indian mobile number"
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                                        onChange={handleChange}
-                                    />
-                                </div>
-                                <div className="col-span-2">
-                                    <label className="text-sm font-medium mb-1 block">Street Address</label>
-                                    <input required name="address" placeholder="House/Flat No., Street, Area" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" onChange={handleChange} />
-                                </div>
-                                <div>
-                                    <label className="text-sm font-medium mb-1 block">PIN Code</label>
-                                    <div className="relative">
-                                        <input
-                                            required
-                                            name="zip"
-                                            maxLength={6}
-                                            placeholder="6-digit PIN"
-                                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                                            onChange={handleChange}
-                                        />
-                                        {pincodeLoading && (
-                                            <div className="absolute right-3 top-2.5">
-                                                <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className="text-sm font-medium mb-1 block">City</label>
-                                    <input
-                                        required
-                                        name="city"
-                                        value={formData.city}
-                                        placeholder="Auto-filled or type manually"
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                                        onChange={handleChange}
-                                    />
-                                </div>
-                                <div className="col-span-2">
-                                    <label className="text-sm font-medium mb-1 block">State</label>
-                                    <input
-                                        required
-                                        name="state"
-                                        value={formData.state}
-                                        placeholder="Auto-filled or type manually"
-                                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                                        onChange={handleChange}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-card p-6 rounded-xl border shadow-sm">
-                            <h2 className="text-xl font-bold mb-4">Payment Method</h2>
-                            <div className="space-y-3">
-                                <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-muted/50 bg-primary/5 ring-1 ring-primary/20">
-                                    <input type="radio" checked readOnly />
-                                    <span className="font-medium bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent italic font-bold text-lg">Razorpay</span>
-                                    <span className="text-sm text-muted-foreground">(Cards, UPI, NetBanking)</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <Button type="submit" size="lg" className="w-full text-lg shadow-xl shadow-primary/20" disabled={loading}>
-                            {loading ? "Processing..." : `Place Order (₹${finalTotal.toFixed(2)})`}
-                        </Button>
-                    </form>
-
-                    {/* Right: Order Summary */}
-                    <div>
-                        <div className="bg-card p-4 sm:p-6 rounded-xl border shadow-sm lg:sticky lg:top-24">
-                            <h2 className="text-xl font-bold mb-4">Your Order</h2>
-                            <div className="divide-y max-h-80 overflow-y-auto pr-2 mb-4">
-                                {items.map((item) => (
-                                    <div key={item.id} className="py-3 flex gap-3">
-                                        <div className="relative h-12 w-12 bg-white border rounded flex-shrink-0">
-                                            {item.image && <Image src={item.image} alt={item.name} fill className="object-contain p-1" unoptimized />}
-                                            <span className="absolute -top-2 -right-2 bg-slate-700 text-white text-[10px] h-5 w-5 flex items-center justify-center rounded-full">
-                                                {item.quantity}
-                                            </span>
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="text-sm font-medium truncate">{item.name}</div>
-                                            <div className="text-sm text-muted-foreground">₹{item.price} each</div>
-                                        </div>
-                                        <div className="font-bold">₹{(item.price * item.quantity).toFixed(2)}</div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <div className="space-y-3 pt-4 border-t">
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Subtotal</span>
-                                    <span>₹{subtotal.toFixed(2)}</span>
-                                </div>
-                                <div className="flex justify-between text-sm">
-                                    <span className="text-muted-foreground">Shipping</span>
-                                    {shipping === 0 ? <span className="text-green-600 font-bold">Free</span> : <span>₹{shipping.toFixed(2)}</span>}
-                                </div>
-                                <div className="flex justify-between text-sm font-bold">
-                                    <span>Total</span>
-                                    <span className="text-primary text-lg">₹{finalTotal.toFixed(2)}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Address Confirmation Modal */}
-            <AnimatePresence>
-                {showConfirmModal && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                        <motion.div 
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.9, opacity: 0 }}
-                            className="bg-card w-full max-w-md rounded-2xl shadow-2xl border overflow-hidden"
-                        >
-                            <div className="p-6 text-center border-b bg-muted/30">
-                                <AlertCircle className="h-10 w-10 text-primary mx-auto mb-2" />
-                                <h3 className="text-xl font-bold">Confirm Your Address</h3>
-                                <p className="text-sm text-muted-foreground mt-1">Please verify your delivery location before we ship.</p>
-                            </div>
-                            
-                            <div className="p-8">
-                                <div className="space-y-4 text-left">
-                                    <div className="flex gap-3">
-                                        <div className="text-primary mt-1"><MapPin className="h-5 w-5" /></div>
-                                        <div>
-                                            <div className="font-bold text-lg">{formData.firstName} {formData.lastName}</div>
-                                            {formData.phone && <div className="text-sm text-muted-foreground">{formData.phone}</div>}
-                                            <div className="text-muted-foreground leading-relaxed mt-1">
-                                                {formData.address}<br />
-                                                {formData.city}, {formData.state}<br />
-                                                <span className="font-bold text-foreground">{formData.zip}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2">
-                                <button 
-                                    onClick={() => setShowConfirmModal(false)}
-                                    className="p-4 bg-muted hover:bg-muted/80 font-medium transition-colors border-r"
-                                >
-                                    Edit Address
-                                </button>
-                                <button 
-                                    onClick={handlePlaceOrder}
-                                    className="p-4 bg-primary text-primary-foreground font-bold hover:bg-primary/90 transition-colors"
-                                >
-                                    Yes, Place Order
-                                </button>
-                            </div>
-                        </motion.div>
-                    </div>
-                )}
-            </AnimatePresence>
-        </div>
+      <div className="mx-auto grid max-w-[1280px] gap-4 pb-16 lg:grid-cols-[1fr_24rem]">
+        <Skeleton className="h-[28rem]" />
+        <Skeleton className="h-80" />
+      </div>
     );
+  }
+
+  if (items.length === 0 && !placed) {
+    return (
+      <div className="mx-auto max-w-xl py-10">
+        <EmptyState
+          headingLevel="h1"
+          icon={ShoppingBag}
+          title="Your cart is empty"
+          body="Add parts to your cart before checking out."
+          action={<ButtonLink href="/products">Browse parts</ButtonLink>}
+        />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="mx-auto max-w-xl py-10">
+        <EmptyState
+          headingLevel="h1"
+          icon={UserRound}
+          title="Sign in to check out"
+          body="Your order, invoice and tracking live in your account. It takes under a minute."
+          action={
+            <>
+              <ButtonLink href="/login?next=/checkout">Sign in</ButtonLink>
+              <ButtonLink href="/register?next=/checkout" variant="glass">
+                Create account
+              </ButtonLink>
+            </>
+          }
+        />
+      </div>
+    );
+  }
+
+  const totals = calcTotals(items, settings);
+  const count = items.reduce((a, i) => a + i.quantity, 0);
+  const fullName = `${form.firstName} ${form.lastName}`.trim();
+
+  const fail = (title: string, detail?: string) => {
+    setError(detail ? `${title}. ${detail}` : title);
+    toast.error(title, detail);
+    setLoading(false);
+  };
+
+  const openRazorpay = (order: PlacedOrder) => {
+    const Razorpay = (window as unknown as { Razorpay?: new (o: unknown) => { on(e: string, cb: (r: { error: { description: string } }) => void): void; open(): void } }).Razorpay;
+    if (!Razorpay) return fail("Payment window could not load", "Check your connection and try again.");
+    const rzp = new Razorpay({
+      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
+      amount: Math.round(order.total * 100),
+      currency: "INR",
+      name: "Zetra Electronics",
+      description: `Payment for Order #${order.id}`,
+      order_id: order.razorpayOrderId,
+      handler: async (response: { razorpay_payment_id: string; razorpay_signature: string }) => {
+        try {
+          const verifyRes = await fetch(`${API_URL}/orders/verify-payment`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify({
+              orderId: order.razorpayOrderId,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            }),
+          });
+          if (verifyRes.ok) {
+            clearCart();
+            router.push(`/checkout/success?orderId=${order.id}`);
+          } else fail("We couldn’t confirm your payment", "If money left your account, contact us with your order number.");
+        } catch {
+          fail("We couldn’t confirm your payment", "Check your connection, then contact us with your order number.");
+        }
+      },
+      prefill: { name: fullName, email: user.email },
+      theme: { color: "#1653a6" },
+      modal: { ondismiss: () => setLoading(false) },
+    });
+    rzp.on("payment.failed", (r) => fail("Payment failed", r.error.description));
+    rzp.open();
+  };
+
+  const placeOrder = async () => {
+    setError(null);
+    setLoading(true);
+    if (placed?.razorpayOrderId) return openRazorpay(placed);
+
+    const orderData = {
+      items: items.map((i) => ({ productId: i.id, quantity: i.quantity, price: i.price })),
+      total: totals.total,
+      userId: user.id,
+      address: { name: fullName, phone: form.phone, street: form.address, city: form.city, state: form.state, zip: form.zip },
+      paymentMethod: form.paymentMethod,
+    };
+
+    try {
+      const res = await fetch(`${API_URL}/orders`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(orderData),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        return fail("Order could not be placed", err.message || "Please try again.");
+      }
+      const order: PlacedOrder = await res.json();
+      if (order.razorpayOrderId) {
+        setPlaced(order);
+        openRazorpay(order);
+      } else {
+        clearCart();
+        router.push(`/checkout/success?orderId=${order.id}`);
+      }
+    } catch {
+      fail("Order could not be placed", "Check your network connection and try again.");
+    }
+  };
+
+  const steps = [
+    { id: "address", label: "Address", icon: MapPin },
+    { id: "review", label: "Review & pay", icon: CreditCard },
+  ] as const;
+
+  return (
+    <div className="mx-auto max-w-[1280px] pb-16">
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
+
+      <Link href="/cart" className="mb-4 inline-flex items-center gap-1.5 text-sm font-semibold text-ink-2 hover:text-brand">
+        <ArrowLeft className="size-4" aria-hidden />
+        Back to cart
+      </Link>
+      <div className="flex flex-wrap items-end justify-between gap-4 pb-6">
+        <h1 className="text-4xl font-extrabold tracking-[-0.035em] text-ink sm:text-5xl">Checkout</h1>
+        <ol className="glass glass-thin flex rounded-full p-1 text-sm font-semibold" aria-label="Checkout steps">
+          {steps.map((s) => {
+            const active = step === s.id;
+            return (
+              <li
+                key={s.id}
+                aria-current={active ? "step" : undefined}
+                className={cn("flex items-center gap-2 rounded-full px-4 py-2 transition-colors", active ? "bg-brand text-brand-ink" : "text-ink-3")}
+              >
+                <s.icon className="size-4" aria-hidden />
+                {s.label}
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-[1fr_24rem] lg:items-start">
+        <div className="grid gap-4">
+          {error && (
+            <div role="alert" className="glass glass-thick flex items-start gap-3 rounded-[var(--radius-tile)] border border-danger/30 bg-danger-soft p-4 text-sm">
+              <AlertCircle className="mt-0.5 size-5 shrink-0 text-danger" aria-hidden />
+              <p className="text-ink">{error}</p>
+            </div>
+          )}
+
+          {step === "address" ? (
+            <form
+              className="glass glass-thick grid gap-5 rounded-[var(--radius-pane)] p-6 sm:p-8"
+              onSubmit={(e) => {
+                e.preventDefault();
+                setStep("review");
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+            >
+              <h2 className="flex items-center gap-2 text-xl font-bold text-ink">
+                <MapPin className="size-5 text-brand" aria-hidden />
+                Where should we ship?
+              </h2>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <TextField label="First name" name="firstName" required autoComplete="given-name" value={form.firstName} onChange={change} />
+                <TextField label="Last name" name="lastName" required autoComplete="family-name" value={form.lastName} onChange={change} />
+                <TextField
+                  className="sm:col-span-2"
+                  label="Mobile number"
+                  name="phone"
+                  type="tel"
+                  inputMode="numeric"
+                  required
+                  maxLength={10}
+                  pattern="[6-9][0-9]{9}"
+                  title="10-digit Indian mobile number"
+                  hint="10 digits, for delivery updates"
+                  autoComplete="tel-national"
+                  value={form.phone}
+                  onChange={change}
+                />
+                <TextField
+                  className="sm:col-span-2"
+                  label="Street address"
+                  name="address"
+                  required
+                  placeholder="House or flat number, street, area"
+                  autoComplete="street-address"
+                  value={form.address}
+                  onChange={change}
+                />
+                <TextField
+                  label="PIN code"
+                  name="zip"
+                  inputMode="numeric"
+                  required
+                  maxLength={6}
+                  pattern="[1-9][0-9]{5}"
+                  title="6-digit PIN code"
+                  autoComplete="postal-code"
+                  value={form.zip}
+                  onChange={change}
+                  hint={pinState === "checking" ? "Checking PIN code…" : pinState === "found" ? "City and state filled in" : undefined}
+                  error={pinState === "unknown" ? "We couldn’t find this PIN code. Check it, or fill in city and state." : undefined}
+                />
+                <TextField label="City" name="city" required autoComplete="address-level2" value={form.city} onChange={change} />
+                <TextField className="sm:col-span-2" label="State" name="state" required autoComplete="address-level1" value={form.state} onChange={change} />
+              </div>
+              <Button type="submit" size="lg" className="h-13 sm:justify-self-end">
+                Continue to review
+              </Button>
+            </form>
+          ) : (
+            <section aria-labelledby="review-title" className="glass glass-thick grid gap-6 rounded-[var(--radius-pane)] p-6 sm:p-8">
+              <h2 id="review-title" className="text-xl font-bold text-ink">
+                Review your order
+              </h2>
+              <div className="flex items-start justify-between gap-4 rounded-[var(--radius-tile)] bg-brand-soft p-4">
+                <div className="flex gap-3">
+                  <MapPin className="mt-0.5 size-5 shrink-0 text-brand" aria-hidden />
+                  <address className="not-italic leading-relaxed text-ink-2">
+                    <span className="block font-semibold text-ink">{fullName}</span>
+                    <span className="tabular block">{form.phone}</span>
+                    {form.address}
+                    <br />
+                    {form.city}, {form.state} <span className="tabular font-semibold text-ink">{form.zip}</span>
+                  </address>
+                </div>
+                <Button variant="ghost" size="sm" onClick={() => setStep("address")} disabled={loading}>
+                  Edit
+                </Button>
+              </div>
+              <ul className="grid divide-y divide-line" aria-label="Parts in this order">
+                {items.map((i) => (
+                  <li key={i.id} className="flex items-center gap-3 py-3">
+                    <span className="relative size-14 shrink-0 overflow-hidden rounded-xl bg-[var(--plate)]">
+                      <ProductImage src={i.image} alt="" sizes="56px" className="p-1.5 mix-blend-multiply" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-semibold text-ink">{i.name}</span>
+                      <span className="tabular text-xs text-ink-3">
+                        {i.quantity} × {formatINR(i.price)}
+                      </span>
+                    </span>
+                    <span className="tabular text-sm font-bold text-ink">{formatINR(i.price * i.quantity)}</span>
+                  </li>
+                ))}
+              </ul>
+              <Button size="lg" className="h-13" onClick={placeOrder} loading={loading}>
+                <Lock className="size-4" aria-hidden />
+                {placed ? "Try payment again" : `Pay ${formatINR(totals.total)}`}
+              </Button>
+              <p className="-mt-2 text-center text-xs text-ink-3">Payments are processed securely by Razorpay. You’ll get a GST invoice by email.</p>
+            </section>
+          )}
+        </div>
+
+        <OrderSummary totals={totals} taxRate={settings.taxRate} itemCount={count} className="lg:sticky lg:top-28" />
+      </div>
+    </div>
+  );
 }
