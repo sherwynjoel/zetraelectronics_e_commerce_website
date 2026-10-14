@@ -3,6 +3,7 @@ import { AddToCartButton } from "@/components/add-to-cart";
 import { ProductImage } from "@/components/ui/product-image";
 import { StockPill } from "@/components/ui/stock-pill";
 import { Price } from "@/components/ui/price";
+import { FavoriteButton } from "@/components/product/favorite-button";
 
 type CardProduct = {
   id: number;
@@ -26,6 +27,9 @@ export function ProductCard({ product, priority }: { product: CardProduct; prior
           sizes="(min-width: 1280px) 22vw, (min-width: 768px) 30vw, 46vw"
           className="p-4 mix-blend-multiply transition-transform duration-700 ease-[var(--ease-liquid)] group-hover:scale-[1.04] dark:mix-blend-normal motion-reduce:group-hover:scale-100"
         />
+        <span className="absolute right-2 top-2 z-10">
+          <FavoriteButton productId={product.id} name={product.name} />
+        </span>
       </div>
       <div className="flex flex-1 flex-col gap-1 px-1.5 pb-1 pt-3">
         <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">

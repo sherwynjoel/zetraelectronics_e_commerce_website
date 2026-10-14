@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LayoutDashboard, LogOut, Package, User } from "lucide-react";
+import { Heart, LayoutDashboard, LogOut, Package, User } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
 import { ButtonLink } from "@/components/ui/button";
 import { useMounted } from "@/lib/use-mounted";
@@ -68,6 +68,10 @@ export function AccountMenu() {
             <Link href="/profile" className={item} onClick={() => setOpen(false)}>
               <User className="size-4" aria-hidden />
               Profile
+            </Link>
+            <Link href="/favorites" className={item} onClick={() => setOpen(false)}>
+              <Heart className="size-4" aria-hidden />
+              Favourites
             </Link>
             <Link href="/track-order" className={item} onClick={() => setOpen(false)}>
               <Package className="size-4" aria-hidden />

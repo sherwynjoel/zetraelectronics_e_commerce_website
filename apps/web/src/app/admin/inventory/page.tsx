@@ -6,52 +6,79 @@ import { Boxes, Pencil } from "lucide-react";
 import { useAdminGet } from "@/lib/admin-api";
 import type { Product } from "@/lib/types";
 import { AdminHeader } from "@/components/admin/admin-shell";
+import { FilterBar, SearchField } from "@/components/admin/filter-bar";
 import { EmptyState } from "@/components/ui/empty-state";
+import { SelectField } from "@/components/ui/field";
 import { ProductImage } from "@/components/ui/product-image";
-import { Segmented } from "@/components/ui/segmented";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StockPill } from "@/components/ui/stock-pill";
 import { TableShell, Td, Th, Tr } from "@/components/ui/table";
 
-type Filter = "all" | "low" | "out";
+type Stock = "all" | "in" | "low" | "out";
 const LOW_AT = 5;
+const EMPTY = { q: "", category: "all", stock: "all" as Stock };
+
+function stockState(n: number): Exclude<Stock, "all"> {
+  return n <= 0 ? "out" : n <= LOW_AT ? "low" : "in";
+}
 
 export default function InventoryPage() {
   const { data, loading } = useAdminGet<Product[]>("/products?limit=100");
-  const [filter, setFilter] = useState<Filter>("all");
+  const [f, setF] = useState(EMPTY);
+  const set = <K extends keyof typeof EMPTY>(k: K, v: (typeof EMPTY)[K]) => setF((p) => ({ ...p, [k]: v }));
 
+  const categories = useMemo(() => [...new Set((data ?? []).map((p) => p.category))].sort(), [data]);
   const counts = useMemo(() => {
-    const list = data ?? [];
-    return { out: list.filter((p) => p.stock <= 0).length, low: list.filter((p) => p.stock > 0 && p.stock <= LOW_AT).length };
+    const c = { in: 0, low: 0, out: 0 };
+    for (const p of data ?? []) c[stockState(p.stock)]++;
+    return c;
   }, [data]);
 
-  const rows = useMemo(
-    () =>
-      [...(data ?? [])]
-        .filter((p) => (filter === "out" ? p.stock <= 0 : filter === "low" ? p.stock > 0 && p.stock <= LOW_AT : true))
-        .sort((a, b) => a.stock - b.stock),
-    [data, filter],
-  );
+  const rows = useMemo(() => {
+    const q = f.q.trim().toLowerCase();
+    return [...(data ?? [])]
+      .filter((p) => (f.category === "all" ? true : p.category === f.category))
+      .filter((p) => (f.stock === "all" ? true : stockState(p.stock) === f.stock))
+      .filter((p) => !q || p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q) || String(p.id) === q)
+      .sort((a, b) => a.stock - b.stock);
+  }, [data, f]);
+
+  const active = f.q !== "" || f.category !== "all" || f.stock !== "all";
 
   return (
     <>
       <AdminHeader title="Inventory" description="Stock levels, lowest first. Edit a product to restock it." />
-      <Segmented<Filter>
-        ariaLabel="Stock filter"
-        value={filter}
-        onChange={setFilter}
-        options={[
-          { value: "all", label: "All" },
-          { value: "low", label: `Low (${counts.low})` },
-          { value: "out", label: `Out (${counts.out})` },
-        ]}
-        className="mb-5 max-w-sm"
-      />
+
+      <FilterBar
+        active={active}
+        onReset={() => setF(EMPTY)}
+        summary={data ? `${rows.length} of ${data.length} products` : null}
+        search={<SearchField label="Search products" value={f.q} onChange={(v) => set("q", v)} placeholder="Name, category or product ID" />}
+      >
+        <SelectField label="Category" value={f.category} onChange={(e) => set("category", e.target.value)}>
+          <option value="all">All categories</option>
+          {categories.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </SelectField>
+        <SelectField label="Stock" value={f.stock} onChange={(e) => set("stock", e.target.value as Stock)}>
+          <option value="all">All stock levels</option>
+          <option value="in">In stock ({counts.in})</option>
+          <option value="low">Low, {LOW_AT} or fewer ({counts.low})</option>
+          <option value="out">Out of stock ({counts.out})</option>
+        </SelectField>
+      </FilterBar>
 
       {loading && !data ? (
         <Skeleton className="h-96 rounded-[var(--radius-tile)]" />
       ) : rows.length === 0 ? (
-        <EmptyState icon={Boxes} title={filter === "all" ? "No products yet" : "Nothing here"} body={filter === "all" ? undefined : "Every product is above this stock level."} />
+        <EmptyState
+          icon={Boxes}
+          title={active ? "No products match these filters" : "No products yet"}
+          body={active ? "Try another category or stock level, or clear the filters." : undefined}
+        />
       ) : (
         <TableShell caption="Inventory">
           <thead>
@@ -73,7 +100,7 @@ export default function InventoryPage() {
                     <span className="relative size-10 shrink-0 overflow-hidden rounded-xl bg-[var(--plate)]">
                       <ProductImage src={p.image} alt="" sizes="40px" className="p-1" />
                     </span>
-                    <span className="font-semibold text-ink">{p.name}</span>
+                    <span className="min-w-0 break-words font-semibold text-ink">{p.name}</span>
                   </span>
                 </Td>
                 <Td label="Category">{p.category}</Td>

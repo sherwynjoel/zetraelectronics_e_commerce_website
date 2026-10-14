@@ -7,6 +7,8 @@ import { formatINR } from "@/lib/format";
 import { categoryHref } from "@/lib/store-data";
 import { ProductStage } from "@/components/product/product-stage";
 import { BuyBox } from "@/components/product/buy-box";
+import { FavoriteButton } from "@/components/product/favorite-button";
+import { ShareButton } from "@/components/product/share-button";
 import { ButtonLink } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Price } from "@/components/ui/price";
@@ -169,7 +171,13 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
         <div className="contents lg:sticky lg:top-28 lg:grid lg:gap-6">
           <section aria-labelledby="product-title" className="glass glass-thick order-2 grid gap-6 rounded-[var(--radius-pane)] p-6 sm:p-8 lg:order-none">
             <div className="grid gap-3">
-              <StockPill stock={product.stock} />
+              <div className="flex items-center justify-between gap-3">
+                <StockPill stock={product.stock} />
+                <div className="flex gap-2">
+                  <FavoriteButton productId={product.id} name={product.name} size="md" />
+                  <ShareButton title={product.name} path={`/products/${product.id}`} />
+                </div>
+              </div>
               <h1 id="product-title" className="text-3xl font-extrabold leading-tight tracking-[-0.03em] text-ink sm:text-4xl">
                 {product.name}
               </h1>

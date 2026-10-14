@@ -6,6 +6,7 @@ import { API_URL } from "@/lib/api";
 import type { Product } from "@/lib/types";
 import { categoryHref, categoryTree, getCategories, getSettings } from "@/lib/store-data";
 import { ProductCard } from "@/components/product-card";
+import { ExpandableGrid } from "@/components/expandable-grid";
 import { HeroSearchBar } from "@/components/layout/HeroSearchBar";
 import { ButtonLink } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -150,48 +151,63 @@ export default async function Home() {
       {categories.length > 0 && (
         <section aria-labelledby="categories-title">
           <h2 id="categories-title" className="text-2xl font-bold text-ink sm:text-3xl">
-            Shop by category
+            Popular categories
           </h2>
-          <ul className="-mx-3 -my-4 mt-1 flex snap-x gap-3 overflow-x-auto px-3 py-4 [scrollbar-width:none] lg:mx-0 lg:grid lg:grid-cols-6 lg:overflow-visible lg:px-0">
-            {categories.map((c) => {
-              const names = [c.name, ...(c.children ?? []).map((s) => s.name)];
-              const parts = products.filter((p) => names.includes(p.category));
-              const cover = parts.find((p) => p.image && p.stock > 0) ?? parts.find((p) => p.image);
-              return (
-                <li key={c.id} className="shrink-0 snap-start">
-                  <Link href={categoryHref(c.name)} className="glass glass-thin glass-lift flex w-44 items-center gap-3 rounded-[var(--radius-tile)] p-2.5 pr-3 lg:w-auto">
-                    <span className="relative size-12 shrink-0 overflow-hidden rounded-xl bg-[var(--plate)]">
-                      <ProductImage src={cover?.image} alt="" sizes="48px" className="p-1 [&_span]:hidden [&_svg]:size-5" />
+          <div className="mt-6">
+            <ExpandableGrid
+              noun="categories"
+              className="grid grid-cols-1 gap-3 min-[400px]:grid-cols-2 lg:grid-cols-4"
+              items={categories
+                .map((c) => {
+                  const names = [c.name, ...(c.children ?? []).map((s) => s.name)];
+                  const parts = products.filter((p) => names.includes(p.category));
+                  return { c, parts, cover: parts.find((p) => p.image && p.stock > 0) ?? parts.find((p) => p.image) };
+                })
+                // Popular first: categories with the most parts lead.
+                .sort((x, y) => y.parts.length - x.parts.length || x.c.name.localeCompare(y.c.name))
+                .map(({ c, parts, cover }) => (
+                  <Link
+                    key={c.id}
+                    href={categoryHref(c.name)}
+                    className="glass glass-thin glass-lift flex min-w-0 items-center gap-3 rounded-[var(--radius-tile)] p-2.5 pr-3"
+                  >
+                    <span className="relative size-14 shrink-0 overflow-hidden rounded-xl bg-[var(--plate)]">
+                      <ProductImage src={cover?.image} alt="" sizes="56px" className="p-1 [&_span]:hidden [&_svg]:size-5" />
                     </span>
                     <span className="min-w-0">
-                      <span className="block truncate text-sm font-semibold text-ink">{c.name}</span>
-                      <span className="block text-xs text-ink-3">{parts.length ? `${parts.length} ${parts.length === 1 ? "part" : "parts"}` : "Coming soon"}</span>
+                      <span className="block text-sm font-semibold leading-snug text-ink">{c.name}</span>
+                      <span className="block text-xs text-ink-3">
+                        {parts.length ? `${parts.length} ${parts.length === 1 ? "part" : "parts"}` : "Coming soon"}
+                      </span>
                     </span>
                   </Link>
-                </li>
-              );
-            })}
-          </ul>
+                ))}
+            />
+          </div>
         </section>
       )}
 
       <section aria-labelledby="new-title">
-        <div className="flex items-end justify-between gap-4">
+        <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
           <h2 id="new-title" className="text-2xl font-bold text-ink sm:text-3xl">
-            New on the bench
+            Featured products
           </h2>
           {products.length > 0 && (
             <Link href="/products" className="flex items-center gap-1.5 text-sm font-semibold text-brand hover:underline">
-              See all parts
+              Browse the catalog
               <ArrowRight className="size-4" aria-hidden />
             </Link>
           )}
         </div>
         {products.length > 0 ? (
-          <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
-            {products.slice(0, 8).map((p, i) => (
-              <ProductCard key={p.id} product={p} priority={i < 4} />
-            ))}
+          <div className="mt-6">
+            <ExpandableGrid
+              noun="products"
+              className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4"
+              items={products.map((p, i) => (
+                <ProductCard key={p.id} product={p} priority={i < 4} />
+              ))}
+            />
           </div>
         ) : (
           <EmptyState

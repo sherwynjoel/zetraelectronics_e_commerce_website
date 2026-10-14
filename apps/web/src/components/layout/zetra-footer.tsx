@@ -48,7 +48,7 @@ export function ZetraFooter({ columns, year }: { columns: FooterColumn[]; year: 
           fontFamily={family}
           fontWeight={800}
           monoFamily="var(--font-hanken), system-ui, sans-serif"
-          height="clamp(460px, 46vw, 600px)"
+          height="max(660px, min(46vw, 680px))"
           grain={0.4}
         />
       </div>

@@ -24,7 +24,7 @@ export function AuthCard({
   footer?: ReactNode;
 }) {
   return (
-    <div className="mx-auto grid min-h-[calc(100dvh-14rem)] max-w-md place-items-center pb-10">
+    <div className="mx-auto grid min-h-[calc(100dvh-7rem)] max-w-md place-items-center pb-10">
       <section className="glass glass-thick w-full rounded-[2rem] p-6 sm:p-9">
         <Link href="/" className="mx-auto mb-6 block size-16 overflow-hidden rounded-full bg-logo shadow-[0_6px_18px_-6px_rgba(11,26,51,.3)]" aria-label="Zetra Electronics home">
           <span className="relative block size-full">

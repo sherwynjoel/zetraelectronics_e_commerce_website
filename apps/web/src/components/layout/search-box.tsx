@@ -140,7 +140,7 @@ export function SearchBox({
                 setOpen(false);
               }
             }}
-            placeholder={hero && wide ? "Search sensors, boards, modules…" : "Search parts"}
+            placeholder={hero && wide ? "Search sensors, boards, modules…" : hero ? "Search" : "Search parts"}
             className={cn(
               "min-w-0 flex-1 bg-transparent text-ink placeholder:text-ink-3 focus:outline-none [&::-webkit-search-cancel-button]:hidden",
               hero ? "text-lg" : "text-sm",
@@ -162,7 +162,7 @@ export function SearchBox({
             aria-label="Search"
             className={cn(
               "grid shrink-0 place-items-center rounded-full bg-brand text-brand-ink transition-colors hover:bg-brand-hover",
-              hero ? "h-12 px-6 text-sm font-semibold" : "size-8",
+              hero ? "h-12 px-4 text-sm font-semibold sm:px-6" : "size-8",
             )}
           >
             {hero ? "Search" : <ArrowRight className="size-4" aria-hidden />}

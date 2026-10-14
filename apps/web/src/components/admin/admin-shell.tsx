@@ -89,11 +89,11 @@ function SidebarFooter() {
 function Brand() {
   return (
     <Link href="/admin" className="flex items-center gap-2.5 px-1" aria-label="Zetra admin home">
-      <span className="relative size-10 overflow-hidden rounded-full bg-logo shadow-[0_2px_8px_rgba(11,26,51,.14)]">
-        <Image src="/logo.png" alt="" fill sizes="40px" className="scale-[1.35] object-contain" />
+      <span className="relative size-12 shrink-0 overflow-hidden rounded-full bg-logo shadow-[0_2px_10px_rgba(11,26,51,.16)] ring-1 ring-line">
+        <Image src="/logo.png" alt="" fill sizes="48px" className="scale-[1.5] object-contain" priority />
       </span>
       <span className="leading-tight">
-        <span className="block text-[15px] font-extrabold tracking-tight text-ink">Zetra</span>
+        <span className="block text-base font-extrabold tracking-tight text-ink">Zetra Electronics</span>
         <span className="block text-xs font-semibold text-ink-3">Store admin</span>
       </span>
     </Link>
@@ -144,6 +144,9 @@ export function AdminShell({ children }: { children: ReactNode }) {
             >
               <Menu className="size-5" aria-hidden />
             </button>
+            <span className="relative size-9 shrink-0 overflow-hidden rounded-full bg-logo ring-1 ring-line" aria-hidden>
+              <Image src="/logo.png" alt="" fill sizes="36px" className="scale-[1.5] object-contain" />
+            </span>
             <span className="flex-1 truncate font-bold text-ink">{title}</span>
             <ThemeToggle />
           </div>

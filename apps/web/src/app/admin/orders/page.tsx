@@ -1,18 +1,21 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { FileDown, Printer, ShoppingCart } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
 import { useAdminGet } from "@/lib/admin-api";
+import { filterOrders, paymentState, type OrderFilters } from "@/lib/admin-filters";
 import { downloadInvoice } from "@/lib/invoice";
 import { printAddressLabel } from "@/lib/print-label";
 import { formatDate, formatINR } from "@/lib/format";
 import { statusTone } from "@/lib/status";
 import { AdminHeader } from "@/components/admin/admin-shell";
+import { FilterBar, SearchField } from "@/components/admin/filter-bar";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Segmented } from "@/components/ui/segmented";
+import { SelectField, TextField } from "@/components/ui/field";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TableShell, Td, Th, Tr } from "@/components/ui/table";
 import { toast } from "@/components/ui/toast";
@@ -22,51 +25,81 @@ type Order = {
   status: string;
   total: number;
   createdAt: string;
+  paymentMethod?: string | null;
   shippingAddress?: string;
   user?: { name?: string | null; email?: string };
   items: { quantity: number }[];
 };
-type View = "active" | "PAID" | "SHIPPED" | "DELIVERED" | "all";
 
-const VIEWS: Record<View, (s: string) => boolean> = {
-  active: (s) => ["PAID", "SHIPPED", "DELIVERED"].includes(s),
-  PAID: (s) => s === "PAID",
-  SHIPPED: (s) => s === "SHIPPED",
-  DELIVERED: (s) => s === "DELIVERED",
-  all: () => true,
-};
+const EMPTY: Required<OrderFilters> = { q: "", status: "all", payment: "all", from: "", to: "", method: "all" };
+const label = (s: string) => s.charAt(0) + s.slice(1).toLowerCase();
+const PAYMENT_LABEL = { paid: "Paid", unpaid: "Awaiting payment", cancelled: "Cancelled" } as const;
 
-export default function AdminOrdersPage() {
+function Orders() {
   const { token } = useAuthStore();
-  const { data, loading } = useAdminGet<Order[]>("/orders");
-  const [view, setView] = useState<View>("active");
-  const rows = useMemo(() => (data ?? []).filter((o) => VIEWS[view](o.status)), [data, view]);
+  const initialQ = useSearchParams().get("q") ?? "";
+  const { data, loading } = useAdminGet<Order[]>("/orders?limit=1000");
+  const [f, setF] = useState<Required<OrderFilters>>({ ...EMPTY, q: initialQ });
+  const set = <K extends keyof OrderFilters>(k: K, v: string) => setF((p) => ({ ...p, [k]: v }));
 
+  const methods = useMemo(() => [...new Set((data ?? []).map((o) => o.paymentMethod).filter(Boolean) as string[])], [data]);
+  const rows = useMemo(() => filterOrders(data ?? [], f), [data, f]);
+  const active = JSON.stringify(f) !== JSON.stringify(EMPTY);
   const icon = "grid size-9 place-items-center rounded-full text-ink-2 hover:bg-brand-soft hover:text-brand";
 
   return (
     <>
-      <AdminHeader title="Orders" description="Paid orders to fulfil, newest first." />
-      <div className="-mx-3 mb-5 overflow-x-auto px-3 pb-1">
-        <Segmented<View>
-          ariaLabel="Order view"
-          value={view}
-          onChange={setView}
-          options={[
-            { value: "active", label: "Paid & later" },
-            { value: "PAID", label: "To ship" },
-            { value: "SHIPPED", label: "Shipped" },
-            { value: "DELIVERED", label: "Delivered" },
-            { value: "all", label: "All" },
-          ]}
-          className="min-w-[34rem] max-w-2xl"
-        />
-      </div>
+      <AdminHeader title="Orders" description="Every order, newest first." />
+
+      <FilterBar
+        active={active}
+        onReset={() => setF(EMPTY)}
+        summary={data ? `${rows.length} of ${data.length} orders` : null}
+        search={
+          <SearchField
+            label="Search orders"
+            value={f.q}
+            onChange={(v) => set("q", v)}
+            placeholder="Order ID, customer name, email or phone"
+          />
+        }
+      >
+        <SelectField label="Order status" value={f.status} onChange={(e) => set("status", e.target.value)}>
+          <option value="all">All statuses</option>
+          {["PENDING", "PAID", "SHIPPED", "DELIVERED", "CANCELLED"].map((s) => (
+            <option key={s} value={s}>
+              {label(s)}
+            </option>
+          ))}
+        </SelectField>
+        <SelectField label="Payment" value={f.payment} onChange={(e) => set("payment", e.target.value)}>
+          <option value="all">All payments</option>
+          <option value="paid">Paid</option>
+          <option value="unpaid">Awaiting payment</option>
+          <option value="cancelled">Cancelled</option>
+        </SelectField>
+        <TextField label="From date" type="date" value={f.from} max={f.to || undefined} onChange={(e) => set("from", e.target.value)} />
+        <TextField label="To date" type="date" value={f.to} min={f.from || undefined} onChange={(e) => set("to", e.target.value)} />
+        {methods.length > 1 && (
+          <SelectField label="Payment method" value={f.method} onChange={(e) => set("method", e.target.value)}>
+            <option value="all">All methods</option>
+            {methods.map((m) => (
+              <option key={m} value={m}>
+                {label(m)}
+              </option>
+            ))}
+          </SelectField>
+        )}
+      </FilterBar>
 
       {loading && !data ? (
         <Skeleton className="h-96 rounded-[var(--radius-tile)]" />
       ) : rows.length === 0 ? (
-        <EmptyState icon={ShoppingCart} title="No orders in this view" body="Orders appear here once customers pay." />
+        <EmptyState
+          icon={ShoppingCart}
+          title={active ? "No orders match" : "No orders yet"}
+          body={active ? "Try a different search or widen the dates, or clear the filters." : "Orders appear here as customers check out."}
+        />
       ) : (
         <TableShell caption="Orders">
           <thead>
@@ -88,20 +121,19 @@ export default function AdminOrdersPage() {
                   <Link href={`/admin/orders/${o.id}`} className="tabular font-mono font-semibold text-ink hover:text-brand">
                     #ORD-{o.id}
                   </Link>
-                  <span className="block text-xs text-ink-3">
-                    {o.items?.reduce((a, i) => a + i.quantity, 0) ?? 0} items
-                  </span>
+                  <span className="block text-xs text-ink-3">{o.items?.reduce((a, i) => a + i.quantity, 0) ?? 0} items</span>
                 </Td>
-                <Td label="Customer">
-                  <span className="block font-semibold text-ink">{o.user?.name || "Customer"}</span>
-                  <span className="block truncate text-xs text-ink-3">{o.user?.email}</span>
+                <Td label="Customer" className="min-w-0">
+                  <span className="block break-words font-semibold text-ink">{o.user?.name || "Customer"}</span>
+                  <span className="block break-all text-xs text-ink-3">{o.user?.email}</span>
                 </Td>
                 <Td label="Date">{formatDate(o.createdAt)}</Td>
                 <Td label="Total" className="tabular text-right font-semibold text-ink max-md:text-left">
                   {formatINR(Number(o.total))}
+                  <span className="block text-xs font-normal text-ink-3">{PAYMENT_LABEL[paymentState(o.status)]}</span>
                 </Td>
                 <Td label="Status">
-                  <Badge tone={statusTone(o.status)}>{o.status.charAt(0) + o.status.slice(1).toLowerCase()}</Badge>
+                  <Badge tone={statusTone(o.status)}>{label(o.status)}</Badge>
                 </Td>
                 <Td className="max-md:col-span-2 max-md:justify-self-end">
                   <span className="flex items-center gap-1">
@@ -131,5 +163,13 @@ export default function AdminOrdersPage() {
         </TableShell>
       )}
     </>
+  );
+}
+
+export default function AdminOrdersPage() {
+  return (
+    <Suspense fallback={<Skeleton className="h-96 rounded-[var(--radius-tile)]" />}>
+      <Orders />
+    </Suspense>
   );
 }

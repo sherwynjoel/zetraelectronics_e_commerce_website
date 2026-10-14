@@ -10,16 +10,17 @@ import { SearchBox } from "./search-box";
 import { CategoryMenu } from "./category-menu";
 import { AccountMenu } from "./account-menu";
 import { CartLink } from "./cart-link";
+import { FavoritesLink } from "./favorites-link";
 import { MobileTabBar } from "./mobile-tab-bar";
 
 function Brand() {
   return (
     <Link href="/" className="flex shrink-0 items-center gap-2 rounded-full pr-2" aria-label="Zetra Electronics home">
-      <span className="relative size-11 overflow-hidden rounded-full bg-logo shadow-[0_2px_8px_rgba(11,26,51,.12)]">
-        <Image src="/logo.png" alt="" fill sizes="44px" className="scale-[1.35] object-contain" priority />
+      <span className="relative size-12 overflow-hidden rounded-full bg-logo shadow-[0_2px_10px_rgba(11,26,51,.16)] ring-1 ring-line">
+        <Image src="/logo.png" alt="" fill sizes="48px" className="scale-[1.5] object-contain" priority />
       </span>
-      <span className="hidden text-[17px] font-extrabold tracking-tight text-ink sm:block">
-        Zetra<span className="font-semibold text-ink-3"> Electronics</span>
+      <span className="text-lg font-extrabold leading-none tracking-tight text-ink">
+        Zetra<span className="hidden font-semibold text-ink-2 sm:inline"> Electronics</span>
       </span>
     </Link>
   );
@@ -60,6 +61,7 @@ export function NavBar({ categories }: { categories: Category[] }) {
                 >
                   <Search className="size-[18px]" aria-hidden />
                 </button>
+                <FavoritesLink />
                 <ThemeToggle />
                 <CartLink className="hidden lg:grid" />
                 <span className="hidden lg:block">
