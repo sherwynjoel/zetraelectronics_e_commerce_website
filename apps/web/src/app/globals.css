@@ -319,6 +319,53 @@ nav[aria-label="Primary"] {
   opacity: 1;
 }
 
+/* Footer credit: the studio name in the Zetra logo colours, blue into red, with a bar that grows on hover. */
+.zetra-footer .hwf-brand .ark-credit {
+  display: block;
+  margin-top: 6px;
+  color: var(--ink-2);
+}
+.zetra-footer .ark-credit a {
+  --ark-from: #1a62d6;
+  --ark-to: #d42a24;
+  position: relative;
+  display: inline-block;
+  font-size: 14.5px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  opacity: 1;
+  background: linear-gradient(90deg, var(--ark-from), var(--ark-to));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.zetra-footer .ark-credit a::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 -3px 0;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--ark-from), var(--ark-to));
+  transform: scaleX(0.25);
+  transform-origin: left;
+  transition: transform 0.3s var(--ease-liquid, ease);
+}
+.zetra-footer .ark-credit a:hover::after,
+.zetra-footer .ark-credit a:focus-visible::after {
+  transform: scaleX(1);
+}
+.dark .zetra-footer .ark-credit a {
+  --ark-from: #7fb2ff;
+  --ark-to: #ff7a70;
+}
+@media (prefers-reduced-motion: reduce) {
+  .zetra-footer .ark-credit a::after { transition: none; }
+}
+@media (forced-colors: active) {
+  .zetra-footer .ark-credit a { color: LinkText; background: none; text-decoration: underline; }
+  .zetra-footer .ark-credit a::after { display: none; }
+}
+
 /* Home hero spotlight: parts swap with a soft focus pull; the autoplay bar fills under the active thumbnail. */
 @keyframes swap-in {
   from { opacity: 0; transform: translateY(8px) scale(0.985); filter: blur(6px); }

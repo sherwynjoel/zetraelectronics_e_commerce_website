@@ -16,7 +16,7 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https://images.unsplash.com https://m.media-amazon.com https://plus.unsplash.com https://zetraelectronics.com https://upload.wikimedia.org",
       "font-src 'self' data:",
-      "connect-src 'self' https://zetraelectronics.com https://api.razorpay.com https://lumberjack.razorpay.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://api.postalpincode.in",
+      `connect-src 'self' ${process.env.NODE_ENV === 'development' ? 'http://localhost:4000' : ''} https://zetraelectronics.com https://api.razorpay.com https://lumberjack.razorpay.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://api.postalpincode.in`,
       "frame-src https://api.razorpay.com https://accounts.google.com https://zetraelectronics.com https://zetraelectronics-c55c1.firebaseapp.com",
       "object-src 'none'",
       "base-uri 'self'",

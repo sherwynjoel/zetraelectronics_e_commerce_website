@@ -42,7 +42,17 @@ export function ZetraFooter({ columns, year }: { columns: FooterColumn[]; year: 
         <HalftoneWordmarkFooter
           wordmark="zetra"
           label="Zetra Electronics"
-          meta={`© ${year} · Electrify Your Needs With Us · Site by The Ark Tech`}
+          meta={
+            <>
+              © {year} · Electrify Your Needs With Us
+              <span className="ark-credit">
+                Powered by{" "}
+                <a href="https://thearktech.in" target="_blank" rel="noopener noreferrer">
+                  The Ark Tech
+                </a>
+              </span>
+            </>
+          }
           columns={columns}
           palette={dark ? DARK : LIGHT}
           fontFamily={family}

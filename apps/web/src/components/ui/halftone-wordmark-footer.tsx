@@ -41,7 +41,7 @@ export interface HalftoneWordmarkFooterProps {
   /** Top-left studio line. */
   label?: string
   /** The muted line under it. */
-  meta?: string
+  meta?: React.ReactNode
   /** Link columns along the top. */
   columns?: FooterColumn[]
   /** Show the back-to-top link. It scrolls the window to 0. Defaults to true. */
