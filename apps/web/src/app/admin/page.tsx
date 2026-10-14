@@ -1,163 +1,127 @@
 "use client";
 
-import { API_URL } from '@/lib/api';
-
+import dynamic from "next/dynamic";
+import Link from "next/link";
+import { ArrowRight, RotateCw } from "lucide-react";
+import { useAdminGet } from "@/lib/admin-api";
+import { formatDate, formatINR } from "@/lib/format";
+import { statusTone } from "@/lib/status";
+import { AdminHeader } from "@/components/admin/admin-shell";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Package, ShoppingCart, DollarSign, TrendingUp, Users } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useAuthStore } from "@/lib/auth-store";
-import { useRouter } from "next/navigation";
-import { SalesChart } from "@/components/admin/sales-chart";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Skeleton } from "@/components/ui/skeleton";
+import { TableShell, Td, Th, Tr } from "@/components/ui/table";
 
-interface DashboardStats {
-    revenue: number;
-    orders: number;
-    products: number;
-    users: number;
-    recentOrders: any[];
-}
+const SalesChart = dynamic(() => import("@/components/admin/sales-chart"), {
+  ssr: false,
+  loading: () => <Skeleton className="h-[22rem] rounded-[var(--radius-pane)]" />,
+});
+
+type Stats = {
+  revenue: number;
+  orders: number;
+  products: number;
+  users: number;
+  recentOrders: { id: number; total: number; status: string; createdAt: string; user?: { name?: string | null; email?: string } }[];
+};
 
 export default function AdminDashboard() {
-    const { user, token, logout } = useAuthStore();
-    const router = useRouter();
-    const [stats, setStats] = useState<DashboardStats | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [mounted, setMounted] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+  const { data, loading, error, reload } = useAdminGet<Stats>("/analytics/stats");
 
-    // Wait for Zustand persist to rehydrate from localStorage before checking auth
-    useEffect(() => {
-        setMounted(true);
-    }, []);
+  const tiles = data
+    ? [
+        { label: "Revenue, all time", value: formatINR(Number(data.revenue) || 0), href: "/admin/orders" },
+        { label: "Orders", value: String(data.orders ?? 0), href: "/admin/orders" },
+        { label: "Products listed", value: String(data.products ?? 0), href: "/admin/products" },
+        { label: "Customers", value: String(data.users ?? 0), href: "/admin/customers" },
+      ]
+    : [];
 
-    useEffect(() => {
-        if (!mounted) return;
+  return (
+    <>
+      <AdminHeader title="Dashboard" description="How the store is doing today." />
 
-        if (!token) {
-            router.push('/login');
-            return;
-        }
-        if (user?.role !== 'ADMIN') {
-            router.push('/');
-            return;
-        }
-
-        // Fetch stats
-        fetch(`${API_URL}/analytics/stats`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        })
-            .then(res => {
-                if (res.status === 401 || res.status === 403) {
-                    logout();
-                    router.push('/login');
-                    throw new Error('Session expired — please log in again');
-                }
-                if (!res.ok) throw new Error(`API error: ${res.status}`);
-                return res.json();
-            })
-            .then(data => {
-                setStats({
-                    revenue: Number(data?.revenue ?? 0),
-                    orders: Number(data?.orders ?? 0),
-                    products: Number(data?.products ?? 0),
-                    users: Number(data?.users ?? 0),
-                    recentOrders: Array.isArray(data?.recentOrders) ? data.recentOrders : [],
-                });
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error('Dashboard stats error:', err);
-                setError(err.message || 'Failed to load stats');
-                setLoading(false);
-            });
-    }, [mounted, token, user, router]);
-
-    if (!mounted || loading) {
-        return <div className="p-8">Loading dashboard metrics...</div>;
-    }
-
-    if (error || !stats) {
-        return <div className="p-8 text-red-500">Failed to load stats: {error ?? 'Unknown error'}. Please refresh.</div>;
-    }
-
-    return (
-        <div className="space-y-8">
-            <h1 className="text-3xl font-bold tracking-tight">Dashboard Overview</h1>
-
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {[
-                    { label: "Total Revenue", value: `₹${Number(stats.revenue).toFixed(2)}`, icon: DollarSign, change: "Lifetime Earnings", color: "text-green-600" },
-                    { label: "Total Orders", value: stats.orders, icon: ShoppingCart, change: "All time orders", color: "text-blue-600" },
-                    { label: "Products", value: stats.products, icon: Package, change: "Active Inventory", color: "text-orange-600" },
-                    { label: "Total Users", value: stats.users, icon: Users, change: "Registered Customers", color: "text-purple-600" },
-                ].map((stat, i) => (
-                    <div key={i} className="bg-card p-6 rounded-xl border shadow-sm hover:shadow-md transition-all">
-                        <div className="flex items-center justify-between mb-4">
-                            <span className="text-sm font-medium text-muted-foreground">{stat.label}</span>
-                            <div className={`p-2 rounded-full bg-muted/50 ${stat.color.replace('text-', 'text-opacity-20 ')}`}>
-                                <stat.icon className={`h-4 w-4 ${stat.color}`} />
-                            </div>
-                        </div>
-                        <div className="text-2xl font-bold">{stat.value}</div>
-                        <div className="text-xs text-muted-foreground mt-1">{stat.change}</div>
-                    </div>
+      {error ? (
+        <EmptyState
+          title="The dashboard couldn’t load"
+          body={error}
+          action={
+            <Button variant="glass" onClick={reload}>
+              <RotateCw className="size-4" aria-hidden />
+              Try again
+            </Button>
+          }
+        />
+      ) : (
+        <div className="grid gap-6">
+          <ul className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+            {loading || !data
+              ? [0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-28 rounded-[var(--radius-tile)]" />)
+              : tiles.map((t) => (
+                  <li key={t.label}>
+                    <Link href={t.href} className="glass glass-regular glass-lift flex h-full flex-col justify-between gap-4 rounded-[var(--radius-tile)] p-5">
+                      <span className="text-sm font-semibold text-ink-3">{t.label}</span>
+                      <span className="tabular truncate text-2xl font-extrabold tracking-tight text-ink sm:text-3xl">{t.value}</span>
+                    </Link>
+                  </li>
                 ))}
-            </div>
+          </ul>
 
-            {/* Sales Analytics Chart */}
-            <SalesChart />
+          <SalesChart />
 
-            {/* Recent Orders */}
-            <div className="bg-card rounded-xl border shadow-sm overflow-hidden">
-                <div className="p-6 border-b flex justify-between items-center bg-muted/5">
-                    <h2 className="text-lg font-bold flex items-center gap-2">
-                        <TrendingUp className="h-5 w-5" /> Recent Orders
-                    </h2>
-                    <Button variant="outline" size="sm" onClick={() => router.push('/admin/orders')}>View All</Button>
-                </div>
-                <div className="p-0">
-                    {stats.recentOrders.length === 0 ? (
-                        <div className="p-8 text-center text-muted-foreground">No orders found yet.</div>
-                    ) : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-sm text-left">
-                                <thead className="bg-muted/50 text-muted-foreground border-b">
-                                    <tr>
-                                        <th className="px-6 py-3 font-medium">Order ID</th>
-                                        <th className="px-6 py-3 font-medium">Customer</th>
-                                        <th className="px-6 py-3 font-medium">Date</th>
-                                        <th className="px-6 py-3 font-medium">Amount</th>
-                                        <th className="px-6 py-3 font-medium">Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y">
-                                    {stats.recentOrders.map((order: any) => (
-                                        <tr key={order.id} className="hover:bg-muted/10 transition-colors">
-                                            <td className="px-6 py-4 font-mono font-medium">#{order.id}</td>
-                                            <td className="px-6 py-4">
-                                                <div className="font-medium">{order.user?.name || 'Guest'}</div>
-                                                <div className="text-xs text-muted-foreground">{order.user?.email}</div>
-                                            </td>
-                                            <td className="px-6 py-4">{new Date(order.createdAt).toLocaleDateString()}</td>
-                                            <td className="px-6 py-4 font-bold">₹{Number(order.total).toFixed(2)}</td>
-                                            <td className="px-6 py-4">
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize
-                                                    ${order.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                                                        order.status === 'DELIVERED' ? 'bg-green-100 text-green-800' :
-                                                            order.status === 'SHIPPED' ? 'bg-blue-100 text-blue-800' :
-                                                                'bg-gray-100 text-gray-800'}`}>
-                                                    {order.status.toLowerCase()}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </div>
+          <section aria-labelledby="recent-title" className="grid gap-3">
+            <div className="flex items-center justify-between gap-3">
+              <h2 id="recent-title" className="text-lg font-bold text-ink">
+                Recent orders
+              </h2>
+              <Link href="/admin/orders" className="flex items-center gap-1 text-sm font-semibold text-brand hover:underline">
+                All orders
+                <ArrowRight className="size-4" aria-hidden />
+              </Link>
             </div>
+            {loading || !data ? (
+              <Skeleton className="h-48 rounded-[var(--radius-tile)]" />
+            ) : data.recentOrders?.length ? (
+              <TableShell caption="Recent orders">
+                <thead>
+                  <tr>
+                    <Th>Order</Th>
+                    <Th>Customer</Th>
+                    <Th>Date</Th>
+                    <Th className="text-right">Total</Th>
+                    <Th>Status</Th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.recentOrders.map((o) => (
+                    <Tr key={o.id}>
+                      <Td label="Order">
+                        <Link href={`/admin/orders/${o.id}`} className="tabular font-mono font-semibold text-ink hover:text-brand">
+                          #ORD-{o.id}
+                        </Link>
+                      </Td>
+                      <Td label="Customer">
+                        <span className="block font-semibold text-ink">{o.user?.name || "Customer"}</span>
+                        <span className="block text-xs text-ink-3">{o.user?.email}</span>
+                      </Td>
+                      <Td label="Date">{formatDate(o.createdAt)}</Td>
+                      <Td label="Total" className="tabular text-right font-semibold text-ink max-md:text-left">
+                        {formatINR(Number(o.total))}
+                      </Td>
+                      <Td label="Status">
+                        <Badge tone={statusTone(o.status)}>{o.status.charAt(0) + o.status.slice(1).toLowerCase()}</Badge>
+                      </Td>
+                    </Tr>
+                  ))}
+                </tbody>
+              </TableShell>
+            ) : (
+              <EmptyState title="No orders yet" body="New orders will show up here as they come in." />
+            )}
+          </section>
         </div>
-    );
+      )}
+    </>
+  );
 }
