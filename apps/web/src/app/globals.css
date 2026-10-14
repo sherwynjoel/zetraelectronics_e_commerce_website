@@ -297,3 +297,24 @@ nav[aria-label="Primary"] {
   opacity: 0;
   pointer-events: none;
 }
+
+/* Halftone footer: small type in the UI face, and muted lines strong enough to read (≥4.5:1). */
+.zetra-footer .hwf-top,
+.zetra-footer .hwf-rule {
+  font-size: 13.5px;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.zetra-footer .hwf-brand strong,
+.zetra-footer .hwf-col h3 {
+  font-weight: 700;
+}
+.zetra-footer .hwf-brand span,
+.zetra-footer .hwf-col h3 {
+  opacity: 1;
+  color: var(--ink-2);
+}
+.zetra-footer .hwf-col a,
+.zetra-footer .hwf-up {
+  opacity: 1;
+}

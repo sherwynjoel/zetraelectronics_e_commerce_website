@@ -7,7 +7,7 @@ export async function Footer() {
 
   const shop: FooterColumn = {
     title: "Shop",
-    links: [{ label: "All parts", href: "/products" }, ...categoryTree(all).slice(0, 4).map((c) => ({ label: c.name, href: categoryHref(c.name) }))],
+    links: [...categoryTree(all).map((c) => ({ label: c.name, href: categoryHref(c.name) })), { label: "All parts", href: "/products" }],
   };
   const help: FooterColumn = {
     title: "Help",

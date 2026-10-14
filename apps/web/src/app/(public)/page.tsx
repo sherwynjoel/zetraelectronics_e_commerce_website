@@ -17,7 +17,7 @@ import { formatImageUrl } from "@/lib/utils";
 export const metadata: Metadata = {
   title: "Zetra Electronics | Buy Electronic Components Online India",
   description:
-    "India's premium destination for electronic components, sensors, IoT modules, development boards, and robotics kits. Fast shipping, best prices.",
+    "Genuine, tested electronic components, sensors, IoT modules, development boards and robotics parts, with datasheets and a GST invoice, shipped across India.",
   alternates: { canonical: "https://zetraelectronics.com" },
   openGraph: {
     title: "Zetra Electronics | Buy Electronic Components Online India",
@@ -61,7 +61,7 @@ export default async function Home() {
     name: "Zetra Electronics",
     url: "https://zetraelectronics.com",
     logo: "https://zetraelectronics.com/logo.png",
-    description: "India's premium destination for electronic components, sensors, IoT modules, and robotics kits.",
+    description: "Electrify Your Needs With Us. Genuine, tested electronic components with datasheets and a GST invoice, shipped across India.",
     contactPoint: { "@type": "ContactPoint", contactType: "customer service", areaServed: "IN" },
   };
 

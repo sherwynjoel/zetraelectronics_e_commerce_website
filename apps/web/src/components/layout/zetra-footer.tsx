@@ -4,9 +4,9 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import HalftoneWordmarkFooter, { type FooterColumn } from "@/components/ui/halftone-wordmark-footer";
 
 // Palettes are hex because the halftone canvas mixes them per dot.
-// Light: glass-solid ground, ink and the logo red as the warm colour. Dark: the dark tokens.
-const LIGHT = { background: "#f6f8fc", ink: "#0b1a33", warm: "#f03c36" };
-const DARK = { background: "#0e1729", ink: "#eaf1ff", warm: "#ff5a4f" };
+// Light: glass-solid ground and ink; pushed dots warm toward brand blue (red stays reserved). Dark: the dark tokens.
+const LIGHT = { background: "#f6f8fc", ink: "#0b1a33", warm: "#2f74e0" };
+const DARK = { background: "#0e1729", ink: "#eaf1ff", warm: "#6aa5ff" };
 
 function subscribeTheme(cb: () => void) {
   const mo = new MutationObserver(cb);
@@ -37,7 +37,7 @@ export function ZetraFooter({ columns, year }: { columns: FooterColumn[]; year: 
   const family = useHankenFamily();
 
   return (
-    <div className="px-3 pb-28 pt-10 lg:px-6 lg:pb-6">
+    <div className="zetra-footer px-3 pb-28 pt-10 lg:px-6 lg:pb-6">
       <div className="mx-auto max-w-[1280px] overflow-hidden rounded-[var(--radius-pane)] shadow-[var(--glass-shadow)] ring-1 ring-line">
         <HalftoneWordmarkFooter
           wordmark="zetra"
@@ -47,7 +47,7 @@ export function ZetraFooter({ columns, year }: { columns: FooterColumn[]; year: 
           palette={dark ? DARK : LIGHT}
           fontFamily={family}
           fontWeight={800}
-          monoFamily="var(--font-jetbrains), ui-monospace, monospace"
+          monoFamily="var(--font-hanken), system-ui, sans-serif"
           height="clamp(460px, 46vw, 600px)"
           grain={0.4}
         />
