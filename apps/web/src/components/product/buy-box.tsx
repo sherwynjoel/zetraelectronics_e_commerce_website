@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { Zap } from "lucide-react";
 import { AddToCartButton } from "@/components/add-to-cart";
@@ -10,7 +11,14 @@ import { useCartStore } from "@/lib/store";
 import { useMounted } from "@/lib/use-mounted";
 import { cn } from "@/lib/utils";
 
-type BuyProduct = { id: number; name: string; price: number; stock: number; image?: string | null; shippingCost: number };
+type BuyProduct = {
+  id: number;
+  name: string;
+  price: number;
+  stock: number;
+  image?: string | null;
+  shippingCost: number;
+};
 
 export function BuyBox({ product }: { product: BuyProduct }) {
   const router = useRouter();
@@ -26,7 +34,9 @@ export function BuyBox({ product }: { product: BuyProduct }) {
   useEffect(() => {
     const el = inline.current;
     if (!el) return;
-    const io = new IntersectionObserver(([e]) => setShowBar(!e.isIntersecting && e.boundingClientRect.top < 0));
+    const io = new IntersectionObserver(([e]) =>
+      setShowBar(!e.isIntersecting && e.boundingClientRect.top < 0),
+    );
     io.observe(el);
     return () => io.disconnect();
   }, []);
@@ -49,30 +59,47 @@ export function BuyBox({ product }: { product: BuyProduct }) {
     <>
       <div ref={inline} className="grid gap-3 sm:grid-cols-2">
         <AddToCartButton product={product} size="lg" />
-        <Button variant="glass" size="lg" className="h-13" onClick={buyNow} disabled={soldOut}>
+        <Button
+          variant="glass"
+          size="lg"
+          className="h-13"
+          onClick={buyNow}
+          disabled={soldOut}
+        >
           <Zap className="size-5" aria-hidden />
           Buy now
         </Button>
       </div>
 
-      <div
-        aria-hidden={!showBar}
-        inert={!showBar}
-        className={cn(
-          "fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 transition-[transform,opacity] duration-500 ease-[var(--ease-liquid)] lg:hidden",
-          showBar ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-[130%] opacity-0",
+      {mounted &&
+        createPortal(
+          <div
+            aria-hidden={!showBar}
+            inert={!showBar}
+            className={cn(
+              "fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 transition-[transform,opacity] duration-500 ease-[var(--ease-liquid)] lg:hidden",
+              showBar
+                ? "translate-y-0 opacity-100"
+                : "pointer-events-none translate-y-[130%] opacity-0",
+            )}
+          >
+            <div className="glass glass-thick flex items-center gap-3 rounded-full py-2 pl-5 pr-2">
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xs text-ink-3">{product.name}</p>
+                <Price value={product.price} size="md" />
+              </div>
+              <div className="w-44 shrink-0">
+                <AddToCartButton
+                  product={product}
+                  size="lg"
+                  className="h-11 rounded-full text-sm"
+                />
+              </div>
+            </div>
+          </div>,
+          // Portalled to <body>: glass ancestors use backdrop-filter, which would pin a fixed child to them.
+          document.body,
         )}
-      >
-        <div className="glass glass-thick flex items-center gap-3 rounded-full py-2 pl-5 pr-2">
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-xs text-ink-3">{product.name}</p>
-            <Price value={product.price} size="md" />
-          </div>
-          <div className="w-44 shrink-0">
-            <AddToCartButton product={product} size="lg" className="h-11 rounded-full text-sm" />
-          </div>
-        </div>
-      </div>
     </>
   );
 }
