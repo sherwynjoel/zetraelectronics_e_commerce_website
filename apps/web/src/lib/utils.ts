@@ -6,11 +6,11 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatImageUrl(path: string | null | undefined): string {
-  if (!path) return "/placeholder-product.png";
+  if (!path) return "";
   // Strip localhost/127.0.0.1 prefix — use relative path so Next.js rewrite proxies it to the API
   if (path.includes('localhost') || path.includes('127.0.0.1')) {
     const match = path.match(/\/uploads\/.*/);
-    return match ? match[0] : "/placeholder-product.png";
+    return match ? match[0] : "";
   }
   if (path.startsWith("http")) return path;
   return path;
