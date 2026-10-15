@@ -122,7 +122,7 @@ export function HeroSpotlight({ parts }: { parts: SpotlightPart[] }) {
         <div
           role="group"
           aria-label="Choose a featured part"
-          className="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 [scrollbar-width:none]"
+          className="-m-1.5 flex gap-2 overflow-x-auto p-1.5 [scrollbar-width:none]"
           onKeyDown={(e) => {
             if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
             e.preventDefault();
