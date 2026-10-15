@@ -18,10 +18,16 @@ export function ProductImage({
   className?: string;
   priority?: boolean;
 }) {
-  const [failed, setFailed] = useState(false);
+  // Resized first; if the resizer can't fetch it, show the original file before giving up.
+  const [stage, setStage] = useState<"resized" | "original" | "failed">("resized");
   const url = formatImageUrl(src);
+  const [forUrl, setForUrl] = useState(url);
+  if (forUrl !== url) {
+    setForUrl(url);
+    setStage("resized");
+  }
 
-  if (!url || failed) {
+  if (!url || stage === "failed") {
     return (
       <div className={cn("grid size-full place-items-center text-[var(--plate-ink)]", className)}>
         <div className="flex flex-col items-center gap-2">
@@ -39,8 +45,8 @@ export function ProductImage({
       fill
       sizes={sizes}
       priority={priority}
-      unoptimized={url.startsWith("/uploads")}
-      onError={() => setFailed(true)}
+      unoptimized={stage === "original"}
+      onError={() => setStage((s) => (s === "resized" ? "original" : "failed"))}
       className={cn("object-contain mix-blend-multiply", className)}
     />
   );

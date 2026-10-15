@@ -145,13 +145,13 @@ export default async function Home() {
                   <Link
                     key={c.id}
                     href={categoryHref(c.name)}
-                    className="glass glass-thin glass-lift flex min-w-0 items-center gap-3 rounded-[var(--radius-tile)] p-2.5 pr-3"
+                    className="glass glass-thin glass-lift flex min-w-0 items-center gap-3 rounded-[var(--radius-tile)] p-2.5 pr-3 min-[400px]:max-sm:flex-col min-[400px]:max-sm:items-start min-[400px]:max-sm:gap-2"
                   >
                     <span className="relative size-14 shrink-0 overflow-hidden rounded-xl bg-[var(--plate)]">
                       <ProductImage src={cover?.image} alt="" sizes="56px" className="p-1 [&_span]:hidden [&_svg]:size-5" />
                     </span>
                     <span className="min-w-0">
-                      <span className="block text-sm font-semibold leading-snug text-ink">{c.name}</span>
+                      <span className="block text-sm font-semibold leading-snug text-ink [overflow-wrap:anywhere]">{c.name}</span>
                       <span className="block text-xs text-ink-3">
                         {parts.length ? `${parts.length} ${parts.length === 1 ? "part" : "parts"}` : "Coming soon"}
                       </span>
