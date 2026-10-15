@@ -1,19 +1,11 @@
 "use client";
 
 import { useEffect, useSyncExternalStore } from "react";
-import { Monitor, Moon, Sun } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 import { THEME_KEY, type ThemePref, applyTheme, nextPref } from "@/lib/theme";
 import { cn } from "@/lib/utils";
 
-const labels: Record<ThemePref, string> = {
-  system: "Theme: match system",
-  light: "Theme: light",
-  dark: "Theme: dark",
-};
-
-const EVENT = "zetra-theme-change";
-
-function read(): ThemePref {
+function readPref(): ThemePref {
   try {
     return (localStorage.getItem(THEME_KEY) as ThemePref) || "system";
   } catch {
@@ -21,40 +13,43 @@ function read(): ThemePref {
   }
 }
 
-function subscribe(cb: () => void) {
-  window.addEventListener(EVENT, cb);
-  window.addEventListener("storage", cb);
-  return () => {
-    window.removeEventListener(EVENT, cb);
-    window.removeEventListener("storage", cb);
-  };
+/** What is on screen right now, read from the class the boot script and applyTheme set. */
+function subscribeShown(cb: () => void) {
+  const mo = new MutationObserver(cb);
+  mo.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+  return () => mo.disconnect();
 }
+const readShown = () => (document.documentElement.classList.contains("dark") ? "dark" : "light");
 
+/**
+ * One tap flips light and dark. Until someone taps, the site follows the device setting;
+ * after that it keeps their choice.
+ */
 export function ThemeToggle({ className }: { className?: string }) {
-  const pref = useSyncExternalStore(subscribe, read, () => "system" as ThemePref);
+  const shown = useSyncExternalStore(subscribeShown, readShown, () => "light" as const);
 
-  // Follow the OS setting while the preference is "system".
+  // Keep following the device while nobody has picked a theme.
   useEffect(() => {
     const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const onChange = () => read() === "system" && applyTheme("system");
+    const onChange = () => readPref() === "system" && applyTheme("system");
     mq.addEventListener("change", onChange);
     return () => mq.removeEventListener("change", onChange);
   }, []);
 
-  const Icon = pref === "light" ? Sun : pref === "dark" ? Moon : Monitor;
+  const next = nextPref(shown);
+  const label = next === "dark" ? "Switch to dark theme" : "Switch to light theme";
+  const Icon = next === "dark" ? Moon : Sun;
 
   return (
     <button
       type="button"
-      aria-label={labels[pref]}
-      title={labels[pref]}
+      aria-label={label}
+      title={label}
       onClick={() => {
-        const p = nextPref(pref);
         try {
-          localStorage.setItem(THEME_KEY, p);
+          localStorage.setItem(THEME_KEY, next);
         } catch {}
-        applyTheme(p);
-        window.dispatchEvent(new Event(EVENT));
+        applyTheme(next);
       }}
       className={cn(
         "glass glass-thin grid size-10 shrink-0 place-items-center rounded-full text-ink-2 transition-colors hover:text-ink",

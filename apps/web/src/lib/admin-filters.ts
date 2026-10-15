@@ -20,6 +20,17 @@ export function paymentState(status: string): PaymentState {
   return "paid";
 }
 
+export type OrderStage = "open" | "shipped" | "delivered" | "cancelled";
+
+/** Delivery progress only. Paid and unpaid orders that haven't shipped are both "open"; payment has its own filter. */
+export function orderStage(status: string): OrderStage {
+  const s = status?.toUpperCase();
+  if (s === "SHIPPED") return "shipped";
+  if (s === "DELIVERED") return "delivered";
+  if (s === "CANCELLED") return "cancelled";
+  return "open";
+}
+
 const norm = (s: unknown) => String(s ?? "").toLowerCase();
 const digits = (s: unknown) => String(s ?? "").replace(/\D/g, "");
 
@@ -38,7 +49,7 @@ export function filterOrders<T extends AdminOrderLike>(orders: T[], f: OrderFilt
   const q = f.q.trim().toLowerCase().replace(/^#?ord-?/, "");
   const qDigits = digits(q);
   return orders.filter((o) => {
-    if (f.status !== "all" && o.status !== f.status) return false;
+    if (f.status !== "all" && orderStage(o.status) !== f.status) return false;
     if (f.payment !== "all" && paymentState(o.status) !== f.payment) return false;
     if (f.method && f.method !== "all" && norm(o.paymentMethod) !== norm(f.method)) return false;
     if (!inDateRange(o.createdAt, f.from, f.to)) return false;

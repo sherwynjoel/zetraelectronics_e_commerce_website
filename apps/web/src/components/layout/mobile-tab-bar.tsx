@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search, ShoppingBag, Store, User } from "lucide-react";
+import { LayoutDashboard, Search, ShoppingBag, Store, User } from "lucide-react";
 import { useAuthStore } from "@/lib/auth-store";
 import { useMounted } from "@/lib/use-mounted";
 import { CountBadge, useCartCount } from "./cart-link";
@@ -25,6 +25,11 @@ export function MobileTabBar() {
       match: (p: string) => ["/profile", "/login", "/register", "/track-order"].some((x) => p.startsWith(x)),
     },
   ];
+  // Admins browsing the store get a way back to the dashboard that is always in reach.
+  if (mounted && user?.role === "ADMIN") {
+    tabs.push({ href: "/admin", label: "Admin", icon: LayoutDashboard, match: (p: string) => p.startsWith("/admin") });
+  }
+  const cols = tabs.length;
   const activeIndex = tabs.findIndex((t) => t.match(pathname));
 
   return (
@@ -32,12 +37,12 @@ export function MobileTabBar() {
       aria-label="Primary"
       className="fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 lg:hidden"
     >
-      <div className="glass glass-regular relative grid grid-cols-4 rounded-full p-1.5">
+      <div className={cn("glass glass-regular relative grid rounded-full p-1.5", cols === 5 ? "grid-cols-5" : "grid-cols-4")}>
         {activeIndex >= 0 && (
           <span
             aria-hidden
-            className="absolute inset-y-1.5 left-1.5 w-[calc((100%-0.75rem)/4)] rounded-full bg-[var(--glass-thick-bg)] shadow-[var(--glass-shadow),var(--glass-inner)] transition-transform duration-500 ease-[var(--ease-spring)] motion-reduce:transition-none"
-            style={{ transform: `translateX(${activeIndex * 100}%)` }}
+            className="absolute inset-y-1.5 left-1.5 rounded-full bg-[var(--glass-thick-bg)] shadow-[var(--glass-shadow),var(--glass-inner)] transition-transform duration-500 ease-[var(--ease-spring)] motion-reduce:transition-none"
+            style={{ width: `calc((100% - 0.75rem) / ${cols})`, transform: `translateX(${activeIndex * 100}%)` }}
           />
         )}
         {tabs.map((t, i) => {

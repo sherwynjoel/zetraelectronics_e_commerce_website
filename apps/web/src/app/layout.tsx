@@ -58,13 +58,13 @@ export const metadata: Metadata = {
     title: "Zetra Electronics | Premium Electronic Components India",
     description:
       "Buy electronic components, sensors, IoT modules, development boards, and robotics kits online in India.",
-    images: [{ url: "/logo.png", width: 512, height: 512, alt: "Zetra Electronics" }],
+    images: [{ url: "/logo-square.png", width: 320, height: 320, alt: "Zetra Electronics" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Zetra Electronics | Premium Electronic Components India",
     description: "Buy electronic components, sensors, IoT modules, and robotics kits online in India.",
-    images: ["/logo.png"],
+    images: ["/logo-square.png"],
   },
   alternates: {
     canonical: "https://zetraelectronics.com",

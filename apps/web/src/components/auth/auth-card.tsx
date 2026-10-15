@@ -28,7 +28,7 @@ export function AuthCard({
       <section className="glass glass-thick w-full rounded-[2rem] p-6 sm:p-9">
         <Link href="/" className="mx-auto mb-6 block size-16 overflow-hidden rounded-full bg-logo shadow-[0_6px_18px_-6px_rgba(11,26,51,.3)]" aria-label="Zetra Electronics home">
           <span className="relative block size-full">
-            <Image src="/logo.png" alt="" fill sizes="64px" className="scale-[1.35] object-contain" />
+            <Image src="/logo-mark.png" alt="" fill unoptimized className="object-contain p-[3px]" />
           </span>
         </Link>
         <div className="mb-7 text-center">

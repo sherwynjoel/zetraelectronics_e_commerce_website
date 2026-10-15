@@ -90,7 +90,7 @@ function Brand() {
   return (
     <Link href="/admin" className="flex items-center gap-2.5 px-1" aria-label="Zetra admin home">
       <span className="relative size-12 shrink-0 overflow-hidden rounded-full bg-logo shadow-[0_2px_10px_rgba(11,26,51,.16)] ring-1 ring-line">
-        <Image src="/logo.png" alt="" fill sizes="48px" className="scale-[1.5] object-contain" priority />
+        <Image src="/logo-mark.png" alt="" fill unoptimized className="object-contain p-[3px]" priority />
       </span>
       <span className="leading-tight">
         <span className="block text-base font-extrabold tracking-tight text-ink">Zetra Electronics</span>
@@ -145,7 +145,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
               <Menu className="size-5" aria-hidden />
             </button>
             <span className="relative size-9 shrink-0 overflow-hidden rounded-full bg-logo ring-1 ring-line" aria-hidden>
-              <Image src="/logo.png" alt="" fill sizes="36px" className="scale-[1.5] object-contain" />
+              <Image src="/logo-mark.png" alt="" fill unoptimized className="object-contain p-[3px]" />
             </span>
             <span className="flex-1 truncate font-bold text-ink">{title}</span>
             <ThemeToggle />

@@ -6,8 +6,9 @@ export function resolveTheme(pref: ThemePref, systemDark: boolean): "light" | "d
   return pref;
 }
 
-export function nextPref(pref: ThemePref): ThemePref {
-  return pref === "system" ? "light" : pref === "light" ? "dark" : "system";
+/** The theme a tap switches to: the opposite of what is on screen now. */
+export function nextPref(shown: "light" | "dark"): "light" | "dark" {
+  return shown === "dark" ? "light" : "dark";
 }
 
 export function applyTheme(pref: ThemePref) {

@@ -68,14 +68,18 @@ export default async function Home() {
     "@type": "Organization",
     name: "Zetra Electronics",
     url: "https://zetraelectronics.com",
-    logo: "https://zetraelectronics.com/logo.png",
+    logo: "https://zetraelectronics.com/logo-square.png",
     description: "Electrify Your Needs With Us. Genuine, tested electronic components with datasheets and a GST invoice, shipped across India.",
     contactPoint: { "@type": "ContactPoint", contactType: "customer service", areaServed: "IN" },
   };
 
+  // Tells Google the site's name for the search result heading.
+  const siteJsonLd = { "@context": "https://schema.org", "@type": "WebSite", name: "Zetra Electronics", url: "https://zetraelectronics.com" };
+
   return (
     <div className="mx-auto flex max-w-[1280px] flex-col gap-16 pb-16 lg:gap-24">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(orgJsonLd).replace(/</g, "\u003c") }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd).replace(/</g, "\u003c") }} />
 
       {/* First viewport: headline and search on the field; the spotlight shows real parts, large, ready to add to cart */}
       <section aria-labelledby="hero-title" className="grid gap-8 pt-2 lg:pt-6">

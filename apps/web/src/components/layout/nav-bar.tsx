@@ -17,7 +17,7 @@ function Brand() {
   return (
     <Link href="/" className="flex shrink-0 items-center gap-2 rounded-full pr-2" aria-label="Zetra Electronics home">
       <span className="relative size-12 overflow-hidden rounded-full bg-logo shadow-[0_2px_10px_rgba(11,26,51,.16)] ring-1 ring-line">
-        <Image src="/logo.png" alt="" fill sizes="48px" className="scale-[1.5] object-contain" priority />
+        <Image src="/logo-mark.png" alt="" fill unoptimized className="object-contain p-[3px]" priority />
       </span>
       <span className="text-lg font-extrabold leading-none tracking-tight text-ink">
         Zetra<span className="hidden font-semibold text-ink-2 sm:inline"> Electronics</span>

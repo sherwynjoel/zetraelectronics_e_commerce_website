@@ -1,4 +1,4 @@
-import { filterCustomers, filterOrders, inDateRange, paymentState, type AdminOrderLike, type CustomerLike } from "./admin-filters";
+import { filterCustomers, filterOrders, inDateRange, orderStage, paymentState, type AdminOrderLike, type CustomerLike } from "./admin-filters";
 
 const orders: AdminOrderLike[] = [
   { id: 101, status: "PAID", createdAt: "2026-10-01T10:00:00Z", paymentMethod: "RAZORPAY", shippingAddress: '{"name":"Asha Rao","phone":"9876500001"}', user: { name: "Asha Rao", email: "asha@example.com" } },
@@ -12,6 +12,21 @@ test("payment state is derived from order status", () => {
   expect(paymentState("DELIVERED")).toBe("paid");
   expect(paymentState("PENDING")).toBe("unpaid");
   expect(paymentState("CANCELLED")).toBe("cancelled");
+});
+
+test("order stage tracks delivery only, so it never repeats a payment state", () => {
+  expect(orderStage("PENDING")).toBe("open");
+  expect(orderStage("PAID")).toBe("open");
+  expect(orderStage("PROCESSING")).toBe("open");
+  expect(orderStage("SHIPPED")).toBe("shipped");
+  expect(orderStage("DELIVERED")).toBe("delivered");
+  expect(orderStage("CANCELLED")).toBe("cancelled");
+});
+
+test("order status and payment filters combine: paid but not shipped yet", () => {
+  const base = { q: "", status: "all", payment: "all", from: "", to: "" };
+  expect(filterOrders(orders, { ...base, status: "open" }).map((o) => o.id)).toEqual([101, 102]);
+  expect(filterOrders(orders, { ...base, status: "open", payment: "paid" }).map((o) => o.id)).toEqual([101]);
 });
 
 test("date range is inclusive of whole days and open-ended", () => {
@@ -29,7 +44,7 @@ test("orders: search by id, name, email or phone, combined with filters", () => 
   expect(filterOrders(orders, { ...base, q: "asha" }).map((o) => o.id)).toEqual([101, 103]);
   expect(filterOrders(orders, { ...base, q: "vik@" }).map((o) => o.id)).toEqual([102]);
   expect(filterOrders(orders, { ...base, q: "98765" }).map((o) => o.id)).toEqual([101]);
-  expect(filterOrders(orders, { ...base, q: "asha", status: "CANCELLED" }).map((o) => o.id)).toEqual([103]);
+  expect(filterOrders(orders, { ...base, q: "asha", status: "cancelled" }).map((o) => o.id)).toEqual([103]);
   expect(filterOrders(orders, { ...base, payment: "unpaid" }).map((o) => o.id)).toEqual([102]);
   expect(filterOrders(orders, { ...base, from: "2026-10-01", to: "2026-10-05" }).map((o) => o.id)).toEqual([101]);
 });

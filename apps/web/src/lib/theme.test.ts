@@ -7,8 +7,8 @@ test("resolves system preference", () => {
   expect(resolveTheme("dark", false)).toBe("dark");
 });
 
-test("cycles system → light → dark → system", () => {
-  expect(nextPref("system")).toBe("light");
+test("flips between light and dark in one tap", () => {
+  // One tap always flips what is on screen; there is no third "system" step.
   expect(nextPref("light")).toBe("dark");
-  expect(nextPref("dark")).toBe("system");
+  expect(nextPref("dark")).toBe("light");
 });

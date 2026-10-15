@@ -66,17 +66,15 @@ function Orders() {
       >
         <SelectField label="Order status" value={f.status} onChange={(e) => set("status", e.target.value)}>
           <option value="all">All statuses</option>
-          {["PENDING", "PAID", "SHIPPED", "DELIVERED", "CANCELLED"].map((s) => (
-            <option key={s} value={s}>
-              {label(s)}
-            </option>
-          ))}
+          <option value="open">Not shipped yet</option>
+          <option value="shipped">Shipped</option>
+          <option value="delivered">Delivered</option>
+          <option value="cancelled">Cancelled</option>
         </SelectField>
         <SelectField label="Payment" value={f.payment} onChange={(e) => set("payment", e.target.value)}>
           <option value="all">All payments</option>
           <option value="paid">Paid</option>
           <option value="unpaid">Awaiting payment</option>
-          <option value="cancelled">Cancelled</option>
         </SelectField>
         <TextField label="From date" type="date" value={f.from} max={f.to || undefined} onChange={(e) => set("from", e.target.value)} />
         <TextField label="To date" type="date" value={f.to} min={f.from || undefined} onChange={(e) => set("to", e.target.value)} />

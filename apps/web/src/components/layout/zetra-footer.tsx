@@ -60,6 +60,8 @@ export function ZetraFooter({ columns, year }: { columns: FooterColumn[]; year: 
           monoFamily="var(--font-hanken), system-ui, sans-serif"
           height="max(660px, min(46vw, 680px))"
           grain={0.4}
+          crop={-0.1}
+          fit={0.9}
         />
       </div>
     </div>
