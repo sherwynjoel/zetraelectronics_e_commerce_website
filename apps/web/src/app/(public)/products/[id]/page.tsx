@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ChevronRight, FileDown, FileText, ReceiptIndianRupee, ShieldCheck, Truck } from "lucide-react";
+import { ArrowRight, ChevronRight, FileDown, FileText, ReceiptIndianRupee, ShieldCheck, Truck } from "lucide-react";
 import { API_URL } from "@/lib/api";
 import { formatImageUrl } from "@/lib/utils";
 import { formatINR } from "@/lib/format";
-import { categoryHref } from "@/lib/store-data";
+import { categoryHref, getAllProducts, getCategories } from "@/lib/store-data";
+import { pickRelated } from "@/lib/related";
+import type { Product as ListProduct } from "@/lib/types";
+import { ProductCard } from "@/components/product-card";
 import { ProductStage } from "@/components/product/product-stage";
 import { BuyBox } from "@/components/product/buy-box";
 import { FavoriteButton } from "@/components/product/favorite-button";
@@ -68,7 +71,7 @@ function parseSpecs(raw?: string | null): [string, string][] {
 
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const product = await getProduct(id);
+  const [product, catalogue, categories] = await Promise.all([getProduct(id), getAllProducts<ListProduct>(), getCategories()]);
 
   if (!product) {
     return (
@@ -86,6 +89,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   const price = Number(product.price);
   const shipping = Number(product.shippingCost);
   const specs = parseSpecs(product.specs);
+  const related = pickRelated(product, catalogue, categories);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -216,6 +220,28 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
           )}
         </div>
       </div>
+
+      {related.length > 0 && (
+        <section aria-labelledby="related-title" className="mt-12 lg:mt-16">
+          <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
+            <h2 id="related-title" className="text-2xl font-bold text-ink sm:text-3xl">
+              Related parts
+            </h2>
+            <Link
+              href={categoryHref(product.category)}
+              className="inline-flex min-w-0 max-w-full items-center gap-1 text-sm font-semibold text-brand hover:underline"
+            >
+              <span className="truncate">More in {product.category.trim()}</span>
+              <ArrowRight className="size-4 shrink-0" aria-hidden />
+            </Link>
+          </div>
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
+            {related.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

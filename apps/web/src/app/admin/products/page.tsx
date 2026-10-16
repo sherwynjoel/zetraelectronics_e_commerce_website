@@ -19,7 +19,7 @@ import { TableShell, Td, Th, Tr } from "@/components/ui/table";
 type Sort = "name_asc" | "name_desc" | "price_asc" | "price_desc" | "stock_asc" | "stock_desc";
 
 export default function AdminProductsPage() {
-  const { data, loading, reload } = useAdminGet<Product[]>("/products?limit=100");
+  const { data, loading, reload } = useAdminGet<Product[]>("/products", { allPages: true });
   const [q, setQ] = useState("");
   const [sort, setSort] = useState<Sort>("name_asc");
 

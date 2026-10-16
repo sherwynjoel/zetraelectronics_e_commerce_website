@@ -23,7 +23,7 @@ function stockState(n: number): Exclude<Stock, "all"> {
 }
 
 export default function InventoryPage() {
-  const { data, loading } = useAdminGet<Product[]>("/products?limit=100");
+  const { data, loading } = useAdminGet<Product[]>("/products", { allPages: true });
   const [f, setF] = useState(EMPTY);
   const set = <K extends keyof typeof EMPTY>(k: K, v: (typeof EMPTY)[K]) => setF((p) => ({ ...p, [k]: v }));
 

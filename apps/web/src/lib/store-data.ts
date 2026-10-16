@@ -1,4 +1,5 @@
 import { API_URL } from "@/lib/api";
+import { fetchAllPages, PAGE_SIZE } from "@/lib/paging";
 
 export type Category = {
   id: number;
@@ -53,4 +54,27 @@ export function categoryTree(all: Category[]): Category[] {
 
 export function categoryHref(name: string) {
   return `/products?category=${encodeURIComponent(name)}`;
+}
+
+/**
+ * Every product matching `params`, fetched 100 at a time. The API caps each request
+ * (50 by default, 100 at most), so a single request silently drops the rest of the catalogue.
+ */
+export async function getAllProducts<T extends { id: number }>(
+  params: Record<string, string> = {},
+  init: RequestInit = { cache: "no-store" },
+): Promise<T[]> {
+  const { page: _page, limit: _limit, ...rest } = params;
+  void _page;
+  void _limit;
+  const rows = await fetchAllPages<T>(async (page) => {
+    try {
+      const q = new URLSearchParams({ ...rest, limit: String(PAGE_SIZE), page: String(page) });
+      const res = await fetch(`${API_URL}/products?${q}`, init);
+      return res.ok ? ((await res.json()) as T[]) : null;
+    } catch {
+      return null;
+    }
+  });
+  return rows ?? [];
 }

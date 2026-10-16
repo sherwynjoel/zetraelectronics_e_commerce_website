@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import { API_URL } from "@/lib/api";
 import type { Product } from "@/lib/types";
-import { categoryTree, getCategories } from "@/lib/store-data";
+import { categoryTree, getAllProducts, getCategories } from "@/lib/store-data";
 import { ActiveFilters, ProductFilters } from "@/components/product-filters";
 import { CatalogGrid } from "@/components/catalog-grid";
 
@@ -19,15 +18,8 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-async function getProducts(params: Record<string, string>): Promise<Product[]> {
-  try {
-    const q = new URLSearchParams(params).toString();
-    const res = await fetch(`${API_URL}/products${q ? `?${q}` : ""}`, { cache: "no-store" });
-    if (!res.ok) return [];
-    return res.json();
-  } catch {
-    return [];
-  }
+function getProducts(params: Record<string, string>): Promise<Product[]> {
+  return getAllProducts<Product>(params);
 }
 
 export default async function ProductsPage({

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { API_URL } from "@/lib/api";
+import { getAllProducts } from "@/lib/store-data";
 import type { Product } from "@/lib/types";
 import { SearchBox } from "@/components/layout/search-box";
 import { CatalogGrid } from "@/components/catalog-grid";
@@ -10,13 +10,7 @@ export const dynamic = "force-dynamic";
 
 async function search(q: string): Promise<Product[]> {
   if (!q) return [];
-  try {
-    const res = await fetch(`${API_URL}/products?search=${encodeURIComponent(q)}`, { cache: "no-store" });
-    if (!res.ok) return [];
-    return res.json();
-  } catch {
-    return [];
-  }
+  return getAllProducts<Product>({ search: q });
 }
 
 export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string | string[] }> }) {

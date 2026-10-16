@@ -4,9 +4,15 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { API_URL } from "@/lib/api";
 import { useAuthStore } from "@/lib/auth-store";
+import { fetchAllPages, PAGE_SIZE } from "@/lib/paging";
 
-/** Authenticated admin GET with loading/error state; a 401/403 signs out and returns to login. */
-export function useAdminGet<T>(path: string | null) {
+class SignedOut extends Error {}
+
+/**
+ * Authenticated admin GET with loading/error state; a 401/403 signs out and returns to login.
+ * With `allPages`, a list endpoint is read 100 rows at a time until every row has arrived.
+ */
+export function useAdminGet<T>(path: string | null, { allPages = false }: { allPages?: boolean } = {}) {
   const { token, logout } = useAuthStore();
   const router = useRouter();
   const [data, setData] = useState<T | null>(null);
@@ -18,20 +24,30 @@ export function useAdminGet<T>(path: string | null) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_URL}${path}`, { headers: { Authorization: `Bearer ${token}` } });
-      if (res.status === 401 || res.status === 403) {
+      const get = async (url: string) => {
+        const res = await fetch(`${API_URL}${url}`, { headers: { Authorization: `Bearer ${token}` } });
+        if (res.status === 401 || res.status === 403) throw new SignedOut();
+        if (!res.ok) throw new Error(`The server returned ${res.status}`);
+        return res.json();
+      };
+      if (allPages) {
+        const sep = path.includes("?") ? "&" : "?";
+        const rows = await fetchAllPages<{ id: number }>(async (page) => get(`${path}${sep}limit=${PAGE_SIZE}&page=${page}`));
+        setData(rows as T);
+      } else {
+        setData(await get(path));
+      }
+    } catch (e) {
+      if (e instanceof SignedOut) {
         logout();
         router.push("/login?next=/admin");
         return;
       }
-      if (!res.ok) throw new Error(`The server returned ${res.status}`);
-      setData(await res.json());
-    } catch (e) {
       setError(e instanceof Error ? e.message : "Request failed");
     } finally {
       setLoading(false);
     }
-  }, [path, token, logout, router]);
+  }, [path, token, logout, router, allPages]);
 
   useEffect(() => {
     load();

@@ -1,4 +1,5 @@
 import { MetadataRoute } from 'next';
+import { getAllProducts } from '@/lib/store-data';
 
 const BASE_URL = 'https://zetraelectronics.com';
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://zetraelectronics.com/api';
@@ -18,12 +19,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     try {
         const [productsRes, categoriesRes] = await Promise.all([
-            fetch(`${API}/products?limit=500`, { next: { revalidate: 3600 } }),
+            getAllProducts<{ id: number; updatedAt?: string }>({}, { next: { revalidate: 3600 } }),
             fetch(`${API}/categories`, { next: { revalidate: 3600 } }),
         ]);
 
-        const productPages: MetadataRoute.Sitemap = productsRes.ok
-            ? (await productsRes.json()).map((p: { id: number; updatedAt?: string }) => ({
+        const productPages: MetadataRoute.Sitemap = productsRes.length
+            ? productsRes.map((p: { id: number; updatedAt?: string }) => ({
                 url: `${BASE_URL}/products/${p.id}`,
                 lastModified: p.updatedAt ? new Date(p.updatedAt) : new Date(),
                 changeFrequency: 'weekly' as const,
